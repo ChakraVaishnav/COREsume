@@ -145,7 +145,7 @@ export default function ResumePreview() {
     return <div className="flex justify-center items-center min-h-screen text-red-500">{error}</div>;
   }
 
-  const Template = resumeData.template === 'single-column'
+  const Template = resumeData.template === 'minimalist'
     ? SingleColumnTemplate
     : TwoColumnTemplate;
 
