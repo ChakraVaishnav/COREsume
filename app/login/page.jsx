@@ -9,6 +9,14 @@ export default function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
+  const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
+  const [forgotPasswordMessage, setForgotPasswordMessage] = useState(null);
+  const [showOtpForm, setShowOtpForm] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [verifyOtpLoading, setVerifyOtpLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const router = useRouter();
 
   function handleChange(e) {
@@ -33,13 +41,85 @@ export default function LoginPage() {
         throw new Error(data.error || "Login failed");
       }
 
-      localStorage.setItem('token', data.token);
+      // Store user data in localStorage
+      localStorage.setItem('user', JSON.stringify({
+        email: form.email,
+        isAuthenticated: true
+      }));
+
       router.push("/dashboard");
     } catch (err) {
       console.error('Login error:', err);
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleForgotPassword(e) {
+    e.preventDefault();
+    setForgotPasswordMessage(null);
+    setForgotPasswordLoading(true);
+
+    try {
+      const res = await fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({ email: forgotPasswordEmail }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to process request");
+      }
+
+      setForgotPasswordMessage("OTP has been sent to your email");
+      setShowOtpForm(true);
+    } catch (err) {
+      console.error('Forgot password error:', err);
+      setForgotPasswordMessage(err.message || "Failed to send OTP. Please try again.");
+    } finally {
+      setForgotPasswordLoading(false);
+    }
+  }
+
+  async function handleVerifyOtp(e) {
+    e.preventDefault();
+    setForgotPasswordMessage(null);
+    setVerifyOtpLoading(true);
+
+    try {
+      const res = await fetch("/api/auth/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: forgotPasswordEmail,
+          otp,
+          newPassword,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to verify OTP");
+      }
+
+      setForgotPasswordMessage("Password updated successfully! You can now login.");
+      setShowOtpForm(false);
+      setShowForgotPassword(false);
+      setForgotPasswordEmail("");
+      setOtp("");
+      setNewPassword("");
+    } catch (err) {
+      console.error('Verify OTP error:', err);
+      setForgotPasswordMessage(err.message);
+    } finally {
+      setVerifyOtpLoading(false);
     }
   }
 
@@ -84,6 +164,72 @@ export default function LoginPage() {
         </form>
 
         {error && <p className="mt-4 text-red-600 font-medium text-center">{error}</p>}
+
+        <div className="mt-4 text-center">
+          <button
+            onClick={() => setShowForgotPassword(!showForgotPassword)}
+            className="text-gray-600 hover:text-yellow-500 transition"
+          >
+            Forgot Password?
+          </button>
+        </div>
+
+        {showForgotPassword && (
+          <div className="mt-6 space-y-4">
+            {!showOtpForm ? (
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <input
+                  type="email"
+                  placeholder="Enter your email to reset password"
+                  value={forgotPasswordEmail}
+                  onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                  required
+                  className="w-full p-3 rounded-lg border border-gray-300 focus:outline-yellow-400 focus:ring-2 focus:ring-yellow-400 placeholder-gray-600"
+                />
+                <button
+                  type="submit"
+                  disabled={forgotPasswordLoading}
+                  className="w-full bg-gray-200 hover:bg-gray-300 text-black font-semibold py-3 rounded-lg cursor-pointer transition"
+                >
+                  {forgotPasswordLoading ? "Sending..." : "Send OTP"}
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleVerifyOtp} className="space-y-4">
+                <input
+                  type="text"
+                  placeholder="Enter OTP"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  required
+                  className="w-full p-3 rounded-lg border border-gray-300 focus:outline-yellow-400 focus:ring-2 focus:ring-yellow-400 placeholder-gray-600"
+                />
+                <input
+                  type="password"
+                  placeholder="Enter new password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  className="w-full p-3 rounded-lg border border-gray-300 focus:outline-yellow-400 focus:ring-2 focus:ring-yellow-400 placeholder-gray-600"
+                />
+                <button
+                  type="submit"
+                  disabled={verifyOtpLoading}
+                  className="w-full bg-gray-200 hover:bg-gray-300 text-black font-semibold py-3 rounded-lg cursor-pointer transition"
+                >
+                  {verifyOtpLoading ? "Verifying..." : "Reset Password"}
+                </button>
+              </form>
+            )}
+            {forgotPasswordMessage && (
+              <p className={`text-center font-medium ${
+                forgotPasswordMessage.includes("successfully") ? "text-green-600" : "text-red-600"
+              }`}>
+                {forgotPasswordMessage}
+              </p>
+            )}
+          </div>
+        )}
 
         <p className="text-center text-gray-600 text-sm mt-6">
           Don't have an account?{" "}

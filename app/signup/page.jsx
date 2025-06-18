@@ -66,7 +66,6 @@ export default function SignUp() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Verification failed");
 
-      // Redirect to dashboard
       router.push("/dashboard");
     } catch (err) {
       setError(err.message);
@@ -76,7 +75,7 @@ export default function SignUp() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-100 flex items-center justify-center px-4">
+    <main className="min-h-screen flex items-center justify-center px-4 bg-white">
       <div className="absolute top-6 left-6">
         <Link
           href="/"
@@ -121,44 +120,42 @@ export default function SignUp() {
           </form>
         )}
 
-       {step === 2 && (
-  <form onSubmit={verifyOtp} className="space-y-6">
-    <div className="text-center mb-4">
-      <h2 className="text-lg font-semibold text-gray-700">
-        Verify Your Email
-      </h2>
-      <p className="text-sm text-gray-500 mt-1">
-        Enter the 6-digit OTP sent to{" "}
-        <span className="font-medium text-yellow-600">{form.email}</span>
-      </p>
-    </div>
+        {step === 2 && (
+          <form onSubmit={verifyOtp} className="space-y-6">
+            <div className="text-center mb-4">
+              <h2 className="text-lg font-semibold text-gray-700">
+                Verify Your Email
+              </h2>
+              <p className="text-sm text-gray-500 mt-1">
+                Enter the 6-digit OTP sent to{" "}
+                <span className="font-medium text-yellow-600">{form.email}</span>
+              </p>
+            </div>
 
-    <div className="flex justify-center">
-      <input
-        name="otp"
-        value={form.otp}
-        onChange={handleChange}
-        placeholder="Enter OTP"
-        pattern="\d{6}"
-        maxLength={6}
-        required
-        className="w-2/3 sm:w-1/2 px-6 py-3 text-lg tracking-widest text-center rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition placeholder:text-gray-400 text-gray-900 font-bold shadow-sm"
-      />
-    </div>
+            <div className="flex justify-center">
+              <input
+                name="otp"
+                value={form.otp}
+                onChange={handleChange}
+                placeholder="Enter OTP"
+                pattern="\d{6}"
+                maxLength={6}
+                required
+                className="w-2/3 sm:w-1/2 px-6 py-3 text-lg tracking-widest text-center rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition placeholder:text-gray-400 text-gray-900 font-bold shadow-sm"
+              />
+            </div>
 
-    <SubmitButton loading={loading} text="Verify & Sign Up" />
-  </form>
-)}
-
+            <SubmitButton loading={loading} text="Verify & Sign Up" />
+          </form>
+        )}
 
         {error && (
           <p className="mt-5 text-red-600 font-medium text-center">{error}</p>
         )}
         {message && (
-          <p className="mt-5 text-green-600 font-medium text-center">
-            {message}
-          </p>
+          <p className="mt-5 text-green-600 font-medium text-center">{message}</p>
         )}
+
         <p className="text-center text-gray-600 text-sm mt-6">
           Already have an account?{" "}
           <Link href="/login" className="text-yellow-500 hover:underline">

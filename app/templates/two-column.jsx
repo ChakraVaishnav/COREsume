@@ -1,6 +1,15 @@
 export default function TwoColumnTemplate({ data }) {
   const { personalInfo, summary, skills, education, projects, experience, achievements, interests } = data;
 
+  // Helper function to check if a section has content
+  const hasContent = (section) => {
+    if (!section) return false;
+    if (Array.isArray(section)) return section.some(item => 
+      Object.values(item).some(value => value && value.trim() !== '')
+    );
+    return section.trim() !== '';
+  };
+
   return (
     <div className="p-8 text-black text-[13px] font-sans leading-relaxed"> {/* ↓ 1px */}
 
@@ -18,26 +27,31 @@ export default function TwoColumnTemplate({ data }) {
           {/* Contact Info */}
           <div className="space-y-1 text-[12px] font-normal"> {/* ↓ 1px */}
             <p>{personalInfo.phone}</p>
-            <a href={`mailto:${personalInfo.email}`} className="text-black no-underline">{personalInfo.email}</a>
-            {personalInfo.linkedin && <p><a href={personalInfo.linkedin} target="_blank" className="text-black no-underline">LinkedIn</a></p>}
-            {personalInfo.github && <p><a href={personalInfo.github} target="_blank" className="text-black no-underline">GitHub</a></p>}
-            {personalInfo.portfolio && <p><a href={personalInfo.portfolio} target="_blank" className="text-black no-underline">Portfolio</a></p>}
+            <a href={`mailto:${personalInfo.email}`} className="text-black no-underline hover:text-yellow-500 transition">{personalInfo.email}</a>
+            {personalInfo.linkedin && <p><a href={personalInfo.linkedin} target="_blank" className="text-black no-underline hover:text-yellow-500 transition">LinkedIn</a></p>}
+            {personalInfo.github && <p><a href={personalInfo.github} target="_blank" className="text-black no-underline hover:text-yellow-500 transition">GitHub</a></p>}
+            {personalInfo.portfolio && <p><a href={personalInfo.portfolio} target="_blank" className="text-black no-underline hover:text-yellow-500 transition">Portfolio</a></p>}
           </div>
 
-          <Section title="Key Skills">
-            <p className="whitespace-pre-line">{skills}</p>
-          </Section>
+          {hasContent(skills) && (
+            <Section title="Key Skills">
+              <p className="whitespace-pre-line">{skills}</p>
+            </Section>
+          )}
 
-          <Section title="Education">
-            <p className="whitespace-pre-line">{education}</p>
-          </Section>
+          {hasContent(education) && (
+            <Section title="Education">
+              <p className="whitespace-pre-line">{education}</p>
+            </Section>
+          )}
 
-          {achievements && (
+          {hasContent(achievements) && (
             <Section title="Achievements">
               <p className="whitespace-pre-line">{achievements}</p>
             </Section>
           )}
-          {interests && (
+
+          {hasContent(interests) && (
             <Section title="Interests">
               <p className="whitespace-pre-line">{interests}</p>
             </Section>
@@ -46,13 +60,13 @@ export default function TwoColumnTemplate({ data }) {
 
         {/* Right Content */}
         <main className="col-span-2 space-y-6 pl-4 text-[13px] font-normal"> {/* ↓ 1px */}
-          {summary && (
+          {hasContent(summary) && (
             <Section title="Professional Summary">
               <p className="text-justify">{summary}</p>
             </Section>
           )}
 
-          {projects && projects.length > 0 && (
+          {hasContent(projects) && (
             <Section title="Projects">
               {projects.map((project, index) => (
                 <div key={index} className="mb-2">
@@ -69,7 +83,7 @@ export default function TwoColumnTemplate({ data }) {
             </Section>
           )}
 
-          {experience && experience.length > 0 && (
+          {hasContent(experience) && (
             <Section title="Work Experience">
               {experience.map((exp, index) => (
                 <div key={index} className="mb-2">

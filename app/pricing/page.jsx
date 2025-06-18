@@ -1,0 +1,255 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import Navbar from "@/components/Navbar";
+import Link from 'next/link';
+
+const pricingPlans = [
+  {
+    id: 1,
+    name: "Starter",
+    credits: 1,
+    price: 19,
+    popular: false,
+    features: ["1 Resume Generation", "Basic Templates"]
+  },
+  {
+    id: 2,
+    name: "Popular",
+    credits: 3,
+    price: 39,
+    popular: true,
+    features: ["3 Resume Generations", "All Templates", "Save 15%"]
+  },
+  {
+    id: 3,
+    name: "Professional",
+    credits: 6,
+    price: 59,
+    popular: false,
+    features: ["6 Resume Generations", "All Templates", "Save 25%"]
+  },
+  {
+    id: 4,
+    name: "Ultimate",
+    credits: 12,
+    price: 99,
+    popular: false,
+    features: ["12 Resume Generations", "All Templates", "Save 40%"]
+  }
+];
+
+export default function Pricing() {
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
+  const [razorpayKey, setRazorpayKey] = useState(null);
+
+  useEffect(() => {
+    // Load Razorpay script
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    script.onload = () => setRazorpayLoaded(true);
+    document.body.appendChild(script);
+
+    // Fetch Razorpay key
+    const fetchKey = async () => {
+      try {
+        const response = await fetch('/api/payment/get-key');
+        const data = await response.json();
+        if (data.success) {
+          setRazorpayKey(data.key);
+        }
+      } catch (error) {
+        console.error('Error fetching Razorpay key:', error);
+      }
+    };
+
+    fetchKey();
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  const handleBuyNow = async (plan) => {
+    if (!razorpayLoaded || !razorpayKey) {
+      alert('Payment gateway is loading. Please try again in a moment.');
+      return;
+    }
+
+    setLoading(true);
+    setSelectedPlan(plan);
+
+    try {
+      // Create order
+      const orderResponse = await fetch('/api/payment/create-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ plan }),
+      });
+
+      const orderData = await orderResponse.json();
+
+      if (!orderData.success) {
+        throw new Error(orderData.error || 'Failed to create order');
+      }
+
+      // Initialize Razorpay payment
+      const options = {
+        key: razorpayKey,
+        amount: orderData.order.amount,
+        currency: orderData.order.currency,
+        name: 'Resumint',
+        description: `${plan.name} Plan - ${plan.credits} Credits`,
+        order_id: orderData.order.id,
+        handler: async function (response) {
+          try {
+            // Verify payment
+            const verifyResponse = await fetch('/api/payment/verify', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              }),
+            });
+
+            const verifyData = await verifyResponse.json();
+
+            if (verifyData.success) {
+              alert('Payment successful! Your credits have been added to your account.');
+              // Redirect to dashboard or refresh credits
+              window.location.href = '/dashboard';
+            } else {
+              alert('Payment verification failed. Please contact support.');
+            }
+          } catch (error) {
+            console.error('Payment verification error:', error);
+            alert('Payment verification failed. Please contact support.');
+          }
+        },
+        prefill: {
+          name: 'User Name', // You can get this from user context
+          email: 'user@example.com', // You can get this from user context
+        },
+        theme: {
+          color: '#EAB308', // Yellow color matching your theme
+        },
+        modal: {
+          ondismiss: function() {
+            setLoading(false);
+            setSelectedPlan(null);
+          }
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+
+    } catch (error) {
+      console.error('Payment error:', error);
+      alert('Failed to initiate payment. Please try again.');
+      setLoading(false);
+      setSelectedPlan(null);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-white">
+      <Navbar />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="flex justify-between items-center mb-16">
+          <Link 
+            href="/dashboard" 
+            className="bg-white text-yellow-500 border-2 border-yellow-500 px-6 py-2 rounded-lg hover:bg-yellow-500 hover:text-white transition-colors font-semibold"
+          >
+            Back to Dashboard
+          </Link>
+          <div className="text-center flex-1">
+            <h1 className="text-4xl font-bold text-black mb-4">Choose Your Plan</h1>
+            <p className="text-gray-600 text-lg">Select the perfect plan for your career journey</p>
+          </div>
+          <div className="w-[140px]"></div> {/* Spacer to balance the layout */}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {pricingPlans.map((plan) => (
+            <div
+              key={plan.id}
+              className={`relative rounded-2xl border-2 transition-all duration-300 hover:scale-105 ${
+                plan.popular
+                  ? 'border-yellow-500 bg-yellow-50'
+                  : 'border-gray-200 hover:border-yellow-500'
+              }`}
+            >
+              {plan.popular && (
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                  <span className="bg-yellow-500 text-white px-4 py-1 rounded-full text-sm font-semibold">
+                    Most Popular
+                  </span>
+                </div>
+              )}
+
+              <div className="p-6">
+                <h3 className="text-xl font-bold text-black mb-2">{plan.name}</h3>
+                <div className="mb-4">
+                  <span className="text-3xl font-bold text-black">₹{plan.price}</span>
+                  <span className="text-gray-600">/one-time</span>
+                </div>
+                <div className="mb-6">
+                  <span className="text-lg font-semibold text-yellow-600">{plan.credits} Credits</span>
+                </div>
+
+                <ul className="space-y-3 mb-8">
+                  {plan.features.map((feature, index) => (
+                    <li key={index} className="flex items-center text-gray-600">
+                      <svg
+                        className="w-5 h-5 text-yellow-500 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+
+                <button
+                  onClick={() => handleBuyNow(plan)}
+                  disabled={loading || !razorpayLoaded || !razorpayKey}
+                  className={`w-full py-3 px-4 rounded-lg font-semibold transition-colors ${
+                    plan.popular
+                      ? 'bg-yellow-500 text-white hover:bg-white hover:text-yellow-500 border-2 border-yellow-500'
+                      : 'bg-white text-yellow-500 border-2 border-yellow-500 hover:bg-yellow-500 hover:text-white'
+                  } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  {loading && selectedPlan?.id === plan.id ? 'Processing...' : 'Buy Now'}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-16 text-center">
+          <p className="text-gray-600">
+            Need a custom plan? <Link href="/contact" className="text-yellow-500 hover:text-yellow-600 font-semibold">Contact us</Link>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+} 
