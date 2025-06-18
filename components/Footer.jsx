@@ -53,6 +53,15 @@ export default function Footer() {
         <div className="mt-8 pt-8 border-t border-gray-200 text-center">
           <p className="text-sm text-gray-600">© 2025 Resumint. All rights reserved.</p>
         </div>
+        <div className="flex flex-wrap gap-4 justify-center mt-4 text-sm text-gray-500">
+          <a href="/terms" className="hover:underline">Terms & Conditions</a>
+          <span>|</span>
+          <a href="/privacy" className="hover:underline">Privacy Policy</a>
+          <span>|</span>
+          <a href="/refund-policy" className="hover:underline">Refund Policy</a>
+          <span>|</span>
+          <a href="/contact" className="hover:underline">Contact Us</a>
+        </div>
       </div>
     </footer>
   );
