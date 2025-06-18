@@ -5,38 +5,10 @@ import Navbar from "@/components/Navbar";
 import Link from 'next/link';
 
 const pricingPlans = [
-  {
-    id: 1,
-    name: "Starter",
-    credits: 1,
-    price: 19,
-    popular: false,
-    features: ["1 Resume Generation", "Basic Templates"]
-  },
-  {
-    id: 2,
-    name: "Popular",
-    credits: 3,
-    price: 39,
-    popular: true,
-    features: ["3 Resume Generations", "All Templates", "Save 15%"]
-  },
-  {
-    id: 3,
-    name: "Professional",
-    credits: 6,
-    price: 59,
-    popular: false,
-    features: ["6 Resume Generations", "All Templates", "Save 25%"]
-  },
-  {
-    id: 4,
-    name: "Ultimate",
-    credits: 12,
-    price: 99,
-    popular: false,
-    features: ["12 Resume Generations", "All Templates", "Save 40%"]
-  }
+  { id: 1, name: "Starter", credits: 1, price: 19, popular: false, features: ["1 Resume Generation", "Basic Templates"] },
+  { id: 2, name: "Popular", credits: 3, price: 39, popular: true, features: ["3 Resume Generations", "All Templates", "Save 15%"] },
+  { id: 3, name: "Professional", credits: 6, price: 59, popular: false, features: ["6 Resume Generations", "All Templates", "Save 25%"] },
+  { id: 4, name: "Ultimate", credits: 12, price: 99, popular: false, features: ["12 Resume Generations", "All Templates", "Save 40%"] }
 ];
 
 export default function Pricing() {
@@ -44,33 +16,37 @@ export default function Pricing() {
   const [loading, setLoading] = useState(false);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
   const [razorpayKey, setRazorpayKey] = useState(null);
+  const [userEmail, setUserEmail] = useState('');
 
   useEffect(() => {
-    // Load Razorpay script
-    const script = document.createElement('script');
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    script.async = true;
-    script.onload = () => setRazorpayLoaded(true);
-    document.body.appendChild(script);
+    const loadRazorpay = () => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+      script.onload = () => setRazorpayLoaded(true);
+      document.body.appendChild(script);
+      return () => document.body.removeChild(script);
+    };
 
-    // Fetch Razorpay key
-    const fetchKey = async () => {
+    const fetchRazorpayKey = async () => {
       try {
-        const response = await fetch('/api/payment/get-key');
-        const data = await response.json();
-        if (data.success) {
-          setRazorpayKey(data.key);
-        }
+        const res = await fetch('/api/payment/get-key');
+        const data = await res.json();
+        if (data.success) setRazorpayKey(data.key);
       } catch (error) {
         console.error('Error fetching Razorpay key:', error);
       }
     };
 
-    fetchKey();
-
-    return () => {
-      document.body.removeChild(script);
+    const getEmailFromStorage = () => {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (user?.email) setUserEmail(user.email);
+      else window.location.href = '/login';
     };
+
+    loadRazorpay();
+    fetchRazorpayKey();
+    getEmailFromStorage();
   }, []);
 
   const handleBuyNow = async (plan) => {
@@ -83,81 +59,66 @@ export default function Pricing() {
     setSelectedPlan(plan);
 
     try {
-      // Create order
-      const orderResponse = await fetch('/api/payment/create-order', {
+      const res = await fetch('/api/payment/create-order', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ plan }),
       });
 
-      const orderData = await orderResponse.json();
+      const orderData = await res.json();
+      if (!orderData.success) throw new Error(orderData.error || 'Order failed');
 
-      if (!orderData.success) {
-        throw new Error(orderData.error || 'Failed to create order');
-      }
-
-      // Initialize Razorpay payment
-      const options = {
+      const rzp = new window.Razorpay({
         key: razorpayKey,
         amount: orderData.order.amount,
         currency: orderData.order.currency,
         name: 'Resumint',
         description: `${plan.name} Plan - ${plan.credits} Credits`,
         order_id: orderData.order.id,
+        prefill: { email: userEmail },
+        theme: { color: '#EAB308' },
+        modal: {
+          ondismiss: () => {
+            setLoading(false);
+            setSelectedPlan(null);
+          },
+        },
         handler: async function (response) {
           try {
-            // Verify payment
-            const verifyResponse = await fetch('/api/payment/verify', {
+            const verifyRes = await fetch('/api/payment/verify', {
               method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
+              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
+                email: userEmail,
+                credits: plan.credits,
               }),
             });
 
-            const verifyData = await verifyResponse.json();
+            const verifyData = await verifyRes.json();
 
             if (verifyData.success) {
-              alert('Payment successful! Your credits have been added to your account.');
-              // Redirect to dashboard or refresh credits
+              alert('✅ Payment successful! Credits added.');
               window.location.href = '/dashboard';
             } else {
-              alert('Payment verification failed. Please contact support.');
+              alert('❌ Payment verification failed.');
             }
           } catch (error) {
-            console.error('Payment verification error:', error);
-            alert('Payment verification failed. Please contact support.');
-          }
-        },
-        prefill: {
-          name: 'User Name', // You can get this from user context
-          email: 'user@example.com', // You can get this from user context
-        },
-        theme: {
-          color: '#EAB308', // Yellow color matching your theme
-        },
-        modal: {
-          ondismiss: function() {
-            setLoading(false);
-            setSelectedPlan(null);
+            console.error('Verification error:', error);
+            alert('Error verifying payment. Please try again.');
           }
         }
-      };
+      });
 
-      const rzp = new window.Razorpay(options);
       rzp.open();
 
     } catch (error) {
       console.error('Payment error:', error);
-      alert('Failed to initiate payment. Please try again.');
+      alert('Something went wrong with payment.');
+    } finally {
       setLoading(false);
-      setSelectedPlan(null);
     }
   };
 
@@ -166,34 +127,27 @@ export default function Pricing() {
       <Navbar />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="flex justify-between items-center mb-16">
-          <Link 
-            href="/dashboard" 
-            className="bg-white text-yellow-500 border-2 border-yellow-500 px-6 py-2 rounded-lg hover:bg-yellow-500 hover:text-white transition-colors font-semibold"
-          >
+          <Link href="/dashboard" className="bg-white text-yellow-500 border-2 border-yellow-500 px-6 py-2 rounded-lg hover:bg-yellow-500 hover:text-white transition-colors font-semibold">
             Back to Dashboard
           </Link>
           <div className="text-center flex-1">
             <h1 className="text-4xl font-bold text-black mb-4">Choose Your Plan</h1>
             <p className="text-gray-600 text-lg">Select the perfect plan for your career journey</p>
           </div>
-          <div className="w-[140px]"></div> {/* Spacer to balance the layout */}
+          <div className="w-[140px]"></div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {pricingPlans.map((plan) => (
+          {pricingPlans.map(plan => (
             <div
               key={plan.id}
               className={`relative rounded-2xl border-2 transition-all duration-300 hover:scale-105 ${
-                plan.popular
-                  ? 'border-yellow-500 bg-yellow-50'
-                  : 'border-gray-200 hover:border-yellow-500'
+                plan.popular ? 'border-yellow-500 bg-yellow-50' : 'border-gray-200 hover:border-yellow-500'
               }`}
             >
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <span className="bg-yellow-500 text-white px-4 py-1 rounded-full text-sm font-semibold">
-                    Most Popular
-                  </span>
+                  <span className="bg-yellow-500 text-white px-4 py-1 rounded-full text-sm font-semibold">Most Popular</span>
                 </div>
               )}
 
@@ -208,20 +162,10 @@ export default function Pricing() {
                 </div>
 
                 <ul className="space-y-3 mb-8">
-                  {plan.features.map((feature, index) => (
-                    <li key={index} className="flex items-center text-gray-600">
-                      <svg
-                        className="w-5 h-5 text-yellow-500 mr-2"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M5 13l4 4L19 7"
-                        />
+                  {plan.features.map((feature, i) => (
+                    <li key={i} className="flex items-center text-gray-600">
+                      <svg className="w-5 h-5 text-yellow-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                       </svg>
                       {feature}
                     </li>
@@ -252,4 +196,4 @@ export default function Pricing() {
       </div>
     </div>
   );
-} 
+}

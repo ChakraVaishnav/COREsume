@@ -119,6 +119,7 @@ export default function ResumePreview() {
         
         // Show success message
         alert("Resume generated successfully! Your credit has been used.");
+        router.push("/dashboard");
       } catch (error) {
         console.error("Error deducting credit:", error);
         alert("There was an error processing your credit. Please contact support.");
