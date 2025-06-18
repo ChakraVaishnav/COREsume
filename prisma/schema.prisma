@@ -17,8 +17,6 @@ model User {
   password   String
   creds      Int      @default(0)        // ✅ to store credits
   unlimited  Boolean  @default(false)
-  name       String?
-  resumes    Resume[]
 }
 
 model Otp {

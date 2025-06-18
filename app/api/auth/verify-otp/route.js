@@ -1,31 +1,43 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../../../generated/prisma"; // adjust if needed
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
 export async function POST(req) {
   try {
-    const { email, otp, newPassword } = await req.json();
+    const { username, email, password, otp } = await req.json();
 
-    if (!email || !otp || !newPassword) {
+    if (!username || !email || !password || !otp) {
       return NextResponse.json(
-        { error: "Email, OTP and new password are required" },
+        { error: "All fields are required" },
         { status: 400 }
       );
     }
 
-    // Find the most recent OTP for this email
+    // ✅ Step 0: Check if user already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (existingUser) {
+      return NextResponse.json(
+        { error: "User already exists. Please login instead." },
+        { status: 409 }
+      );
+    }
+
+    // ✅ Step 1: Validate OTP
     const otpRecord = await prisma.otp.findFirst({
       where: {
         email,
         code: otp,
         expiresAt: {
-          gt: new Date(), // Check if OTP hasn't expired
+          gt: new Date(), // ensure not expired
         },
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
 
@@ -36,28 +48,31 @@ export async function POST(req) {
       );
     }
 
-    // Hash the new password
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    // ✅ Step 2: Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Update user's password
-    await prisma.user.update({
-      where: { email },
-      data: { password: hashedPassword },
+    // ✅ Step 3: Create new user
+    await prisma.user.create({
+      data: {
+        username,
+        email,
+        password: hashedPassword,
+      },
     });
 
-    // Delete the used OTP
+    // ✅ Step 4: Delete used OTP
     await prisma.otp.delete({
       where: { id: otpRecord.id },
     });
 
     return NextResponse.json(
-      { message: "Password updated successfully" },
+      { message: "User created successfully" },
       { status: 200 }
     );
   } catch (error) {
     console.error("Verify OTP error:", error);
     return NextResponse.json(
-      { error: "Something went wrong" },
+      { error: "Something went wrong", details: error.message },
       { status: 500 }
     );
   }
