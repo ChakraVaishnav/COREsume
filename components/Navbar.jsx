@@ -46,7 +46,7 @@ export default function Navbar() {
   return (
     <header className="w-full bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
-        <Link href="/" className="text-xl font-bold tracking-tight">
+        <Link href="/dashboard" className="text-xl font-bold tracking-tight">
    <h1 className="text-2xl sm:text-4xl font-black tracking-tight flex items-center">
             <span className="text-black">CORE </span>
             <span className="text-yellow-400 ">sume</span>
