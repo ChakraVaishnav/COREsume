@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { FiRefreshCw } from "react-icons/fi"; // Refresh icon from react-icons
 
 export default function Navbar() {
   const [credits, setCredits] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     fetchCredits();
@@ -13,6 +15,7 @@ export default function Navbar() {
 
   const fetchCredits = async () => {
     try {
+      setRefreshing(true);
       const userData = JSON.parse(localStorage.getItem('user'));
       if (!userData?.email) {
         window.location.href = "/login";
@@ -36,6 +39,7 @@ export default function Navbar() {
       console.error("Error fetching credits:", error);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -43,11 +47,19 @@ export default function Navbar() {
     <header className="w-full bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
         <Link href="/dashboard" className="text-5xl font-bold text-black hover:text-yellow-500 transition">
-          Resumint
+          COREsume
         </Link>
         <div className="flex items-center space-x-4">
-          <div className="text-sm font-medium text-gray-700">
+          <div className="text-sm font-medium text-gray-700 flex items-center">
             Credits: {loading ? "Loading..." : credits ?? 0}
+            <button
+              onClick={fetchCredits}
+              disabled={refreshing}
+              className="ml-1 text-yellow-500 hover:text-yellow-600 transition"
+              title="Refresh credits"
+            >
+              <FiRefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+            </button>
           </div>
           <Link 
             href="/pricing" 
@@ -68,4 +80,4 @@ export default function Navbar() {
       </div>
     </header>
   );
-} 
+}

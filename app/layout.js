@@ -12,11 +12,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Resumint",
+  title: "COREsume",
   icons: {
-    icon: "/ResumintLogo.png",
-    shortcut: "/ResumintLogo.png",
-    apple: "/ResumintLogo.png",
+    icon: "/CoresumeLogo.png",
+    shortcut: "/CoresumeLogo.png",
+    apple: "/CoresumeLogo.png",
   },
 };
 
@@ -27,6 +27,10 @@ export default function RootLayout({ children }) {
   className={`${geistSans.variable} ${geistMono.variable} antialiased`}
   suppressHydrationWarning
 >
+<link
+          href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap"
+          rel="stylesheet"
+        />
 
         {children}
       </body>

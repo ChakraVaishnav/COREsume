@@ -19,7 +19,7 @@ export default function ContactPage() {
             <div className="space-y-2">
               <p className="flex items-center text-gray-600">
                 <span className="font-medium mr-2">Email:</span>
-                resumintcommunity@gmail.com
+                coresumeteam@gmail.com
               </p>
               <p className="flex items-center text-gray-600">
                 <span className="font-medium mr-2">Hours:</span>

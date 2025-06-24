@@ -17,8 +17,9 @@ export default function Home() {
         {/* Header */}
         <header className="flex items-center justify-between px-4 py-4 sm:px-10 border-b border-gray-200 bg-white sticky top-0 z-10 shadow-sm">
           {/* Left: Brand */}
-          <h1 className="text-2xl sm:text-4xl font-black text-black tracking-tight">
-            Resumint
+          <h1 className="text-2xl sm:text-4xl font-black tracking-tight flex items-center">
+            <span className="text-black">CORE </span>
+            <span className="text-yellow-400 ">sume</span>
           </h1>
 
           {/* Right: Auth Buttons (small on mobile, full on desktop) */}
@@ -79,7 +80,7 @@ export default function Home() {
           className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-12 py-16 sm:py-20 space-y-12 bg-gray-50 rounded-3xl shadow-inner"
         >
           <h3 className="text-3xl sm:text-4xl font-extrabold text-center text-gray-900">
-            Why Choose Resumint?
+            Why Choose COREsume?
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-10 mt-8 sm:mt-10">

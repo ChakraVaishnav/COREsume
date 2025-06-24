@@ -1,5 +1,32 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 export default function TwoColumnTemplate({ data }) {
-  const { personalInfo, summary, skills, education, projects, experience, achievements, interests } = data;
+  const [form, setForm] = useState(null);
+
+  useEffect(() => {
+    const data = localStorage.getItem('resumeFormData');
+    if (data) {
+      const parsed = JSON.parse(data);
+
+      if (!Array.isArray(parsed.experience)) {
+        parsed.experience = [
+          {
+            role: '',
+            company: '',
+            duration: '',
+            description: '',
+          },
+        ];
+      }
+
+      setForm(parsed);
+    }
+  }, []);
+
+  if (!form) return <p className="text-center p-8 text-sm">Loading resume...</p>;
+
+  const { personalInfo, summary, skills, education, experience, projects, achievements, interests } = form;
 
   // Helper function to check if a section has content
   const hasContent = (section) => {

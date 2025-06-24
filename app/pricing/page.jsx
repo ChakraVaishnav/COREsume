@@ -4,12 +4,53 @@ import { useState, useEffect } from 'react';
 import Navbar from "@/components/Navbar";
 import Link from 'next/link';
 
+const basePricePerCredit = 19;
+
 const pricingPlans = [
-  { id: 1, name: "Starter", credits: 1, price: 19, popular: false, features: ["1 Resume Generation", "Basic Templates"] },
-  { id: 2, name: "Popular", credits: 3, price: 39, popular: true, features: ["3 Resume Generations", "All Templates", "Save 15%"] },
-  { id: 3, name: "Professional", credits: 6, price: 59, popular: false, features: ["6 Resume Generations", "All Templates", "Save 25%"] },
-  { id: 4, name: "Ultimate", credits: 12, price: 99, popular: false, features: ["12 Resume Generations", "All Templates", "Save 40%"] }
-];
+  {
+    id: 1,
+    name: "Starter",
+    credits: 1,
+    price: 19,
+    popular: false,
+  },
+  {
+    id: 2,
+    name: "Value Pack",
+    credits: 3,
+    price: 39,
+    popular: true,
+  },
+  {
+    id: 3,
+    name: "Professional",
+    credits: 5,
+    price: 59,
+    popular: false,
+  },
+  {
+    id: 4,
+    name: "Max Pro",
+    credits: 8,
+    price: 79,
+    popular: false,
+  },
+].map(plan => {
+  const fullPrice = plan.credits * basePricePerCredit;
+  const discount = fullPrice > plan.price ? Math.round(((fullPrice - plan.price) / fullPrice) * 100) : 0;
+
+  return {
+    ...plan,
+    fullPrice,
+    discount,
+    features: [
+      `${plan.credits} Resume Generation${plan.credits > 1 ? 's' : ''}`,
+      "All Templates",
+      "No Watermark",
+      ...(discount > 0 ? [`Save ${discount}%`] : [])
+    ]
+  };
+});
 
 export default function Pricing() {
   const [selectedPlan, setSelectedPlan] = useState(null);
@@ -72,7 +113,7 @@ export default function Pricing() {
         key: razorpayKey,
         amount: orderData.order.amount,
         currency: orderData.order.currency,
-        name: 'Resumint',
+        name: 'COREsume',
         description: `${plan.name} Plan - ${plan.credits} Credits`,
         order_id: orderData.order.id,
         prefill: { email: userEmail },
@@ -154,8 +195,15 @@ export default function Pricing() {
               <div className="p-6">
                 <h3 className="text-xl font-bold text-black mb-2">{plan.name}</h3>
                 <div className="mb-4">
-                  <span className="text-3xl font-bold text-black">₹{plan.price}</span>
-                  <span className="text-gray-600">/one-time</span>
+                  {plan.discount > 0 ? (
+                    <div className="flex flex-col items-start">
+                      <span className="text-2xl font-bold text-black line-through text-sm">₹{plan.fullPrice}</span>
+                      <span className="text-3xl font-bold text-black">₹{plan.price}</span>
+                    </div>
+                  ) : (
+                    <span className="text-3xl font-bold text-black">₹{plan.price}</span>
+                  )}
+                  <span className="text-gray-600 text-sm">/one-time</span>
                 </div>
                 <div className="mb-6">
                   <span className="text-lg font-semibold text-yellow-600">{plan.credits} Credits</span>

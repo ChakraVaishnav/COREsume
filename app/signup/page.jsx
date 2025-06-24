@@ -87,7 +87,7 @@ export default function SignUp() {
 
       <div className="w-full max-w-lg bg-white rounded-3xl shadow-2xl p-10 sm:p-14 animate-fadeIn">
         <h1 className="text-3xl font-bold text-center text-gray-900 mb-10 tracking-tight select-none">
-          Create your Resumint Account
+          Create your COREsume Account
         </h1>
 
         {step === 1 && (

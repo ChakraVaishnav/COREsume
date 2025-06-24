@@ -45,6 +45,28 @@ export default function Dashboard() {
 
   if (!mounted) return null;
 
+  const templates = [
+    {
+      name: "Minimalist",
+      slug: "minimalist",
+      image: "/Demo1.jpg",
+      description: "Clean, single-column layout with a modern look.",
+    },
+    {
+      name: "Sidebar Elegance",
+      slug: "sidebar-elegance",
+      image: "/Demo2.png",
+      description: "Two-column layout with sidebar for key info.",
+    },
+    {
+      name: "Chronical Classic",
+      slug: "timeline",
+      image: "/Demo3.png",
+      description: "Chronological timeline layout that flows through your experience — showing you’ve been legit since day one.",
+    },
+    // Add more here easily later 🔥
+  ];
+  
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar />
@@ -56,57 +78,38 @@ export default function Dashboard() {
             Choose Your Template
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Pick from two professional, ATS‑friendly designs to create your resume.
+            Pick from professional, ATS‑friendly designs to create your resume.
           </p>
         </section>
 
         {/* Templates Grid */}
         <section className="max-w-6xl mx-auto px-4 pb-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Minimalist Template */}
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300 border border-gray-100">
-              <img
-                src="/Demo1.jpg"
-                alt="Minimalist Resume"
-                className="w-full object-contain bg-gray-50"
-                style={{ maxHeight: "400px" }}
-              />
-              <div className="p-6">
-                <h3 className="text-xl font-semibold mb-2 text-black">Minimalist</h3>
-                <p className="text-gray-600 mb-4">
-                  Clean, single-column layout with a modern look.
-                </p>
-                <Link
-                  href="/resume-form?template=minimalist"
-                  className="block w-full text-center py-3 bg-yellow-400 text-black rounded-lg hover:bg-yellow-500 transition font-medium"
-                >
-                  Use This Template
-                </Link>
-              </div>
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+  {templates.map((template, index) => (
+    <div
+      key={index}
+      className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300 border border-gray-100"
+    >
+      <img
+        src={template.image}
+        alt={`${template.name} Resume`}
+        className="w-full object-contain bg-gray-50"
+        style={{ maxHeight: "400px" }}
+      />
+      <div className="p-6">
+        <h3 className="text-xl font-semibold mb-2 text-black">{template.name}</h3>
+        <p className="text-gray-600 mb-4">{template.description}</p>
+        <Link
+          href={`/resume-form?template=${template.slug}`}
+          className="block w-full text-center py-3 bg-yellow-400 text-black rounded-lg hover:bg-yellow-500 transition font-medium"
+        >
+          Use This Template
+        </Link>
+      </div>
+    </div>
+  ))}
+</div>
 
-            {/* Sidebar Elegance */}
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300 border border-gray-100">
-              <img
-                src="/Demo2.png"
-                alt="Sidebar Elegance Resume"
-                className="w-full object-contain bg-gray-50"
-                style={{ maxHeight: "400px" }}
-              />
-              <div className="p-6">
-                <h3 className="text-xl font-semibold mb-2 text-black">Sidebar Elegance</h3>
-                <p className="text-gray-600 mb-4">
-                  Two-column layout with sidebar for key info.
-                </p>
-                <Link
-                  href="/resume-form?template=sidebar-elegance"
-                  className="block w-full text-center py-3 bg-yellow-400 text-black rounded-lg hover:bg-yellow-500 transition font-medium"
-                >
-                  Use This Template
-                </Link>
-              </div>
-            </div>
-          </div>
         </section>
       </main>
 

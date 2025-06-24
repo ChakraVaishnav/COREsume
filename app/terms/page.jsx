@@ -13,7 +13,7 @@ export default function TermsPage() {
         <section>
           <h2 className="text-xl font-semibold text-black mb-4">1. Acceptance of Terms</h2>
           <p className="text-gray-600">
-            By accessing and using Resumint, you agree to be bound by these Terms and Conditions. 
+            By accessing and using COREsume, you agree to be bound by these Terms and Conditions. 
             If you do not agree to these terms, please do not use our service.
           </p>
         </section>
@@ -21,7 +21,7 @@ export default function TermsPage() {
         <section>
           <h2 className="text-xl font-semibold text-black mb-4">2. Use of Service</h2>
           <p className="text-gray-600">
-            You agree to use Resumint only for lawful purposes and in accordance with these Terms. 
+            You agree to use COREsume only for lawful purposes and in accordance with these Terms. 
             You are responsible for maintaining the confidentiality of your account and for all 
             activities that occur under your account.
           </p>
@@ -38,7 +38,7 @@ export default function TermsPage() {
         <section>
           <h2 className="text-xl font-semibold text-black mb-4">4. Subscription and Payments</h2>
           <p className="text-gray-600">
-            Some features of Resumint may require a subscription. By subscribing, you agree to 
+            Some features of COREsume may require a subscription. By subscribing, you agree to 
             pay all fees associated with your subscription plan. We reserve the right to modify 
             our pricing with notice.
           </p>
@@ -47,7 +47,7 @@ export default function TermsPage() {
         <section>
           <h2 className="text-xl font-semibold text-black mb-4">5. Limitation of Liability</h2>
           <p className="text-gray-600">
-            Resumint is provided "as is" without any warranties. We are not liable for any 
+            COREsume is provided "as is" without any warranties. We are not liable for any 
             damages arising from the use or inability to use our service.
           </p>
         </section>
@@ -65,7 +65,7 @@ export default function TermsPage() {
           <p className="text-gray-600">
             For questions about these Terms and Conditions, please contact us at:
             <br />
-            Email: legal@resumint.com
+            Email: coresumeteam@gmail.com
           </p>
         </section>
       </div>

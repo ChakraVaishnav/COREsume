@@ -7,7 +7,7 @@ export default function PrivacyPage() {
     <PageLayout title="Privacy Policy">
       <div className="space-y-6">
         <p className="text-gray-600">
-          Last updated: March 2024
+          Last updated: June 2025
         </p>
 
         <section>
@@ -63,7 +63,7 @@ export default function PrivacyPage() {
           <p className="text-gray-600">
             If you have any questions about this Privacy Policy, please contact us at:
             <br />
-            Email: privacy@resumint.com
+            Email: coresumeteam@gmail.com
           </p>
         </section>
       </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Navbar from '@/components/Navbar';
+import { templates } from '../utils/template'; // ✅ dynamic template list
 
 const DEFAULT_FORM = {
   personalInfo: {
@@ -15,22 +16,13 @@ const DEFAULT_FORM = {
   },
   summary: '',
   experience: [
-    {
-      role: '',
-      company: '',
-      duration: '',
-      description: '',
-    },
+    { role: '', company: '', duration: '', description: '' },
   ],
   education: '',
   skills: '',
   achievements: '',
   projects: [
-    {
-      name: '',
-      description: '',
-      link: '',
-    },
+    { name: '', description: '', link: '' },
   ],
   interests: '',
 };
@@ -42,6 +34,7 @@ function ResumeForm() {
   const [template, setTemplate] = useState('single-column');
   const isInitialLoad = useRef(true);
 
+  // ✅ Load saved form/template from localStorage (once)
   useEffect(() => {
     if (isInitialLoad.current) {
       const savedForm = localStorage.getItem('resumeFormData');
@@ -54,14 +47,19 @@ function ResumeForm() {
     }
   }, []);
 
+  // ✅ Update template from searchParams
   useEffect(() => {
     const templateParam = searchParams.get('template');
-    if (templateParam === 'minimalist' || templateParam === 'sidebar-elegance') {
-      setTemplate(templateParam);
-      localStorage.setItem('resumeTemplate', templateParam);
+    if (templateParam) {
+      const isValid = templates.some(t => t.slug === templateParam);
+      if (isValid) {
+        setTemplate(templateParam);
+        localStorage.setItem('resumeTemplate', templateParam);
+      }
     }
   }, [searchParams]);
 
+  // ✅ Save form to localStorage on change
   useEffect(() => {
     if (!isInitialLoad.current) {
       localStorage.setItem('resumeFormData', JSON.stringify(form));
@@ -80,28 +78,28 @@ function ResumeForm() {
   };
 
   const addExperience = () => {
-    setForm((prev) => ({
+    setForm(prev => ({
       ...prev,
       experience: [...prev.experience, { role: '', company: '', duration: '', description: '' }],
     }));
   };
 
   const removeExperience = (index) => {
-    setForm((prev) => ({
+    setForm(prev => ({
       ...prev,
       experience: prev.experience.filter((_, i) => i !== index),
     }));
   };
 
   const addProject = () => {
-    setForm((prev) => ({
+    setForm(prev => ({
       ...prev,
       projects: [...prev.projects, { name: '', description: '', link: '' }],
     }));
   };
 
   const removeProject = (index) => {
-    setForm((prev) => ({
+    setForm(prev => ({
       ...prev,
       projects: prev.projects.filter((_, i) => i !== index),
     }));
@@ -125,10 +123,10 @@ function ResumeForm() {
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold text-black">Create Resume</h1>
           <div className="flex gap-4">
-            <button onClick={() => router.push('/dashboard')} className="bg-yellow-500 text-black px-4 py-2 rounded hover:bg-yellow-600 transition-colors font-semibold">
+            <button onClick={() => router.push('/dashboard')} className="bg-yellow-500 text-black px-4 py-2 rounded hover:bg-yellow-600 font-semibold">
               Go to Dashboard
             </button>
-            <button onClick={clearForm} className="bg-red text-red-500 px-4 py-2 rounded hover:bg-red-100 transition-colors font-semibold">
+            <button onClick={clearForm} className="text-red-500 border border-red-500 px-4 py-2 rounded hover:bg-red-100 font-semibold">
               Clear Form
             </button>
           </div>
@@ -138,6 +136,7 @@ function ResumeForm() {
           Template: <strong className="text-yellow-600">{template}</strong>
         </p>
 
+        {/* Personal Info */}
         <div className="grid grid-cols-2 gap-4">
           {Object.keys(form.personalInfo).map((key) => (
             <input
@@ -150,6 +149,7 @@ function ResumeForm() {
           ))}
         </div>
 
+        {/* Main Sections */}
         <TextArea label="Summary" value={form.summary} onChange={(e) => handleChange(e, 'summary')} />
         <TextArea label="Education" value={form.education} onChange={(e) => handleChange(e, 'education')} />
         <TextArea label="Skills" value={form.skills} onChange={(e) => handleChange(e, 'skills')} />
@@ -190,7 +190,7 @@ function ResumeForm() {
 
         <button
           onClick={handleSubmit}
-          className="w-full bg-yellow-500 text-black py-2 rounded mt-6 hover:bg-yellow-600 transition-colors font-semibold"
+          className="w-full bg-yellow-500 text-black py-2 rounded mt-6 hover:bg-yellow-600 font-semibold"
         >
           Generate Resume
         </button>
@@ -199,7 +199,7 @@ function ResumeForm() {
   );
 }
 
-// 🔽 Helper Components 🔽
+// 🔽 Reusable Components 🔽
 
 function Input({ label, value, onChange }) {
   return (
@@ -240,7 +240,7 @@ function SectionList({ title, list, onAdd, onRemove, render }) {
           <div className="flex justify-between">
             <h3 className="font-medium text-black">{title} {index + 1}</h3>
             {index > 0 && (
-              <button onClick={() => onRemove(index)} className="text-red-600 hover:text-red-700 transition-colors">
+              <button onClick={() => onRemove(index)} className="text-red-600 hover:text-red-700">
                 Remove
               </button>
             )}
