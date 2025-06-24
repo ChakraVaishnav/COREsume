@@ -46,9 +46,10 @@ export default function Navbar() {
   return (
     <header className="w-full bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
-        <Link href="/dashboard" className="text-5xl font-bold text-black hover:text-yellow-500 transition">
-          COREsume
-        </Link>
+        <Link href="/" className="text-xl font-bold tracking-tight">
+    <span className="text-black">CORE</span>
+    <span className="text-yellow-400">sume</span>
+  </Link>
         <div className="flex items-center space-x-4">
           <div className="text-sm font-medium text-gray-700 flex items-center">
             Credits: {loading ? "Loading..." : credits ?? 0}
