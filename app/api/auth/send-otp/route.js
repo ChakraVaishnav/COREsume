@@ -41,7 +41,7 @@ export async function POST(req) {
     });
 
     // ✅ Use your reusable mail function
-    await sendOtpMail(email, otp);
+    await sendOtpMail(email, otp,"signup");
 
     return new Response(JSON.stringify({ message: "OTP sent successfully" }), {
       status: 200,
