@@ -46,7 +46,7 @@ export default function Footer() {
           <div>
             <h3 className="text-sm font-semibold text-gray-900 mb-4">Contact</h3>
             <ul className="space-y-2">
-              <li className="text-sm text-gray-600"><a href={`mailto:coresumecommunity@gmail.com`} className="text-black no-underline hover:text-yellow-500 transition">coresumecommunity@gmail.com</a></li>
+              <li className="text-sm text-gray-600"><a href={`mailto:coresumeteam@gmail.com`} className="text-black no-underline hover:text-yellow-500 transition">coresumeteam@gmail.com</a></li>
             </ul>
           </div>
         </div>
