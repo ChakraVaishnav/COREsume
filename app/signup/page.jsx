@@ -16,6 +16,7 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
   const [error, setError] = useState(null);
+  const [agreed, setAgreed] = useState(false);
   const router = useRouter();
 
   const handleChange = (e) =>
@@ -27,6 +28,7 @@ export default function SignUp() {
     setMessage(null);
 
     if (!form.email) return setError("Please enter a valid email");
+    if (!agreed) return setError("You must agree to the Terms and Conditions");
 
     setLoading(true);
     try {
@@ -116,6 +118,27 @@ export default function SignUp() {
               minLength={6}
               required
             />
+
+            <div className="flex items-start gap-2 text-sm text-gray-600">
+              <input
+                type="checkbox"
+                id="terms"
+                checked={agreed}
+                onChange={() => setAgreed(!agreed)}
+                className="mt-1"
+              />
+              <label htmlFor="terms">
+                I agree to the{" "}
+                <Link
+                  href="/terms"
+                  className="text-yellow-600 hover:underline font-medium"
+                  target="_blank"
+                >
+                  Terms and Conditions
+                </Link>
+              </label>
+            </div>
+
             <SubmitButton loading={loading} text="Send OTP" />
           </form>
         )}
@@ -167,7 +190,14 @@ export default function SignUp() {
   );
 }
 
-function FancyInput({ type = "text", name, value, onChange, placeholder, ...props }) {
+function FancyInput({
+  type = "text",
+  name,
+  value,
+  onChange,
+  placeholder,
+  ...props
+}) {
   return (
     <input
       type={type}
@@ -188,11 +218,7 @@ function SubmitButton({ loading, text }) {
       disabled={loading}
       className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-3 rounded-xl transition shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
     >
-      {loading ? (
-        <span className="animate-pulse">Please wait...</span>
-      ) : (
-        text
-      )}
+      {loading ? <span className="animate-pulse">Please wait...</span> : text}
     </button>
   );
 }

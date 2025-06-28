@@ -84,8 +84,8 @@ export default function Home() {
   className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-12 py-16 sm:py-20 space-y-12 bg-gray-50 rounded-3xl shadow-inner"
 >
   <h3 className="text-3xl sm:text-4xl font-extrabold text-center text-gray-900">
-    How <span className="text-black">CORE</span>
-    <span className="text-yellow-400">sume</span> Works
+    Why Choose <span className="text-black">CORE</span>
+    <span className="text-yellow-400">sume</span> ?
   </h3>
 
   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-10 mt-8 sm:mt-10">
@@ -137,14 +137,6 @@ export default function Home() {
 
   <div className="space-y-6 sm:space-y-8">
     {/* FAQ 1 */}
-    <div className="border border-gray-200 rounded-lg p-5 shadow-sm bg-white">
-      <h4 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">
-        ❌ Can I get a refund after purchasing?
-      </h4>
-      <p className="text-gray-600 text-sm sm:text-base">
-        No, we currently do not offer refunds. Please review your resume preview carefully before making payment.
-      </p>
-    </div>
 
     {/* FAQ 2 */}
     <div className="border border-gray-200 rounded-lg p-5 shadow-sm bg-white">

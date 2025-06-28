@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -15,6 +15,7 @@ export default function ResumePreview() {
   const [credits, setCredits] = useState(0);
   const [showToast, setShowToast] = useState(false);
   const [warningStep, setWarningStep] = useState(0);
+  const [pageCount, setPageCount] = useState(1); // <-- new state
 
   useEffect(() => {
     try {
@@ -46,6 +47,22 @@ export default function ResumePreview() {
       return () => clearTimeout(timer);
     }
   }, [showToast]);
+
+  useEffect(() => {
+    const calculatePages = () => {
+      const resume = document.getElementById('resume-container');
+      if (resume) {
+        const height = resume.scrollHeight;
+        const estimatedPages = Math.ceil(height / 1122); // A4 page height in px
+        setPageCount(estimatedPages);
+      }
+    };
+
+    // Wait until DOM is painted
+    setTimeout(calculatePages, 300);
+    window.addEventListener('resize', calculatePages);
+    return () => window.removeEventListener('resize', calculatePages);
+  }, [resumeData]);
 
   const fetchCredits = async (email) => {
     try {
@@ -129,37 +146,53 @@ export default function ResumePreview() {
             <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md text-center">
               {warningStep === 1 && (
                 <>
-                  <h2 className="text-xl font-bold text-yellow-600 mb-3">Heads up!</h2>
-                  <p className="text-gray-700 mb-5">You’re about to generate your resume. A credit will be deducted only after it’s saved successfully.</p>
+                  <h2 className="text-xl font-bold text-yellow-600 mb-3">Heads Up!</h2>
+                  <p className="text-gray-700 mb-3">
+                    Please don’t use the site on mobile to download resumes. We are not responsible for any issues if you proceed via mobile, as you agreed to the terms and conditions. 📱🚫
+                    <br /><br />
+                    It’s highly recommended to use a laptop or desktop 💻 for a better experience.
+                  </p>
+                  <div className='flex justify-center gap-4'>
+                  <button onClick={() => setWarningStep(0)}
+                      className="px-5 py-2 border border-gray-400 rounded hover:bg-gray-100">
+                    Back
+                  </button>
                   <button
                     onClick={() => setWarningStep(2)}
                     className="bg-yellow-500 text-white px-5 py-2 rounded-md hover:bg-yellow-600"
                   >
                     Continue
                   </button>
+                  </div>
                 </>
               )}
               {warningStep === 2 && (
                 <>
-                  <h2 className="text-xl font-bold text-yellow-600 mb-3">Final Confirmation</h2>
-                  <p className="text-gray-700 mb-5">Clicking OK will start resume download. The credit will be deducted only after it's completed.</p>
-                  <div className="flex justify-center gap-4">
-                    <button
-                      onClick={() => setWarningStep(0)}
-                      className="px-5 py-2 border border-gray-400 rounded hover:bg-gray-100"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={() => {
-                        setWarningStep(0);
-                        setTimeout(startPrintProcess, 100);
-                      }}
-                      className="px-5 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-                    >
-                      OK
-                    </button>
-                  </div>
+                   <h2 className="text-xl font-bold text-red-600 mb-3">Final Confirmation</h2>
+          <p className="text-gray-700 mb-5">
+            Clicking <strong>OK</strong> will deduct <strong>1 credit</strong> immediately, even if you cancel the next print or save dialog.
+            <br />
+            To avoid losing credits, please click "Save" when prompted.
+            <br />
+            If you're unsure, click <strong>Cancel</strong> now and review your resume again.
+          </p>
+          <div className="flex justify-center gap-4">
+            <button
+              onClick={() => setWarningStep(0)}
+              className="px-5 py-2 border border-gray-400 rounded hover:bg-gray-100"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                setWarningStep(0);
+                setTimeout(startPrintProcess, 100);
+              }}
+              className="px-5 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+            >
+              OK
+            </button>
+          </div>
                 </>
               )}
             </div>
@@ -174,6 +207,7 @@ export default function ResumePreview() {
           >
             Back to Form
           </button>
+          <p className="text-sm text-gray-500 mb-4">Estimated resume pages: <span className="font-bold">{pageCount}</span></p>
 
           <button
             onClick={handleDownload}
@@ -184,7 +218,7 @@ export default function ResumePreview() {
         </div>
 
         {/* Resume Preview */}
-        <div className="max-w-[210mm] mx-auto bg-white shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-yellow-200 p-8 print:shadow-none print:p-0 print:border-0">
+        <div id="resume-container" className="max-w-[210mm] mx-auto bg-white shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-yellow-200 p-8 print:shadow-none print:p-0 print:border-0">
           <TemplateComponent />
         </div>
       </div>

@@ -7,7 +7,7 @@ export default function TermsPage() {
     <PageLayout title="Terms and Conditions">
       <div className="space-y-6">
         <p className="text-gray-600">
-          Last updated: March 2024
+          Last updated: June 2025
         </p>
 
         <section>
@@ -61,7 +61,16 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold text-black mb-4">7. Contact Information</h2>
+          <h2 className="text-xl font-semibold text-black mb-4">7. Use Only in Computer or Laptop</h2>
+          <p className="text-gray-600">
+            Dont use out application in mobile, dont try to download resume form the mobile 
+            it wont work but the credit will be deducted so be aware of that 
+            and we are not responsible for your own credit loose
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-xl font-semibold text-black mb-4">8. Contact Information</h2>
           <p className="text-gray-600">
             For questions about these Terms and Conditions, please contact us at:
             <br />

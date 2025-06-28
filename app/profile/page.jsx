@@ -41,7 +41,6 @@ export default function ProfilePage() {
   };
 
   const handleLogout = () => {
-    localStorage.clear();
     router.push("/login");
   };
 
