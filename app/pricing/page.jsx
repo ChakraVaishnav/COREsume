@@ -43,6 +43,7 @@ const pricingPlans = [
     ...plan,
     fullPrice,
     discount,
+    bonusCredits: Math.ceil(plan.credits * 0.5),
     features: [
       `${plan.credits} Resume Generation${plan.credits > 1 ? 's' : ''}`,
       "All Templates",
@@ -134,7 +135,7 @@ export default function Pricing() {
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
                 email: userEmail,
-                credits: plan.credits,
+                credits: plan.credits + plan.bonusCredits,
               }),
             });
 
@@ -167,7 +168,17 @@ export default function Pricing() {
     <div className="min-h-screen bg-white">
       <Navbar />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="flex justify-between items-center mb-16">
+        
+        <div className="text-center mb-10">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-yellow-600">
+            🌧 Monsoon Offer: Get 50% Extra Credits on Every Purchase!
+          </h2>
+          <p className="text-gray-600 mt-2 text-base">
+            Limited time deal – Build more resumes for less.
+          </p>
+        </div>
+
+        <div className="flex justify-between items-center mb-12">
           <Link href="/dashboard" className="bg-white text-yellow-500 border-2 border-yellow-500 px-6 py-2 rounded-lg hover:bg-yellow-500 hover:text-white transition-colors font-semibold">
             Back to Dashboard
           </Link>
@@ -205,8 +216,13 @@ export default function Pricing() {
                   )}
                   <span className="text-gray-600 text-sm">/one-time</span>
                 </div>
-                <div className="mb-6">
-                  <span className="text-lg font-semibold text-yellow-600">{plan.credits} Credits</span>
+
+                {/* Offer display */}
+                <div className="mb-6 text-left">
+                  <span className="text-lg font-semibold text-yellow-600">
+                    {plan.credits} Credits + <span className="text-green-600 font-bold">Extra {plan.bonusCredits} Credits</span>
+                  </span>
+                  <p className="text-sm text-gray-500 mt-1">as part of our <span className="font-semibold text-yellow-600">🌧 Monsoon Offer</span></p>
                 </div>
 
                 <ul className="space-y-3 mb-8">

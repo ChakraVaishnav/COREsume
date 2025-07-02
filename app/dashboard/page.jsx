@@ -70,6 +70,26 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar />
+      {/* Monsoon Offer Banner */}
+<section className="relative overflow-hidden bg-gradient-to-br from-yellow-300 to-yellow-500 py-4 px-4 sm:px-8 text-center shadow-md border-b border-yellow-600 animate-fade-in">
+  <div className="max-w-4xl mx-auto">
+    <h3 className="text-xl sm:text-2xl font-extrabold text-black tracking-tight">
+      🌧️ Monsoon Offer: <span className="text-white drop-shadow">Extra 50% Credits</span> on Every Purchase!
+    </h3>
+    <p className="mt-1 text-sm sm:text-base text-black font-medium">
+      Buy any plan now and instantly get 50% more credits for free.
+    </p>
+    <Link
+      href="/pricing"
+      className="inline-block mt-3 bg-black text-yellow-400 px-4 py-2 rounded-md text-sm font-semibold shadow hover:bg-gray-900 transition duration-200"
+    >
+      🎁 Grab This Limited-Time Deal
+    </Link>
+    <div className="absolute top-2 right-4 animate-pulse bg-black text-white text-xs px-3 py-1 rounded-full font-semibold">
+      Limited Time!
+    </div>
+  </div>
+</section>
 
       {/* Hero */}
       <main className="flex-grow py-12">

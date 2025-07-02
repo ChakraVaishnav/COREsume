@@ -50,6 +50,33 @@ export default function Home() {
               Just fill your info, choose from modern ATS-friendly templates,
               pay securely, and get a polished PDF instantly.
             </p>
+            <p className="text-base sm:text-lg text-gray-600 max-w-xl mx-auto lg:mx-0">
+            Your resume is your first impression.
+            Free builders blur it. COREsume sharpens it.
+</p>
+{/* Monsoon Offer Banner */}
+<section className="relative overflow-hidden bg-gradient-to-br from-yellow-300 to-yellow-500 py-6 sm:py-8 px-4 sm:px-8 text-center shadow-xl border-b border-yellow-600 animate-fade-in">
+  <div className="max-w-4xl mx-auto">
+    <h3 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-black tracking-tight">
+      🌧️ Monsoon Offer: <span className="text-white drop-shadow">Extra 50% Credits</span> on Every Purchase!
+    </h3>
+    <p className="mt-2 text-sm sm:text-base md:text-lg text-black font-medium">
+      Buy any plan now and we’ll instantly boost your credits by 50% — no extra cost. 
+      <br className="hidden sm:block" /> Make your job-winning resume with double the power!
+    </p>
+
+    <Link
+      href="/signup"
+      className="inline-block mt-4 bg-black text-yellow-400 px-6 py-3 rounded-xl text-sm sm:text-base font-bold uppercase tracking-wide shadow-lg hover:bg-gray-900 transition duration-200"
+    >
+      🎁 Claim Your Bonus Now
+    </Link>
+
+    <div className="absolute top-3 right-3 animate-pulse bg-black text-white text-xs sm:text-sm px-3 py-1 rounded-full font-semibold">
+      Limited Time!
+    </div>
+  </div>
+</section>
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <button
                 onClick={scrollToFeatures}
@@ -130,6 +157,24 @@ export default function Home() {
     </div>
   </div>
 </section>
+<br>
+</br>
+{/* How it works section */}
+<section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-12 py-16 sm:py-20 space-y-12">
+  <h3 className="text-3xl sm:text-4xl font-extrabold text-center text-gray-900 mb-8">
+    How <span className="text-black">CORE</span><span className="text-yellow-400">sume</span> Works 🚀
+  </h3>
+
+  <div className="max-w-4xl mx-auto px-4">
+    <video
+      src="/COREsume%20DEMO.mp4"
+      controls
+      className="rounded-xl shadow-lg w-full"
+    />
+  </div>
+</section>
+
+
 <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-12 py-16 sm:py-20 space-y-12">
   <h3 className="text-3xl sm:text-4xl font-extrabold text-center text-gray-900">
     Frequently Asked Questions
