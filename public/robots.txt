@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://coresume.vercel.app
+
+# Sitemaps
+Sitemap: https://coresume.vercel.app/sitemap.xml

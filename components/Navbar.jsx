@@ -98,17 +98,6 @@ export default function Navbar() {
               />
             </svg>
           </Link>
-
-          {/* Logout Button */}
-          <button
-            onClick={() => {
-              localStorage.clear();
-              window.location.href = "/login";
-            }}
-            className="text-sm bg-red-100 text-red-800 px-4 py-2 rounded-md hover:bg-red-200 transition"
-          >
-            Logout
-          </button>
         </div>
       </div>
     </header>

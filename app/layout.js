@@ -29,7 +29,13 @@ export const metadata = {
     apple: "/CoresumeLogo.png",
   },
   verification: {
-    google: "jka4DRBGLCNJ_bMO3bCsvIu1JzP7aLQoiF_-cUn7-lE", 
+    verification: {
+      google: "jka4DRBGLCNJ_bMO3bCsvIu1JzP7aLQoiF_-cUn7-lE",
+      other: {
+        "msvalidate.01": "85023E8EB0DCAE5FAB481C687E63C677", // ✅ Bing meta
+      },
+    },
+    
   },
   openGraph: {
     title: "COREsume – Build Stylish Resumes",
@@ -55,20 +61,24 @@ export const metadata = {
   },
 };
 
-
-
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body
-  className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-  suppressHydrationWarning
->
-<link
+      <head>
+        {/* ✅ Bing Webmaster Verification */}
+        <meta name="msvalidate.01" content="85023E8EB0DCAE5FAB481C687E63C677" />
+        
+        {/* ✅ Optional font you added */}
+        <link
           href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap"
           rel="stylesheet"
         />
+      </head>
 
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        suppressHydrationWarning
+      >
         {children}
       </body>
     </html>

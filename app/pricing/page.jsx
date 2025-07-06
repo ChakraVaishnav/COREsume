@@ -167,97 +167,133 @@ export default function Pricing() {
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        
-        <div className="text-center mb-10">
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-yellow-600">
+  
+      <div className="relative px-4 sm:px-6 lg:px-8 py-12 max-w-7xl mx-auto">
+        {/* Back Button */}
+        <div className="mb-6">
+          <Link
+            href="/dashboard"
+            className="inline-block bg-white text-yellow-500 border-2 border-yellow-500 px-6 py-2 rounded-lg hover:bg-yellow-500 hover:text-white transition-colors font-semibold"
+          >
+            ← Back to Dashboard
+          </Link>
+        </div>
+  
+        {/* Hero Quote */}
+        <h2 className="text-3xl sm:text-4xl text-center font-bold text-black mb-10">
+          Your resume is your first impression,<br></br>Free builders blur it, {" "}
+          <span className="text-black">CORE</span>
+          <span className="text-yellow-400">sume</span>
+          <span className="text-black"> sharpens it.</span>
+        </h2>
+  
+        {/* Offer Highlight */}
+        <div className="text-center mb-12">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-yellow-400">
             🌧 Monsoon Offer: Get 50% Extra Credits on Every Purchase!
           </h2>
           <p className="text-gray-600 mt-2 text-base">
             Limited time deal – Build more resumes for less.
           </p>
         </div>
-
-        <div className="flex justify-between items-center mb-12">
-          <Link href="/dashboard" className="bg-white text-yellow-500 border-2 border-yellow-500 px-6 py-2 rounded-lg hover:bg-yellow-500 hover:text-white transition-colors font-semibold">
-            Back to Dashboard
-          </Link>
-          <div className="text-center flex-1">
-            <h1 className="text-4xl font-bold text-black mb-4">Choose Your Plan</h1>
-            <p className="text-gray-600 text-lg">Select the perfect plan for your career journey</p>
-          </div>
-          <div className="w-[140px]"></div>
+  
+        {/* Section Heading */}
+        <div className="text-center mb-14">
+          <h1 className="text-4xl font-bold text-black mb-4">Choose Your Plan</h1>
+          <p className="text-gray-600 text-lg">Select the perfect plan for your career journey</p>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {pricingPlans.map(plan => (
+  
+        {/* Pricing Plans */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          {pricingPlans.map((plan) => (
             <div
               key={plan.id}
-              className={`relative rounded-2xl border-2 transition-all duration-300 hover:scale-105 ${
-                plan.popular ? 'border-yellow-500 bg-yellow-50' : 'border-gray-200 hover:border-yellow-500'
+              className={`relative rounded-2xl border-2 transition-all duration-300 hover:scale-[1.03] ${
+                plan.popular
+                  ? "border-yellow-500 bg-yellow-50"
+                  : "border-gray-200 hover:border-yellow-500"
               }`}
             >
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <span className="bg-yellow-500 text-white px-4 py-1 rounded-full text-sm font-semibold">Most Popular</span>
+                  <span className="bg-yellow-500 text-white px-4 py-1 rounded-full text-sm font-semibold">
+                    Most Popular
+                  </span>
                 </div>
               )}
-
+  
               <div className="p-6">
                 <h3 className="text-xl font-bold text-black mb-2">{plan.name}</h3>
+  
+                {/* Price Display */}
                 <div className="mb-4">
                   {plan.discount > 0 ? (
                     <div className="flex flex-col items-start">
-                      <span className="text-2xl font-bold text-black line-through text-sm">₹{plan.fullPrice}</span>
+                      <span className="text-sm line-through text-gray-500">₹{plan.fullPrice}</span>
                       <span className="text-3xl font-bold text-black">₹{plan.price}</span>
                     </div>
                   ) : (
                     <span className="text-3xl font-bold text-black">₹{plan.price}</span>
                   )}
-                  <span className="text-gray-600 text-sm">/one-time</span>
+                  <span className="text-gray-600 text-sm"> / one-time</span>
                 </div>
-
-                {/* Offer display */}
+  
+                {/* Bonus Info */}
                 <div className="mb-6 text-left">
                   <span className="text-lg font-semibold text-yellow-600">
-                    {plan.credits} Credits + <span className="text-green-600 font-bold">Extra {plan.bonusCredits} Credits</span>
+                    {plan.credits} Credits +{" "}
+                    <span className="text-green-600 font-bold">{plan.bonusCredits} Bonus</span>
                   </span>
-                  <p className="text-sm text-gray-500 mt-1">as part of our <span className="font-semibold text-yellow-600">🌧 Monsoon Offer</span></p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    as part of our <span className="font-semibold text-yellow-600">🌧 Monsoon Offer</span>
+                  </p>
                 </div>
-
+  
+                {/* Feature List */}
                 <ul className="space-y-3 mb-8">
                   {plan.features.map((feature, i) => (
                     <li key={i} className="flex items-center text-gray-600">
-                      <svg className="w-5 h-5 text-yellow-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg
+                        className="w-5 h-5 text-yellow-500 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                       </svg>
                       {feature}
                     </li>
                   ))}
                 </ul>
-
+  
+                {/* Buy Button */}
                 <button
                   onClick={() => handleBuyNow(plan)}
                   disabled={loading || !razorpayLoaded || !razorpayKey}
                   className={`w-full py-3 px-4 rounded-lg font-semibold transition-colors ${
                     plan.popular
-                      ? 'bg-yellow-500 text-white hover:bg-white hover:text-yellow-500 border-2 border-yellow-500'
-                      : 'bg-white text-yellow-500 border-2 border-yellow-500 hover:bg-yellow-500 hover:text-white'
-                  } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      ? "bg-yellow-500 text-white hover:bg-white hover:text-yellow-500 border-2 border-yellow-500"
+                      : "bg-white text-yellow-500 border-2 border-yellow-500 hover:bg-yellow-500 hover:text-white"
+                  } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
-                  {loading && selectedPlan?.id === plan.id ? 'Processing...' : 'Buy Now'}
+                  {loading && selectedPlan?.id === plan.id ? "Processing..." : "Buy Now"}
                 </button>
               </div>
             </div>
           ))}
         </div>
-
+  
+        {/* Contact Prompt */}
         <div className="mt-16 text-center">
           <p className="text-gray-600">
-            Need a custom plan? <Link href="/contact" className="text-yellow-500 hover:text-yellow-600 font-semibold">Contact us</Link>
+            Need a custom plan?{" "}
+            <Link href="/contact" className="text-yellow-500 hover:text-yellow-600 font-semibold">
+              Contact us
+            </Link>
           </p>
         </div>
       </div>
     </div>
   );
+  
 }

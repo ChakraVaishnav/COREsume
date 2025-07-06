@@ -46,14 +46,15 @@ export default function Home() {
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-tight text-gray-900">
               Build a Job-Winning Resume in Minutes
             </h2>
+            <h2 className="text-xl sm:text-3xl text-gray-600 max-w-xl mx-auto lg:mx-0">
+            Your resume is your first impression.
+            Free builders blur it. COREsume sharpens it.
+            </h2>
             <p className="text-base sm:text-lg text-gray-600 max-w-xl mx-auto lg:mx-0">
               Just fill your info, choose from modern ATS-friendly templates,
               pay securely, and get a polished PDF instantly.
             </p>
-            <p className="text-base sm:text-lg text-gray-600 max-w-xl mx-auto lg:mx-0">
-            Your resume is your first impression.
-            Free builders blur it. COREsume sharpens it.
-</p>
+            
 {/* Monsoon Offer Banner */}
 <section className="relative overflow-hidden bg-gradient-to-br from-yellow-300 to-yellow-500 py-6 sm:py-8 px-4 sm:px-8 text-center shadow-xl border-b border-yellow-600 animate-fade-in">
   <div className="max-w-4xl mx-auto">
