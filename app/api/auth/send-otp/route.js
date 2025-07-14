@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 export async function POST(req) {
   try {
-    const { email } = await req.json();
+    const { email, forceResend } = await req.json();
 
     if (!email) {
       return new Response(JSON.stringify({ error: "Email is required" }), {
@@ -29,6 +29,14 @@ export async function POST(req) {
       );
     }
 
+    // ✅ Optional: delete any existing OTPs for this email before creating new one
+    if (forceResend) {
+      await prisma.otp.deleteMany({
+        where: { email },
+      });
+    }
+    
+
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
@@ -40,8 +48,7 @@ export async function POST(req) {
       },
     });
 
-    // ✅ Use your reusable mail function
-    await sendOtpMail(email, otp,"signup");
+    await sendOtpMail(email, otp, "signup");
 
     return new Response(JSON.stringify({ message: "OTP sent successfully" }), {
       status: 200,

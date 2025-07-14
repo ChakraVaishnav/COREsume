@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FiArrowLeft } from "react-icons/fi";
@@ -12,12 +12,24 @@ export default function SignUp() {
     password: "",
     otp: "",
   });
+
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
   const [error, setError] = useState(null);
   const [agreed, setAgreed] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+
   const router = useRouter();
+
+  useEffect(() => {
+    if (resendCooldown > 0) {
+      const interval = setInterval(() => {
+        setResendCooldown((prev) => prev - 1);
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [resendCooldown]);
 
   const handleChange = (e) =>
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
@@ -43,6 +55,33 @@ export default function SignUp() {
 
       setMessage("OTP sent to your email!");
       setStep(2);
+      setResendCooldown(30); // Start cooldown on first OTP too
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resendOtp = async () => {
+    if (resendCooldown > 0) return;
+
+    setError(null);
+    setMessage(null);
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: form.email, forceResend: true }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to resend OTP");
+
+      setMessage("OTP resent to your email!");
+      setResendCooldown(30); // Reset cooldown
     } catch (err) {
       setError(err.message);
     } finally {
@@ -151,7 +190,9 @@ export default function SignUp() {
               </h2>
               <p className="text-sm text-gray-500 mt-1">
                 Enter the 6-digit OTP sent to{" "}
-                <span className="font-medium text-yellow-600">{form.email}</span>
+                <span className="font-medium text-yellow-600">
+                  {form.email}
+                </span>
               </p>
             </div>
 
@@ -169,6 +210,19 @@ export default function SignUp() {
             </div>
 
             <SubmitButton loading={loading} text="Verify & Sign Up" />
+
+            <div className="text-center mt-2">
+              <button
+                type="button"
+                onClick={resendOtp}
+                disabled={loading || resendCooldown > 0}
+                className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-3 rounded-xl transition shadow-lg disabled:opacity-60"
+              >
+                {resendCooldown > 0
+                  ? `Resend in ${resendCooldown}s`
+                  : "Resend OTP"}
+              </button>
+            </div>
           </form>
         )}
 
@@ -176,7 +230,9 @@ export default function SignUp() {
           <p className="mt-5 text-red-600 font-medium text-center">{error}</p>
         )}
         {message && (
-          <p className="mt-5 text-green-600 font-medium text-center">{message}</p>
+          <p className="mt-5 text-green-600 font-medium text-center">
+            {message}
+          </p>
         )}
 
         <p className="text-center text-gray-600 text-sm mt-6">

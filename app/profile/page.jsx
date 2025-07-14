@@ -90,13 +90,6 @@ export default function ProfilePage() {
             >
               Logout
             </button>
-
-            <Link
-              href="/dashboard"
-              className="w-full block text-center border border-gray-300 text-gray-600 py-2 rounded-md hover:bg-gray-100 transition"
-            >
-              ← Back to Dashboard
-            </Link>
           </div>
         </div>
       </main>
