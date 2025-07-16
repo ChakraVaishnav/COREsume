@@ -1,15 +1,23 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef,useEffect } from "react";
 import Link from "next/link";
 import Footer from "@/components/Footer";
-
+import { useRouter } from "next/navigation";
 export default function Home() {
   const featuresRef = useRef(null);
 
   const scrollToFeatures = () => {
     featuresRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+  const router = useRouter();
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user?.isAuthenticated) {
+      router.push("/dashboard");
+    }
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col">
