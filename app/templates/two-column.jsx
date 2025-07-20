@@ -97,10 +97,10 @@ export default function TwoColumnTemplate({ data }) {
             <Section title="Projects">
               {projects.map((project, index) => (
                 <div key={index} className="mb-2">
-                  <h3 className="font semibold">
+                  <h3 className="font semibold text-black">
                    {project.link ? (
 
-                    <a href={project.link} target="_blank" className="font-normal text-black no-underline">
+                    <a href={project.link} target="_blank" className="font semibold text-black no-underline">
                       {project.name}
                     </a>
                   ) : (
