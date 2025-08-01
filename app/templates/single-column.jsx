@@ -20,7 +20,6 @@ export default function SingleColumnTemplate() {
           },
         ];
       }
-
       setForm(parsed);
     }
   }, []);
@@ -43,6 +42,9 @@ export default function SingleColumnTemplate() {
       {/* Header */}
       <header className="mb-2">
         <h1 className="text-[18px] font-bold">{personalInfo.name}</h1>
+        {form.appliedJob && (
+          <p className="text-[12px] font-semibold text-gray-800 mt-0.5 mb-0.5">{form.appliedJob}</p>
+        )}
         <p className="text-[12px] text-gray-700 mt-0.5">
           <a href={`mailto:${personalInfo.email}`} className="text-black no-underline hover:text-yellow-500 transition">{personalInfo.email}</a> | {personalInfo.phone} 
           {personalInfo.linkedin && <> | <a href={personalInfo.linkedin} className="text-black no-underline hover:text-yellow-500 transition">LinkedIn</a></>}

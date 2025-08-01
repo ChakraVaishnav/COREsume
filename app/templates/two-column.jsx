@@ -41,8 +41,11 @@ export default function TwoColumnTemplate({ data }) {
     <div className="p-8 text-black text-[13px] font-sans leading-relaxed"> {/* ↓ 1px */}
 
       {/* Name at the top center */}
-      <header className="text-center mb-6">
+      <header className="text-center mb-4">
         <h1 className="text-[19px] font-bold uppercase">{personalInfo.name}</h1> {/* ↓ 1px */}
+        {form.appliedJob && (
+          <p className="text-[13px] font-semibold text-gray-800 mt-0.5">{form.appliedJob}</p>
+        )}
       </header>
 
       {/* Two-column layout */}
@@ -93,6 +96,18 @@ export default function TwoColumnTemplate({ data }) {
             </Section>
           )}
 
+{hasContent(experience) && (
+            <Section title="Work Experience">
+              {experience.map((exp, index) => (
+                <div key={index} className="mb-2">
+                  <h3 className="font semi-bold">{exp.role} — {exp.company}</h3>
+                  <p className="text-gray-600 text-[12px]">{exp.duration}</p> {/* ↓ 1px */}
+                  <p className="whitespace-pre-line">{exp.description}</p>
+                </div>
+              ))}
+            </Section>
+          )}
+
           {hasContent(projects) && (
             <Section title="Projects">
               {projects.map((project, index) => (
@@ -109,18 +124,6 @@ export default function TwoColumnTemplate({ data }) {
                   </h3>
 
                   <p className="whitespace-pre-line">{project.description}</p>
-                </div>
-              ))}
-            </Section>
-          )}
-
-          {hasContent(experience) && (
-            <Section title="Work Experience">
-              {experience.map((exp, index) => (
-                <div key={index} className="mb-2">
-                  <h3 className="font semi-bold">{exp.role} — {exp.company}</h3>
-                  <p className="text-gray-600 text-[12px]">{exp.duration}</p> {/* ↓ 1px */}
-                  <p className="whitespace-pre-line">{exp.description}</p>
                 </div>
               ))}
             </Section>

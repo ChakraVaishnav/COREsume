@@ -52,6 +52,9 @@ export default function TimelineTemplate() {
       {/* Header */}
       <header className="mb-4">
         <h1 className="text-[18px] font-bold">{personalInfo.name}</h1> {/* reduced from 20px */}
+        {form.appliedJob && (
+          <p className="text-[12px] font-semibold text-gray-800 mt-0.5 mb-0.5">{form.appliedJob}</p>
+        )}
         <p className="text-[11px]">
           <a href={`mailto:${personalInfo.email}`} className="text-black no-underline">{personalInfo.email}</a> | {personalInfo.phone}
           {personalInfo.linkedin && <> | <a href={personalInfo.linkedin} className="text-black no-underline">LinkedIn</a></>}

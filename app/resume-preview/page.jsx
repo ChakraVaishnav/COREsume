@@ -126,15 +126,15 @@ export default function ResumePreview() {
   if (error) return <div className="flex justify-center items-center min-h-screen text-red-500">{error}</div>;
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
       <div className="print:hidden">
         <Navbar />
       </div>
 
-      <div className="min-h-screen bg-white p-8 print:p-0">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-8 print:p-0">
         {/* Toast */}
         {showToast && (
-          <div className="fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg">
+          <div className="fixed top-4 right-4 bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-3 rounded-xl shadow-lg border border-red-400">
             <p className="font-semibold">Insufficient Credits!</p>
             <p className="text-sm">Redirecting to pricing page...</p>
           </div>
@@ -142,34 +142,42 @@ export default function ResumePreview() {
 
         {/* Warning Modal */}
         {warningStep > 0 && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-            <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md text-center">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md text-center border border-gray-200">
               {warningStep === 1 && (
                 <>
-                  <h2 className="text-xl font-bold text-yellow-600 mb-3">Heads Up!</h2>
-                  <p className="text-gray-700 mb-3">
+                  <div className="bg-yellow-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl">⚠️</span>
+                  </div>
+                  <h2 className="text-xl font-bold text-black mb-3">Heads Up!</h2>
+                  <p className="text-gray-700 mb-6 leading-relaxed">
                     Please don’t use the site on mobile to download resumes. We are not responsible for any issues if you proceed via mobile, as you agreed to the terms and conditions. 📱🚫
                     <br /><br />
                     It’s highly recommended to use a laptop or desktop 💻 for a better experience.
                   </p>
                   <div className='flex justify-center gap-4'>
-                  <button onClick={() => setWarningStep(0)}
-                      className="px-5 py-2 border border-gray-400 rounded hover:bg-gray-100">
+                  <button 
+                    onClick={() => setWarningStep(0)}
+                    className="px-6 py-3 border-2 border-gray-400 text-gray-700 rounded-xl hover:bg-gray-100 font-semibold transition-all duration-200"
+                  >
                     Back
                   </button>
                   <button
                     onClick={() => setWarningStep(2)}
-                    className="bg-yellow-500 text-white px-5 py-2 rounded-md hover:bg-yellow-600"
+                    className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black rounded-xl hover:from-yellow-600 hover:to-yellow-700 font-semibold transition-all duration-200 shadow-lg"
                   >
                     Continue
                   </button>
                   </div>
                 </>
               )}
-              {warningStep === 2 && (
+                              {warningStep === 2 && (
                 <>
-                   <h2 className="text-xl font-bold text-red-600 mb-3">Final Confirmation</h2>
-          <p className="text-gray-700 mb-5">
+                  <div className="bg-red-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl">💳</span>
+                  </div>
+                   <h2 className="text-xl font-bold text-black mb-3">Final Confirmation</h2>
+          <p className="text-gray-700 mb-6 leading-relaxed">
             Clicking <strong>OK</strong> will deduct <strong>1 credit</strong> immediately, even if you cancel the next print or save dialog.
             <br />
             To avoid losing credits, please click "Save" when prompted.
@@ -179,7 +187,7 @@ export default function ResumePreview() {
           <div className="flex justify-center gap-4">
             <button
               onClick={() => setWarningStep(0)}
-              className="px-5 py-2 border border-gray-400 rounded hover:bg-gray-100"
+              className="px-6 py-3 border-2 border-gray-400 text-gray-700 rounded-xl hover:bg-gray-100 font-semibold transition-all duration-200"
             >
               Cancel
             </button>
@@ -188,7 +196,7 @@ export default function ResumePreview() {
                 setWarningStep(0);
                 setTimeout(startPrintProcess, 100);
               }}
-              className="px-5 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+              className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black rounded-xl hover:from-yellow-600 hover:to-yellow-700 font-semibold transition-all duration-200 shadow-lg"
             >
               OK
             </button>
@@ -200,26 +208,41 @@ export default function ResumePreview() {
         )}
 
         {/* Controls */}
-        <div className="flex justify-between max-w-[210mm] mx-auto mb-4 print:hidden">
-          <button
-            onClick={() => router.push('/resume-form')}
-            className="bg-white text-yellow-500 border-2 border-yellow-500 px-6 py-2 rounded hover:bg-yellow-500 hover:text-white font-semibold w-40"
-          >
-            Back to Form
-          </button>
-          <p className="text-sm text-gray-500 mb-4">Estimated resume pages: <span className="font-bold">{pageCount}</span></p>
+        <div className="max-w-4xl mx-auto mb-8 print:hidden">
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+            <div className="flex justify-between items-center">
+              <button
+                onClick={() => router.push('/resume-form')}
+                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-gray-100 to-gray-200 text-black border-2 border-gray-300 rounded-xl hover:from-gray-200 hover:to-gray-300 font-semibold transition-all duration-200 shadow-md"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                Back to Form
+              </button>
+              
+              <div className="text-center">
+                <p className="text-sm text-gray-600">Estimated resume pages: <span className="font-bold text-black">{pageCount}</span></p>
+              </div>
 
-          <button
-            onClick={handleDownload}
-            className="bg-yellow-500 text-white border-2 border-yellow-500 px-6 py-2 rounded hover:bg-white hover:text-yellow-500 font-semibold w-40"
-          >
-            Download PDF
-          </button>
+              <button
+                onClick={handleDownload}
+                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black border-2 border-yellow-400 rounded-xl hover:from-yellow-600 hover:to-yellow-700 font-semibold transition-all duration-200 shadow-lg"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Download PDF
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Resume Preview */}
-        <div id="resume-container" className="max-w-[210mm] mx-auto bg-white shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-yellow-200 p-8 print:shadow-none print:p-0 print:border-0">
-          <TemplateComponent />
+        <div className="max-w-4xl mx-auto">
+          <div id="resume-container" className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8 print:shadow-none print:p-0 print:border-0 print:rounded-none">
+            <TemplateComponent />
+          </div>
         </div>
       </div>
     </div>
