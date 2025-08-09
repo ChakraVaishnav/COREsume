@@ -11,6 +11,7 @@
 - **Simple Resume Creation**: Fill in your details and generate a clean, modern resume instantly.
 - **Customizable Templates**: Choose from a variety of templates to suit your style.
 - **User-Friendly Interface**: No technical skills required—just input your data and download your resume!
+- **AI Suggestions**: Get smart, context-aware suggestions to help you improve your resume content.
 - **Privacy First**: Your information is safe and never stored.
 
 ---
@@ -27,7 +28,8 @@
 
 1. **Enter Your Details**: Academic background, skills, achievements, and more.
 2. **Choose a Template**: Pick the design that fits your personality.
-3. **Generate & Download**: Instantly get your resume as a PDF.
+3. **Get AI Suggestions**: Enhance your resume with tailored recommendations for each section.
+4. **Generate & Download**: Instantly get your resume as a PDF.
 
 ---
 
@@ -35,18 +37,8 @@
 
 - **Save Time**: No formatting headaches—just focus on your content.
 - **Stand Out**: Impress recruiters with a well-designed resume.
+- **Smart Improvements**: Let AI help you refine your resume for maximum impact.
 - **Completely Free**: No hidden costs or subscriptions.
-
----
-
-## 💡 Get Started
-
-1. **Clone this repo**  
-   ```bash
-   git clone https://github.com/ChakraVaishnav/COREsume.git
-   ```
-2. **Follow the instructions** in the documentation.
-3. **Start building your resume!**
 
 ---
 
