@@ -36,7 +36,6 @@ export async function POST(req) {
       status: 200,
     });
   } catch (error) {
-    console.error("Error generating summary:", error);
     return new Response(JSON.stringify({ error: "Failed to generate summary" }), {
       status: 500,
     });

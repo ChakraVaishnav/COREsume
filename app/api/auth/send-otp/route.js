@@ -55,7 +55,6 @@ export async function POST(req) {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("Send OTP error:", error);
     return new Response(
       JSON.stringify({ error: "Internal Server Error", details: error.message }),
       {

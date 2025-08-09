@@ -36,7 +36,7 @@ export default function Navbar() {
       const data = await response.json();
       setCredits(data.credits);
     } catch (error) {
-      console.error("Error fetching credits:", error);
+      return error;
     } finally {
       setLoading(false);
       setRefreshing(false);
