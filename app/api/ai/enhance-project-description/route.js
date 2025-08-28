@@ -47,7 +47,6 @@ export async function POST(req) {
       status: 200,
     });
   } catch (error) {
-    console.error("Error enhancing project description:", error);
     return new Response(JSON.stringify({ error: "Failed to enhance project description" }), {
       status: 500,
     });

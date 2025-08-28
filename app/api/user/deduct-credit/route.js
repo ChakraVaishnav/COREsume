@@ -21,7 +21,6 @@ export async function POST(req) {
     });
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Deduct credit error:", error);
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
   }
 }

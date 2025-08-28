@@ -27,7 +27,6 @@ export async function POST(req) {
 
     return new Response(JSON.stringify({ message: "OTP verified successfully" }), { status: 200 });
   } catch (err) {
-    console.error("OTP verify error:", err);
     return new Response(JSON.stringify({ error: "Internal Server Error" }), { status: 500 });
   }
 }

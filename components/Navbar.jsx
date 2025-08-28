@@ -12,7 +12,6 @@ export default function Navbar() {
   useEffect(() => {
     fetchCredits();
   }, []);
-
   const fetchCredits = async () => {
     try {
       setRefreshing(true);

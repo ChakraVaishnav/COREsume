@@ -12,7 +12,6 @@ export async function generateGeminiResponse(prompt) {
     const text = response.text();
     return text;
   } catch (error) {
-    console.error("Gemini API error:", error);
     throw error;
   }
 }

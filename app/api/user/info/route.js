@@ -16,7 +16,6 @@ export async function GET(req) {
       select: {
         username: true,
         email: true
-        // 👇 password intentionally excluded
       }
     });
 
@@ -27,7 +26,6 @@ export async function GET(req) {
     return NextResponse.json(user, { status: 200 });
 
   } catch (error) {
-    console.error("User Info API Error:", error);
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
   }
 }

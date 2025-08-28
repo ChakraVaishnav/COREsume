@@ -90,6 +90,16 @@ export default function SingleColumnTemplate() {
           ))}
         </section>
       )}
+<<<<<<< HEAD
+=======
+      {/* Education */}
+      {hasContent(education) && (
+        <section className="mb-2">
+          <h2 className="font-semibold border-b border-gray-300 mb-0.5 uppercase text-[11px]">Education</h2>
+          <p className="whitespace-pre-line">{education}</p>
+        </section>
+      )}
+>>>>>>> restore-freemium
 
       {/* Projects */}
       {hasContent(projects) && (
@@ -127,6 +137,38 @@ export default function SingleColumnTemplate() {
           <p className="whitespace-pre-line">{interests}</p>
         </section>
       )}
+      {/* Watermark for Free Template */}
+    <div
+      className="pointer-events-none select-none fixed left-0 bottom-8 w-full flex justify-center z-50"
+      style={{
+        opacity: 0.12,
+        fontSize: "3rem",
+        fontWeight: "bold",
+        letterSpacing: "0.2em",
+        color: "#000",
+        transform: "rotate(-20deg)",
+        userSelect: "none",
+      }}
+      id="free-watermark"
+    >
+      COREsume
     </div>
+    <style jsx global>{`
+      @media print {
+        #free-watermark {
+          position: fixed !important;
+          left: 0 !important;
+          bottom: 20% !important;
+          width: 100vw !important;
+          display: flex !important;
+          justify-content: center !important;
+          opacity: 0.15 !important;
+          z-index: 9999 !important;
+          pointer-events: none !important;
+        }
+      }
+    `}</style>
+    </div>
+    
   );
 }

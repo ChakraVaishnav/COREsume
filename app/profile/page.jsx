@@ -34,7 +34,6 @@ export default function ProfilePage() {
       const data = await res.json();
       setUserData(data);
     } catch (err) {
-      console.error(err);
     } finally {
       setLoading(false);
     }

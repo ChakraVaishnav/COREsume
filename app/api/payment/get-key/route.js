@@ -7,7 +7,6 @@ export async function GET() {
       key: process.env.RAZOR_PAY_ID,
     });
   } catch (error) {
-    console.error('Error getting Razorpay key:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to get payment key' },
       { status: 500 }

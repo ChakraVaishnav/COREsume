@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import SingleColumnTemplate from '../templates/single-column';
 import TwoColumnTemplate from '../templates/two-column';
 import TimelineTemplate from '../templates/timeline';
+import PremiumSingleColumnResume from '../templates/premium-single-column';
+import PremiumTwoColumnTemplate from '../templates/premium-two-column';
 import Navbar from "@/components/Navbar";
 
 export default function ResumePreview() {
@@ -83,18 +85,21 @@ export default function ResumePreview() {
   const startPrintProcess = () => {
     const handleAfterPrint = async () => {
       try {
-        const user = JSON.parse(localStorage.getItem('user'));
-        const res = await fetch("/api/user/deduct-credit", {
-          method: 'POST',
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${user.email}`
-          }
-        });
+        if (!isFreeTemplate) {
+          // Only deduct credit for premium templates
+          const user = JSON.parse(localStorage.getItem('user'));
+          const res = await fetch("/api/user/deduct-credit", {
+            method: 'POST',
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${user.email}`
+            }
+          });
 
-        if (!res.ok) throw new Error("Deducting credit failed");
-        setCredits(prev => prev - 1);
-        router.push("/dashboard");
+          if (!res.ok) throw new Error("Deducting credit failed");
+          setCredits(prev => prev - 1);
+          router.push("/dashboard");
+        }
       } catch (error) {
         console.error("Error deducting credit:", error);
         alert("There was an error processing your credit. Please contact support.");
@@ -107,20 +112,30 @@ export default function ResumePreview() {
     window.print();
   };
 
+  const isFreeTemplate = resumeData?.template === 'minimalist';
+
   const handleDownload = () => {
-    if (credits < 1) {
-      setShowToast(true);
-      return;
+    if (isFreeTemplate) {
+      // No warnings, no credit check, just print
+      startPrintProcess();
+    } else {
+      // Show warnings for premium templates
+      setWarningStep(1);
     }
-    setWarningStep(1);
   };
 
-  const TemplateComponent =
+    const TemplateComponent =
     resumeData?.template === 'minimalist'
       ? SingleColumnTemplate
       : resumeData?.template === 'sidebar-elegance'
         ? TwoColumnTemplate
-        : TimelineTemplate;
+        : resumeData?.template === 'timeline'
+          ? TimelineTemplate
+          : resumeData?.template === 'premium-single-column'
+            ? PremiumSingleColumnResume
+            : resumeData?.template === 'premium-two-column'
+            ? PremiumTwoColumnTemplate
+            : SingleColumnTemplate; // fallback
 
   if (loading) return <div className="flex justify-center items-center min-h-screen text-black">Loading...</div>;
   if (error) return <div className="flex justify-center items-center min-h-screen text-red-500">{error}</div>;
@@ -171,7 +186,7 @@ export default function ResumePreview() {
                   </div>
                 </>
               )}
-                              {warningStep === 2 && (
+                 {warningStep === 2 && (
                 <>
                   <div className="bg-red-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                     <span className="text-2xl">💳</span>

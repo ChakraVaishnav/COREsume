@@ -19,7 +19,6 @@ export async function POST(req) {
 
     return Response.json({ success: true, order });
   } catch (error) {
-    console.error('Order creation error:', error);
     return Response.json({ success: false, error: 'Order creation failed' }, { status: 500 });
   }
 }
