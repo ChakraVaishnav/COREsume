@@ -143,6 +143,15 @@ function ResumeForm() {
             </button>
           </div>
         </div>
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4 flex items-center gap-3">
+        <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12A9 9 0 113 12a9 9 0 0118 0z" />
+        </svg>
+        <span className="text-red-700 font-semibold">
+          AI suggestions are <span className="underline">not available</span> for free templates.<br />
+          For premium templates, you must have credits to use AI suggestions.
+        </span>
+      </div>
 
           <div className="flex items-center gap-3 bg-gradient-to-r from-yellow-50 to-yellow-100 p-4 rounded-xl border border-yellow-200">
             <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>

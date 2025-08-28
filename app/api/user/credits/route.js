@@ -23,7 +23,6 @@ export async function GET(req) {
     return NextResponse.json({ credits: user.creds }, { status: 200 });
 
   } catch (error) {
-    console.error("Credits API Error:", error);
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
   }
 }
