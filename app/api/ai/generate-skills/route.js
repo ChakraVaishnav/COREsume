@@ -41,6 +41,7 @@ export async function POST(req) {
       status: 200,
     });
   } catch (error) {
+    console.error("Error generating skills:", error);
     return new Response(JSON.stringify({ error: "Failed to generate skills" }), {
       status: 500,
     });

@@ -73,6 +73,26 @@ export default function TimelineTemplate() {
         </section>
       )}
 
+      {/* Skills */}
+      {hasContent(skills) && (
+        <section className="mb-4">
+          <h2 className="font-bold uppercase text-[13px] mb-1">Skills</h2>
+          <div className="pl-2 border-l-2 border-black ml-2">
+            <p className="pl-2 whitespace-pre-line">{skills}</p>
+          </div>
+        </section>
+      )}
+
+      {/* Education */}
+      {hasContent(education) && (
+        <section className="mb-4">
+          <h2 className="font-bold uppercase text-[13px] mb-1">Education</h2>
+          <div className="pl-2 border-l-2 border-black ml-2">
+            <p className="pl-2 whitespace-pre-line">{education}</p>
+          </div>
+        </section>
+      )}
+
       {/* Experience */}
       {hasContent(experience) && (
         <section className="mb-4">
@@ -88,16 +108,6 @@ export default function TimelineTemplate() {
                 <p className="text-[12px] whitespace-pre-line">{exp.description}</p>
               </div>
             ))}
-          </div>
-        </section>
-      )}
-
-      {/* Education */}
-      {hasContent(education) && (
-        <section className="mb-4">
-          <h2 className="font-bold uppercase text-[13px] mb-1">Education</h2>
-          <div className="pl-2 border-l-2 border-black ml-2">
-            <p className="pl-2 whitespace-pre-line">{education}</p>
           </div>
         </section>
       )}
@@ -122,16 +132,6 @@ export default function TimelineTemplate() {
                 <p className="text-[12px] whitespace-pre-line">{proj.description}</p>
               </div>
             ))}
-          </div>
-        </section>
-      )}
-
-      {/* Skills */}
-      {hasContent(skills) && (
-        <section className="mb-4">
-          <h2 className="font-bold uppercase text-[13px] mb-1">Skills</h2>
-          <div className="pl-2 border-l-2 border-black ml-2">
-            <p className="pl-2 whitespace-pre-line">{skills}</p>
           </div>
         </section>
       )}

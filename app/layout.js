@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "COREsume – Build Your Resume Effortlessly Using CORE AI",
+  title: "COREsume – Build Your Resume in Core Style",
   description:
     "Create stylish, professional resumes effortlessly with COREsume – the modern resume builder for students and professionals.",
   keywords: [

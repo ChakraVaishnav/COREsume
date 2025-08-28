@@ -69,6 +69,14 @@ export default function SingleColumnTemplate() {
         </section>
       )}
 
+      {/* Education */}
+      {hasContent(education) && (
+        <section className="mb-2">
+          <h2 className="font-semibold border-b border-gray-300 mb-0.5 uppercase text-[11px]">Education</h2>
+          <p className="whitespace-pre-line">{education}</p>
+        </section>
+      )}
+
       {/* Experience */}
       {hasContent(experience) && (
         <section className="mb-2">
@@ -80,14 +88,6 @@ export default function SingleColumnTemplate() {
               <p className="whitespace-pre-line">{exp.description}</p>
             </div>
           ))}
-        </section>
-      )}
-
-      {/* Education */}
-      {hasContent(education) && (
-        <section className="mb-2">
-          <h2 className="font-semibold border-b border-gray-300 mb-0.5 uppercase text-[11px]">Education</h2>
-          <p className="whitespace-pre-line">{education}</p>
         </section>
       )}
 

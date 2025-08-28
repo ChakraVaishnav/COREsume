@@ -76,7 +76,7 @@ export default function ResumePreview() {
       const data = await res.json();
       setCredits(data.credits);
     } catch (error) {
-      return error;
+      console.error("Error fetching credits:", error);
     }
   };
 
@@ -96,6 +96,7 @@ export default function ResumePreview() {
         setCredits(prev => prev - 1);
         router.push("/dashboard");
       } catch (error) {
+        console.error("Error deducting credit:", error);
         alert("There was an error processing your credit. Please contact support.");
       } finally {
         window.removeEventListener('afterprint', handleAfterPrint);
