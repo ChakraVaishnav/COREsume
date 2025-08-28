@@ -82,10 +82,26 @@ export default function ResumePreview() {
     }
   };
 
-  const startPrintProcess = () => {
+  const isFreeTemplate = resumeData?.template === 'minimalist';
+
+  const handleDownload = () => {
+    if (isFreeTemplate) {
+      // Free: no warnings, no credit check, direct print
+      startPrintProcess(false);
+    } else {
+      // Premium: check credits
+      if (credits <= 0) {
+        setShowToast(true);
+      } else {
+        setWarningStep(1);
+      }
+    }
+  };
+
+  const startPrintProcess = (shouldDeductCredit = true) => {
     const handleAfterPrint = async () => {
       try {
-        if (!isFreeTemplate) {
+        if (shouldDeductCredit) {
           // Only deduct credit for premium templates
           const user = JSON.parse(localStorage.getItem('user'));
           const res = await fetch("/api/user/deduct-credit", {
@@ -112,19 +128,7 @@ export default function ResumePreview() {
     window.print();
   };
 
-  const isFreeTemplate = resumeData?.template === 'minimalist';
-
-  const handleDownload = () => {
-    if (isFreeTemplate) {
-      // No warnings, no credit check, just print
-      startPrintProcess();
-    } else {
-      // Show warnings for premium templates
-      setWarningStep(1);
-    }
-  };
-
-    const TemplateComponent =
+  const TemplateComponent =
     resumeData?.template === 'minimalist'
       ? SingleColumnTemplate
       : resumeData?.template === 'sidebar-elegance'
@@ -209,7 +213,7 @@ export default function ResumePreview() {
             <button
               onClick={() => {
                 setWarningStep(0);
-                setTimeout(startPrintProcess, 100);
+                setTimeout(() => startPrintProcess(true), 100);
               }}
               className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black rounded-xl hover:from-yellow-600 hover:to-yellow-700 font-semibold transition-all duration-200 shadow-lg"
             >
