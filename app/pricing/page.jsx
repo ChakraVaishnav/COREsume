@@ -74,13 +74,9 @@ export default function Pricing() {
         const res = await fetch('/api/payment/get-key');
         const data = await res.json();
         if (data.success) setRazorpayKey(data.key);
-<<<<<<< HEAD
       } catch (error) {
         console.error('Error fetching Razorpay key:', error);
       }
-=======
-      } catch (error) {}
->>>>>>> restore-freemium
     };
 
     const getEmailFromStorage = () => {
