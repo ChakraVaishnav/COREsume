@@ -75,7 +75,6 @@ export default function Pricing() {
         const data = await res.json();
         if (data.success) setRazorpayKey(data.key);
       } catch (error) {
-        console.error('Error fetching Razorpay key:', error);
       }
     };
 
@@ -147,7 +146,6 @@ export default function Pricing() {
               alert('❌ Payment verification failed.');
             }
           } catch (error) {
-            console.error('Verification error:', error);
             alert('Error verifying payment. Please try again.');
           }
         }
@@ -156,7 +154,6 @@ export default function Pricing() {
       rzp.open();
 
     } catch (error) {
-      console.error('Payment error:', error);
       alert('Something went wrong with payment.');
     } finally {
       setLoading(false);
