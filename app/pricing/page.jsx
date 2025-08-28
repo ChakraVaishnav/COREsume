@@ -57,7 +57,7 @@ export default function Pricing() {
 
   useEffect(() => {
     // Check if Monsoon Offer is still active (till Sept 10)
-    const offerEnd = new Date("2025-03-T23:59:59");
+    const offerEnd = new Date("2025-09-03T23:59:59");
     setIsOfferActive(new Date() <= offerEnd);
 
     const loadRazorpay = () => {
@@ -210,7 +210,7 @@ export default function Pricing() {
                     <>
                       <span className="text-sm line-through text-gray-500 block">₹{plan.originalPrice}</span>
                       <span className="text-3xl font-bold text-black">₹{plan.price}</span>
-                      <span className="block text-sm text-green-600 mt-1">Limited time till Sept 3rd</span>
+                      <span className="block text-sm text-green-600 mt-1">Limited time till Sept 3</span>
                     </>
                   ) : (
                     <>
