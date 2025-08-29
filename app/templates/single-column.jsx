@@ -127,8 +127,10 @@ export default function SingleColumnTemplate() {
           <p className="whitespace-pre-line">{interests}</p>
         </section>
       )}
-      {/* Watermark for Free Template */}
-    <div
+
+       {/* Watermark for Free Template */}
+    {/*
+      <div
       className="pointer-events-none select-none fixed left-0 bottom-8 w-full flex justify-center z-50"
       style={{
         opacity: 0.12,
@@ -158,7 +160,8 @@ export default function SingleColumnTemplate() {
         }
       }
     `}</style>
+    */}
     </div>
     
   );
-}
+    }
