@@ -29,7 +29,6 @@ export async function POST(req) {
       );
     }
 
-    // ✅ Optional: delete any existing OTPs for this email before creating new one
     if (forceResend) {
       await prisma.otp.deleteMany({
         where: { email },

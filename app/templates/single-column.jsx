@@ -129,7 +129,7 @@ export default function SingleColumnTemplate() {
       )}
 
        {/* Watermark for Free Template */}
-    {/*
+    
       <div
       className="pointer-events-none select-none fixed left-0 bottom-8 w-full flex justify-center z-50"
       style={{
@@ -160,7 +160,6 @@ export default function SingleColumnTemplate() {
         }
       }
     `}</style>
-    */}
     </div>
     
   );
