@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import SingleColumnTemplate from '../templates/single-column';
 import TwoColumnTemplate from '../templates/two-column';
@@ -17,7 +17,8 @@ export default function ResumePreview() {
   const [credits, setCredits] = useState(0);
   const [showToast, setShowToast] = useState(false);
   const [warningStep, setWarningStep] = useState(0);
-  const [pageCount, setPageCount] = useState(1); // <-- new state
+  const [pageCount, setPageCount] = useState(1);
+  const creditDeductedRef = useRef(false);
 
   useEffect(() => {
     try {
@@ -60,7 +61,6 @@ export default function ResumePreview() {
       }
     };
 
-    // Wait until DOM is painted
     setTimeout(calculatePages, 300);
     window.addEventListener('resize', calculatePages);
     return () => window.removeEventListener('resize', calculatePages);
@@ -77,16 +77,18 @@ export default function ResumePreview() {
       if (!res.ok) throw new Error("Failed to fetch credits");
       const data = await res.json();
       setCredits(data.credits);
-    } catch (error) {
-    }
+    } catch (error) {}
   };
 
   const isFreeTemplate = resumeData?.template === 'minimalist';
 
+  // Mobile detection
+  const isMobile = typeof window !== "undefined" && /Mobi|Android/i.test(navigator.userAgent);
+
   const handleDownload = () => {
     if (isFreeTemplate) {
-      // Free: no warnings, no credit check, direct print
-      startPrintProcess(false);
+      // Free: direct print, no warnings, no credit check
+      window.print();
     } else {
       // Premium: check credits
       if (credits <= 0) {
@@ -98,10 +100,11 @@ export default function ResumePreview() {
   };
 
   const startPrintProcess = (shouldDeductCredit = true) => {
+    creditDeductedRef.current = false;
     const handleAfterPrint = async () => {
       try {
-        if (shouldDeductCredit) {
-          // Only deduct credit for premium templates
+        if (shouldDeductCredit && !creditDeductedRef.current) {
+          creditDeductedRef.current = true;
           const user = JSON.parse(localStorage.getItem('user'));
           const res = await fetch("/api/user/deduct-credit", {
             method: 'POST',
@@ -137,7 +140,7 @@ export default function ResumePreview() {
             ? PremiumSingleColumnResume
             : resumeData?.template === 'premium-two-column'
             ? PremiumTwoColumnTemplate
-            : SingleColumnTemplate; // fallback
+            : SingleColumnTemplate;
 
   if (loading) return <div className="flex justify-center items-center min-h-screen text-black">Loading...</div>;
   if (error) return <div className="flex justify-center items-center min-h-screen text-red-500">{error}</div>;
