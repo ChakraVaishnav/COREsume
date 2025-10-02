@@ -51,14 +51,14 @@ export default function Dashboard() {
       slug: "minimalist",
       image: "/Demo1.jpg",
       description: "Clean, single-column layout with a modern look.",
-      type: "free",
+  
     },
     {
       name: "Sidebar Elegance",
       slug: "sidebar-elegance",
       image: "/Demo2.png",
       description: "Two-column layout with sidebar for key info.",
-      type: "premium",
+      
     },
     {
       name: "Chronical Classic",
@@ -66,7 +66,7 @@ export default function Dashboard() {
       image: "/Demo3.png",
       description:
         "Chronological timeline layout that flows through your experience — showing you’ve been legit since day one.",
-      type: "premium",
+      
     },
     {
       name: "Professional Pro Template",
@@ -74,7 +74,7 @@ export default function Dashboard() {
       image: "/Demo4.png",
       description:
         "Professional single-column layout with clean section dividers, perfect for ATS systems.",
-      type: "premium",
+      
     },
     {
       name: "Premium Professional",
@@ -82,7 +82,7 @@ export default function Dashboard() {
       image: "/Demo5.png",
       description:
         "Premium two-column layout with elegant design and clear sectioning, ideal for showcasing your skills and experience.",
-      type: "premium",
+      
     },
   ];
 
@@ -116,23 +116,6 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar />
-
-      {/* Offer Banner */}
-      <section className="w-full bg-yellow-400 border-b border-yellow-300 py-4 px-4 text-center">
-        <div className="max-w-3xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-3">
-          <span className="text-base sm:text-lg font-semibold text-yellow-800">
-            🌧️ Monsoon Mega Offer:{" "}
-            <span className="font-bold text-black">Resume for just ₹2</span>
-          </span>
-          <Link
-            href="/pricing"
-            className="ml-0 sm:ml-4 mt-2 sm:mt-0 inline-block bg-black-100 text-black px-4 py-2 rounded font-semibold hover:bg-yellow-100 transition"
-          >
-            Grab the Deal
-          </Link>
-        </div>
-      </section>
-
       {/* Hero */}
       <main className="flex-grow">
         <section className="text-center px-4 sm:px-6 pt-12 pb-8">
@@ -178,21 +161,12 @@ export default function Dashboard() {
                   </h3>
                   <p className="text-gray-600 mb-4">{template.description}</p>
 
-                  {template.type === "free" ? (
                     <Link
                       href={`/resume-form?template=${template.slug}`}
-                      className="block w-full text-center py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition font-medium"
+                      className="block w-full text-center py-3 bg-yellow-400 text-black rounded-lg hover:bg-green-600 transition font-medium"
                     >
-                      Use This Template (Free)
+                      Use This Template 
                     </Link>
-                  ) : (
-                    <Link
-                      href={`/resume-form?template=${template.slug}`}
-                      className="block w-full text-center py-3 bg-yellow-400 text-black rounded-lg hover:bg-yellow-500 transition font-medium"
-                    >
-                      Use This Template (Premium)
-                    </Link>
-                  )}
                 </div>
               </div>
             ))}

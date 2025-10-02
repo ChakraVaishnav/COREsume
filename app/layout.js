@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Inter } from 'next/font/google';
+import Head from "next/head";
 
 const inter = Inter({ subsets: ['latin'] });
 const geistSans = Geist({
@@ -14,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "COREsume – Build Your Resume in Core Style",
+  title: "COREsume – Free Resume Builder, make ATS Friendly Resumes get hired in 2025",
   description:
     "Create stylish, professional resumes effortlessly with COREsume – the modern resume builder for students and professionals.",
   keywords: [
@@ -24,6 +25,13 @@ export const metadata = {
     "modern resume",
     "free resume builder",
     "online CV",
+    "ATS resume",
+    "student resume",
+    "professional resume",
+    "download resume",
+    "resume templates",
+    "AI resume",
+    "resume tips"
   ],
   icons: {
     icon: "/CoresumeLogo.png",
@@ -31,9 +39,9 @@ export const metadata = {
     apple: "/CoresumeLogo.png",
   },
   verification: {
-    google: "jka4DRBGLCNJ_bMO3bCsvIu1JzP7aLQoiF_-cUn7-lE", // ✅ Google
+    google: "jka4DRBGLCNJ_bMO3bCsvIu1JzP7aLQoiF_-cUn7-lE",
     other: {
-      "msvalidate.01": "85023E8EB0DCAE5FAB481C687E63C677", // ✅ Bing
+      "msvalidate.01": "85023E8EB0DCAE5FAB481C687E63C677",
     },
   },
   openGraph: {
@@ -63,14 +71,31 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        suppressHydrationWarning
-      >
+      <Head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="robots" content="index, follow" />
+        <meta name="author" content="COREsume Team" />
+        <meta name="theme-color" content="#FFD600" />
+        <link rel="canonical" href="https://coresume.vercel.app/" />
         <link
           href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap"
           rel="stylesheet"
         />
+        {/* Social meta tags for sharing */}
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content={metadata.openGraph.title} />
+        <meta property="og:description" content={metadata.openGraph.description} />
+        <meta property="og:url" content={metadata.openGraph.url} />
+        <meta property="og:image" content={metadata.openGraph.images[0].url} />
+        <meta name="twitter:card" content={metadata.twitter.card} />
+        <meta name="twitter:title" content={metadata.twitter.title} />
+        <meta name="twitter:description" content={metadata.twitter.description} />
+        <meta name="twitter:image" content={metadata.twitter.images[0]} />
+      </Head>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        suppressHydrationWarning
+      >
         {children}
       </body>
     </html>

@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Navbar from "@/components/Navbar";
-import { templates } from "../utils/template"; // ✅ dynamic template list
+import { templates } from "../utils/template";
 
 const DEFAULT_FORM = {
   personalInfo: {
@@ -31,6 +31,20 @@ function ResumeForm() {
   const [template, setTemplate] = useState("single-column");
   const [credits, setCredits] = useState(null);
   const isInitialLoad = useRef(true);
+
+  // Warning popup state
+  const [showWarning, setShowWarning] = useState(false);
+  const [pendingAISuggestion, setPendingAISuggestion] = useState(null); // {type, payload}
+  const [dontRemind, setDontRemind] = useState(false);
+
+  // Toast state
+  const [showToast, setShowToast] = useState(false);
+
+  // Load "dontRemind" from localStorage
+  useEffect(() => {
+    const remindVal = localStorage.getItem("dontRemindAISuggestion");
+    setDontRemind(remindVal === "true");
+  }, []);
 
   // ✅ Load saved form/template from localStorage (once)
   useEffect(() => {
@@ -139,13 +153,196 @@ function ResumeForm() {
     router.push("/resume-preview");
   };
 
+  const handlePayment = () => {
+    if (credits <= 0) {
+      setShowToast(true);
+      setTimeout(() => {
+        router.push("/pricing");
+      }, 1800);
+      return;
+    }
+  };
   // AI suggestions allowed only if user has at least 1 credit
   const aiAllowed = credits > 0;
+
+  // Deduct credit API
+  const deductCredit = async () => {
+    try {
+      const userData = JSON.parse(localStorage.getItem("user"));
+      await fetch("/api/user/deduct-credit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${userData.email}`,
+        },
+      });
+      setCredits((prev) => (prev > 0 ? prev - 1 : 0));
+    } catch (e) {
+      // handle error silently
+    }
+  };
+
+  // AI Suggestion Handler
+  const handleAISuggestion = async (type, payload) => {
+    if (credits <= 0) {
+      router.push("/pricing");
+      return;
+    }
+    // If don't remind is set, proceed directly
+    if (dontRemind) {
+      await deductCredit();
+      await runAISuggestion(type, payload);
+      return;
+    }
+    // Otherwise, show warning popup
+    setPendingAISuggestion({ type, payload });
+    setShowWarning(true);
+  };
+
+  // Actually run the AI suggestion
+  const runAISuggestion = async (type, payload) => {
+    let url = "";
+    let body = {};
+    if (type === "summary") {
+      url = "/api/ai/generate-summary";
+      body = {
+        jobRole: payload.jobRole,
+        experienceLevel: payload.experienceLevel,
+      };
+    } else if (type === "skills") {
+      url = "/api/ai/generate-skills";
+      body = {
+        jobRole: payload.jobRole,
+        experienceLevel: payload.experienceLevel,
+      };
+    } else if (type === "experience") {
+      url = "/api/ai/quantify-experience";
+      body = {
+        description: payload.description,
+        jobRole: payload.jobRole,
+        experienceLevel: payload.experienceLevel,
+      };
+    } else if (type === "project-generate") {
+      url = "/api/ai/generate-project-description";
+      body = {
+        projectTitle: payload.projectTitle,
+        jobRole: payload.jobRole,
+        experienceLevel: payload.experienceLevel,
+      };
+    } else if (type === "project-enhance") {
+      url = "/api/ai/enhance-project-description";
+      body = {
+        projectTitle: payload.projectTitle,
+        description: payload.description,
+        jobRole: payload.jobRole,
+        experienceLevel: payload.experienceLevel,
+      };
+    }
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    // Update form based on type
+    if (type === "summary" && data.summary) {
+      setForm((prev) => ({ ...prev, summary: data.summary }));
+    } else if (type === "skills" && data.skills) {
+      setForm((prev) => ({ ...prev, skills: data.skills }));
+    } else if (type === "experience" && data.quantifiedDescription) {
+      handleChange(
+        { target: { value: data.quantifiedDescription } },
+        payload.path
+      );
+    } else if (type === "project-generate" && data.projectDescription) {
+      handleChange(
+        { target: { value: data.projectDescription } },
+        payload.path
+      );
+    } else if (type === "project-enhance" && data.enhancedDescription) {
+      handleChange(
+        { target: { value: data.enhancedDescription } },
+        payload.path
+      );
+    }
+  };
+
+  // Warning popup confirm
+  const handleWarningConfirm = async () => {
+    setShowWarning(false);
+    if (pendingAISuggestion) {
+      await deductCredit();
+      await runAISuggestion(pendingAISuggestion.type, pendingAISuggestion.payload);
+      setPendingAISuggestion(null);
+    }
+    if (dontRemind) {
+      localStorage.setItem("dontRemindAISuggestion", "true");
+    } else {
+      localStorage.setItem("dontRemindAISuggestion", "false");
+    }
+  };
+
+  // Warning popup cancel
+  const handleWarningCancel = () => {
+    setShowWarning(false);
+    setPendingAISuggestion(null);
+    if (dontRemind) {
+      localStorage.setItem("dontRemindAISuggestion", "true");
+    } else {
+      localStorage.setItem("dontRemindAISuggestion", "false");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
       <Navbar />
       <div className="max-w-4xl mx-auto p-6 space-y-8">
+        {/* Toast for insufficient credits */}
+        {showToast && (
+          <div className="fixed top-4 right-4 bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-3 rounded-xl shadow-lg border border-red-400 z-50">
+            <p className="font-semibold">Insufficient Credits!</p>
+            <p className="text-sm">Redirecting to pricing page...</p>
+          </div>
+        )}
+
+        {/* Warning Popup */}
+        {showWarning && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+            <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md text-center border border-gray-200">
+              <div className="bg-yellow-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">⚠️</span>
+              </div>
+              <h2 className="text-xl font-bold text-black mb-3">AI Credit Warning</h2>
+              <p className="text-gray-700 mb-6 leading-relaxed">
+                Using AI suggestions will deduct <strong>1 credit</strong> from your account.<br />
+                Are you sure you want to proceed?
+              </p>
+              <label className="flex items-center justify-center gap-2 mb-4 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={dontRemind}
+                  onChange={(e) => setDontRemind(e.target.checked)}
+                />
+                <span className="text-sm text-gray-700">Don't remind me again</span>
+              </label>
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={handleWarningCancel}
+                  className="px-6 py-3 border-2 border-gray-400 text-gray-700 rounded-xl hover:bg-gray-100 font-semibold transition-all duration-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleWarningConfirm}
+                  className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black rounded-xl hover:from-yellow-600 hover:to-yellow-700 font-semibold transition-all duration-200 shadow-lg"
+                >
+                  Confirm
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Header Section */}
         <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
           <div className="flex justify-between items-center mb-6">
@@ -172,29 +369,7 @@ function ResumeForm() {
               </button>
             </div>
           </div>
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4 flex items-center gap-3">
-            <svg
-              className="w-6 h-6 text-red-500"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 9v2m0 4h.01M21 12A9 9 0 113 12a9 9 0 0118 0z"
-              />
-            </svg>
-            <span className="text-red-700 font-semibold">
-              AI suggestions are{" "}
-              <span className="underline">not available</span> for free
-              templates.
-              <br />
-              For premium templates, you must have credits to use AI suggestions.
-            </span>
-          </div>
-
+          
           <div className="flex items-center gap-3 bg-gradient-to-r from-yellow-50 to-yellow-100 p-4 rounded-xl border border-yellow-200">
             <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
             <p className="text-black">
@@ -330,30 +505,19 @@ function ResumeForm() {
               </h2>
             </div>
             <button
-              onClick={async () => {
+              onClick={() => {
+                if (credits <= 0) {
+                  setShowToast(true);
+                  setTimeout(() => {
+                  router.push("/pricing");
+                  }, 1800);
+                  return;
+                }
                 const jobRole = form.appliedJob || form.jobrole || "Software Engineer";
                 const experienceLevel = form.experienceLevel || "";
-                const res = await fetch("/api/ai/generate-summary", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ jobRole, experienceLevel }),
-                });
-                const data = await res.json();
-                if (data.summary) {
-                  setForm((prev) => ({ ...prev, summary: data.summary }));
-                }
+                handleAISuggestion("summary", { jobRole, experienceLevel });
               }}
-              className={`bg-gradient-to-r from-yellow-500 to-yellow-600 text-black px-4 py-2 rounded-xl font-bold transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2 ${
-                !aiAllowed
-                  ? "opacity-50 cursor-not-allowed pointer-events-none"
-                  : "hover:from-yellow-600 hover:to-yellow-700"
-              }`}
-              disabled={!aiAllowed}
-              title={
-                credits === 0
-                  ? "You need credits to use AI suggestions"
-                  : ""
-              }
+              className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-black px-4 py-2 rounded-xl font-bold transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2 hover:from-yellow-600 hover:to-yellow-700"
             >
               <svg
                 className="w-4 h-4"
@@ -437,36 +601,12 @@ function ResumeForm() {
               <h2 className="text-2xl font-bold text-black">Skills</h2>
             </div>
             <button
-              onClick={async () => {
+              onClick={() => {
                 const jobRole = form.appliedJob || form.jobrole || "Software Engineer";
                 const experienceLevel = form.experienceLevel || "";
-
-                if (!jobRole) {
-                  alert('Please fill in the "Target Job Role" field first');
-                  return;
-                }
-
-                const res = await fetch("/api/ai/generate-skills", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ jobRole, experienceLevel }),
-                });
-                const data = await res.json();
-                if (data.skills) {
-                  setForm((prev) => ({ ...prev, skills: data.skills }));
-                }
+                handleAISuggestion("skills", { jobRole, experienceLevel });
               }}
-              className={`bg-gradient-to-r from-yellow-500 to-yellow-600 text-black px-4 py-2 rounded-xl font-bold transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2 ${
-                !aiAllowed
-                  ? "opacity-50 cursor-not-allowed pointer-events-none"
-                  : "hover:from-yellow-600 hover:to-yellow-700"
-              }`}
-              disabled={!aiAllowed}
-              title={
-                credits === 0
-                  ? "You need credits to use AI suggestions"
-                  : ""
-              }
+              className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-black px-4 py-2 rounded-xl font-bold transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2 hover:from-yellow-600 hover:to-yellow-700"
             >
               <svg
                 className="w-4 h-4"
@@ -605,46 +745,28 @@ function ResumeForm() {
                     Description
                   </label>
                   <button
-                    onClick={async () => {
-                      if (!exp.description.trim()) {
-                        alert(
-                          "Please enter a description first before enhancing with AI"
-                        );
+                    onClick={() => {
+                      if (credits <= 0) {
+                        setShowToast(true);
+                        setTimeout(() => {
+                          router.push("/pricing");
+                        }, 1800);
                         return;
                       }
-
-                      const jobRole =
-                        form.appliedJob || form.jobrole || "Software Engineer";
-                      const experienceLevel = form.experienceLevel || "";
-
-                      const res = await fetch("/api/ai/quantify-experience", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                          description: exp.description,
-                          jobRole,
-                          experienceLevel,
-                        }),
-                      });
-                      const data = await res.json();
-                      if (data.quantifiedDescription) {
-                        handleChange(
-                          { target: { value: data.quantifiedDescription } },
-                          `experience.${index}.description`
-                        );
+                      if (!exp.description.trim()) {
+                        alert("Please enter a description first before enhancing with AI");
+                        return;
                       }
+                      const jobRole = form.appliedJob || form.jobrole || "Software Engineer";
+                      const experienceLevel = form.experienceLevel || "";
+                      handleAISuggestion("experience", {
+                        description: exp.description,
+                        jobRole,
+                        experienceLevel,
+                        path: `experience.${index}.description`,
+                      });
                     }}
-                    className={`bg-gradient-to-r from-yellow-500 to-yellow-600 text-black px-3 py-1 rounded-lg hover:from-yellow-600 hover:to-yellow-700 text-sm font-bold transition-all duration-200 flex items-center gap-1 ${
-                      !aiAllowed
-                        ? "opacity-50 cursor-not-allowed pointer-events-none"
-                        : "hover:from-yellow-600 hover:to-yellow-700"
-                    }`}
-                    disabled={!aiAllowed}
-                    title={
-                      credits === 0
-                        ? "You need credits to use AI suggestions"
-                        : ""
-                    }
+                    className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-black px-3 py-1 rounded-lg hover:from-yellow-600 hover:to-yellow-700 text-sm font-bold transition-all duration-200 flex items-center gap-1"
                   >
                     <svg
                       className="w-3 h-3"
@@ -778,49 +900,28 @@ function ResumeForm() {
                   </label>
                   <div className="flex gap-2">
                     <button
-                      onClick={async () => {
-                        if (!proj.name.trim()) {
-                          alert(
-                            "Please enter a project name first before generating description with AI"
-                          );
+                      onClick={() => {
+                        if (credits <= 0) {
+                          setShowToast(true);
+                          setTimeout(() => {
+                            router.push("/pricing");
+                          }, 1800);
                           return;
                         }
-
-                        const jobRole =
-                          form.appliedJob || form.jobrole || "Software Engineer";
-                        const experienceLevel = form.experienceLevel || "";
-
-                        const res = await fetch(
-                          "/api/ai/generate-project-description",
-                          {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                              projectTitle: proj.name,
-                              jobRole,
-                              experienceLevel,
-                            }),
-                          }
-                        );
-                        const data = await res.json();
-                        if (data.projectDescription) {
-                          handleChange(
-                            { target: { value: data.projectDescription } },
-                            `projects.${index}.description`
-                          );
+                        if (!proj.name.trim()) {
+                          alert("Please enter a project name first before generating description with AI");
+                          return;
                         }
+                        const jobRole = form.appliedJob || form.jobrole || "Software Engineer";
+                        const experienceLevel = form.experienceLevel || "";
+                        handleAISuggestion("project-generate", {
+                          projectTitle: proj.name,
+                          jobRole,
+                          experienceLevel,
+                          path: `projects.${index}.description`,
+                        });
                       }}
-                      className={`bg-gradient-to-r from-yellow-500 to-yellow-600 text-black px-3 py-1 rounded-lg hover:from-yellow-600 hover:to-yellow-700 text-sm font-bold transition-all duration-200 flex items-center gap-1 ${
-                        !aiAllowed
-                          ? "opacity-50 cursor-not-allowed pointer-events-none"
-                          : "hover:from-yellow-600 hover:to-yellow-700"
-                      }`}
-                      disabled={!aiAllowed}
-                      title={
-                        credits === 0
-                          ? "You need credits to use AI suggestions"
-                          : ""
-                      }
+                      className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-black px-3 py-1 rounded-lg hover:from-yellow-600 hover:to-yellow-700 text-sm font-bold transition-all duration-200 flex items-center gap-1"
                     >
                       <svg
                         className="w-3 h-3"
@@ -838,48 +939,29 @@ function ResumeForm() {
                       Generate
                     </button>
                     <button
-                      onClick={async () => {
+                      onClick={() => {
+                        if (credits <= 0) {
+                          setShowToast(true);
+                          setTimeout(() => {
+                            router.push("/pricing");
+                          }, 1800);
+                          return;
+                        }
                         if (!proj.description.trim()) {
                           alert("Please enter a description first before enhancing with AI");
                           return;
                         }
-
-                        const jobRole =
-                          form.appliedJob || form.jobrole || "Software Engineer";
+                        const jobRole = form.appliedJob || form.jobrole || "Software Engineer";
                         const experienceLevel = form.experienceLevel || "";
-
-                        const res = await fetch(
-                          "/api/ai/enhance-project-description",
-                          {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                              projectTitle: proj.name,
-                              description: proj.description,
-                              jobRole,
-                              experienceLevel,
-                            }),
-                          }
-                        );
-                        const data = await res.json();
-                        if (data.enhancedDescription) {
-                          handleChange(
-                            { target: { value: data.enhancedDescription } },
-                            `projects.${index}.description`
-                          );
-                        }
+                        handleAISuggestion("project-enhance", {
+                          projectTitle: proj.name,
+                          description: proj.description,
+                          jobRole,
+                          experienceLevel,
+                          path: `projects.${index}.description`,
+                        });
                       }}
-                      className={`bg-gradient-to-r from-yellow-500 to-yellow-600 text-black px-3 py-1 rounded-lg hover:from-yellow-600 hover:to-yellow-700 text-sm font-bold transition-all duration-200 flex items-center gap-1 ${
-                        !aiAllowed
-                          ? "opacity-50 cursor-not-allowed pointer-events-none"
-                          : "hover:from-yellow-600 hover:to-yellow-700"
-                      }`}
-                      disabled={!aiAllowed}
-                      title={
-                        credits === 0
-                          ? "You need credits to use AI suggestions"
-                          : ""
-                      }
+                      className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-black px-3 py-1 rounded-lg hover:from-yellow-600 hover:to-yellow-700 text-sm font-bold transition-all duration-200 flex items-center gap-1"
                     >
                       <svg
                         className="w-3 h-3"
@@ -981,70 +1063,6 @@ function ResumeForm() {
           </button>
         </div>
       </div>
-    </div>
-  );
-}
-
-// 🔽 Reusable Components 🔽
-
-function Input({ label, value, onChange }) {
-  return (
-    <input
-      placeholder={label}
-      value={value}
-      onChange={onChange}
-      className="border border-yellow-200 bg-white p-2 rounded w-full focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none"
-    />
-  );
-}
-
-function TextArea({ label, value, onChange }) {
-  return (
-    <div>
-      <h2 className="font-semibold text-black">{label}</h2>
-      <textarea
-        value={value}
-        onChange={onChange}
-        className="w-full border border-yellow-200 bg-white p-2 rounded focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none"
-        rows={3}
-      />
-    </div>
-  );
-}
-
-function SectionList({ title, list, onAdd, onRemove, render }) {
-  return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center mt-6">
-        <h2 className="font-semibold text-black">{title}</h2>
-        <button
-          onClick={onAdd}
-          className="text-yellow-600 hover:text-yellow-700 transition-colors"
-        >
-          + Add {title}
-        </button>
-      </div>
-      {list.map((item, index) => (
-        <div
-          key={index}
-          className="border border-yellow-200 bg-white p-4 rounded space-y-2"
-        >
-          <div className="flex justify-between">
-            <h3 className="font-medium text-black">
-              {title} {index + 1}
-            </h3>
-            {index > 0 && (
-              <button
-                onClick={() => onRemove(index)}
-                className="text-red-600 hover:text-red-700"
-              >
-                Remove
-              </button>
-            )}
-          </div>
-          {render(item, index)}
-        </div>
-      ))}
     </div>
   );
 }

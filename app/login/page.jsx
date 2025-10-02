@@ -45,13 +45,19 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-screen bg-white flex flex-col items-center justify-center px-6 py-12">
+      <Link
+  href="/"
+  className="absolute top-4 left-4 flex items-center gap-2 px-4 py-2 bg-white border border-yellow-400 rounded-full shadow hover:bg-yellow-50 hover:text-yellow-600 transition font-semibold text-black"
+  style={{
+    boxShadow: "0 2px 8px rgba(255, 193, 7, 0.12)",
+    fontSize: "1rem",
+    zIndex: 10,
+  }}
+>
+  <FiArrowLeft className="inline-block" />
+  <span>Back to Home</span>
+</Link>
       <div className="w-full max-w-md bg-gray-50 rounded-3xl shadow-xl p-10 relative">
-        <Link
-          href="/"
-          className="absolute top-4 left-4 text-black hover:text-yellow-500 transition"
-        >
-          <FiArrowLeft size={24} />
-        </Link>
 
         <h1 className="text-4xl font-extrabold mb-8 text-center text-black select-none">
           Welcome Back 👋

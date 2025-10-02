@@ -47,34 +47,6 @@ export default function Home() {
           </nav>
         </header>
 
-        {/* 🎁 Monsoon Offer Banner */}
-        <motion.section
-  initial={{ y: -20, opacity: 0 }}
-  animate={{ y: 0, opacity: 1 }}
-  transition={{ duration: 0.6 }}
-  className="relative overflow-hidden bg-gradient-to-br from-yellow-300 to-yellow-500 py-3 sm:py-4 px-4 sm:px-6 text-center shadow-md border-b border-yellow-600"
->
-  <div className="max-w-4xl mx-auto">
-    <h3 className="text-lg sm:text-xl md:text-2xl font-extrabold text-black tracking-tight leading-tight">
-      🌧️ Monsoon Offer:{" "}
-      <span className="text-white drop-shadow">Extra 50% Credits</span> on Every Purchase!
-    </h3>
-    <p className="mt-1 text-xs sm:text-sm md:text-base text-black font-medium leading-snug">
-      Get 50% bonus credits instantly with every plan — no extra cost. Double the power of your resume today!
-    </p>
-
-    <Link
-      href="/signup"
-      className="inline-block mt-3 bg-black text-yellow-400 px-4 py-2 rounded-lg text-xs sm:text-sm font-bold uppercase tracking-wide shadow hover:bg-gray-900 transition duration-200"
-    >
-      🎁 Claim Bonus
-    </Link>
-
-    <div className="absolute top-2 right-2 animate-pulse bg-black text-white text-[10px] sm:text-xs px-2 py-0.5 rounded-full font-semibold">
-      Limited Time!
-    </div>
-  </div>
-</motion.section>
         {/* Hero Section */}
         <section className="flex flex-col-reverse lg:flex-row items-center justify-between max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-5 gap-10 sm:gap-14">
           <div className="w-full lg:w-1/2 space-y-6 text-center lg:text-left">
