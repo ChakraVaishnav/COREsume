@@ -1,0 +1,23 @@
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+
+export async function POST(req) {
+  try {
+    const cookieHeader = req.headers.get("cookie") || "";
+        const cookies = parse(cookieHeader);
+        const token = cookies.token;
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+    if (user.creds < 1) {
+      return NextResponse.json({ error: "Insufficient credits" }, { status: 400 });
+    }
+    await prisma.user.update({
+      where: { email },
+      data: { creds: { decrement: 1 } },
+    });
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
+  }
+}
