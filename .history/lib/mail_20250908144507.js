@@ -1,4 +1,4 @@
-import nodemailer from "../../node_modules/nodemailer/lib/nodemailer.js";
+import nodemailer from "nodemailer";
 
 const createGmailTransporter = () => {
   return nodemailer.createTransport({
