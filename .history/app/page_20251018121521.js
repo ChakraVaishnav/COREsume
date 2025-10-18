@@ -15,22 +15,10 @@ export default function Home() {
   };
 
   useEffect(() => {
-    // Use cookie + JWT (server-side) for auth detection instead of localStorage.
-    // Calls `/api/user/info` which returns user info when the HttpOnly cookie is present.
-    const checkAuth = async () => {
-      try {
-        const res = await fetch("/api/user/info", { credentials: "include" });
-        if (res.ok) {
-          // authenticated on the server via cookie
-          router.push("/dashboard");
-        }
-      } catch (err) {
-        // network or other error - silently ignore and remain on home
-        console.debug("auth check failed", err);
-      }
-    };
-
-    checkAuth();
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user?.isAuthenticated) {
+      router.push("/dashboard");
+    }
   }, [router]);
 
   return (
