@@ -1,4 +1,4 @@
-import { PrismaClient } from "../../../generated/prisma";
+import { PrismaClient } from "../../../generated/prisma/client";
 import { sendOtpMail } from "@/lib/mail";
 
 const prisma = new PrismaClient();

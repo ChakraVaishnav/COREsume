@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "../../../generated/prisma";
+import { prisma } from "../../../generated/prisma";
 import bcrypt from "bcryptjs";
 import { serialize } from "cookie";
 import jwt from "jsonwebtoken";
-const prisma = new PrismaClient();
+
 export async function POST(req) {
   try {
     const { email, password } = await req.json();

@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { PrismaClient } from "../../../generated/prisma";
 import { parse } from "cookie";
 import { verify } from "jsonwebtoken";
-const prisma = new PrismaClient();
 export async function POST(req) {
   try {
     const cookieHeader = req.headers.get("cookie") || "";

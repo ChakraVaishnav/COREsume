@@ -1,10 +1,10 @@
-import { PrismaClient } from "../../../generated/prisma";
+import { Prisma } from "../../../generated/prisma/client";
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { parse } from "cookie";
 import jwt from "jsonwebtoken";
 
-const prisma = new PrismaClient();
+const prisma = new Prisma.Client();
 export async function POST(req) {
   try {
     const cookieHeader = req.headers.get("cookie") || "";
