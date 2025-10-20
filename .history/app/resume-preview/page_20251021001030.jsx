@@ -15,7 +15,7 @@ export default function ResumePreview() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [pageCount, setPageCount] = useState(1);
-  const [isReviewed, setIsReviewed] = useState(false);
+  const [isReviwed, setIsReviewed] = useState(false);
   const [isDownloaded, setIsDownloaded] = useState(false);
   const [showRating, setShowRating] = useState(false);
   const [ratingScore, setRatingScore] = useState(5);
@@ -49,46 +49,12 @@ export default function ResumePreview() {
     window.addEventListener('resize', calculatePages);
     return () => window.removeEventListener('resize', calculatePages);
   }, [resumeData]);
-  const checkIsRated = async () =>{
-    try {
-      const tpl = resumeData?.template;
-      if (!tpl) {
 
-        return false;
-      }
-
-      const url = `/api/feedback/verify-rated?template=${encodeURIComponent(tpl)}`;
-      const res = await fetch(url, {
-        method: 'GET',
-        credentials: 'include',
-      });
-
-      if (!res.ok) {
-        return false;
-      }
-
-      const json = await res.json();
-
-      // If the endpoint says the user already rated, don't show the modal
-      if (json.rated) {
-        setIsReviewed(true);
-        setShowRating(false);
-        return true;
-      }
-
-      setShowRating(true);
-      return false;
-    } catch (err) {
-      return false;
-    }
-  }
-  const handleDownload = async () => {
-    // Print dialog may block; verify after print returns
+  const handleDownload = () => {
     window.print();
-    try {
-      await checkIsRated();
-    } catch (err) {
-    }
+    setIsDownloaded(true);
+    // show rating modal after a small delay to allow print dialog to appear
+    setTimeout(() => setShowRating(true), 800);
   };
 
   const TemplateComponent =
@@ -191,15 +157,16 @@ export default function ResumePreview() {
                 onClick={async () => {
                   setSubmitting(true);
                   try {
-                    const res = await fetch('/api/feedback/rating', {
+                    const res = await fetch('/api/user/rating', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
                       credentials: 'include',
-                      body: JSON.stringify({ score: ratingScore, comment: ratingComment, template: resumeData?.template }),
+                      body: JSON.stringify({ score: ratingScore, comment: ratingComment }),
                     });
                     if (!res.ok) throw new Error('Failed to submit rating');
                     setShowRating(false);
                   } catch (err) {
+                    console.error(err);
                     alert('Failed to submit rating');
                   } finally {
                     setSubmitting(false);

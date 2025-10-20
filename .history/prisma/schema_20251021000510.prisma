@@ -33,6 +33,6 @@ model Rating {
   userId    Int
   score     Int
   comment   String?
-  template  String
+  template  String?  
   createdAt DateTime @default(now())
 }

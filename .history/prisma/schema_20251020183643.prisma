@@ -32,7 +32,6 @@ model Rating {
   user      User     @relation(fields: [userId], references: [id])
   userId    Int
   score     Int
-  comment   String?
-  template  String
+  comment   String?  
   createdAt DateTime @default(now())
 }

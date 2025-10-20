@@ -15,12 +15,7 @@ export default function ResumePreview() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [pageCount, setPageCount] = useState(1);
-  const [isReviewed, setIsReviewed] = useState(false);
-  const [isDownloaded, setIsDownloaded] = useState(false);
-  const [showRating, setShowRating] = useState(false);
-  const [ratingScore, setRatingScore] = useState(5);
-  const [ratingComment, setRatingComment] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const isDownloaded=false;
   useEffect(() => {
     try {
       const savedForm = localStorage.getItem('resumeFormData');
@@ -49,46 +44,10 @@ export default function ResumePreview() {
     window.addEventListener('resize', calculatePages);
     return () => window.removeEventListener('resize', calculatePages);
   }, [resumeData]);
-  const checkIsRated = async () =>{
-    try {
-      const tpl = resumeData?.template;
-      if (!tpl) {
 
-        return false;
-      }
-
-      const url = `/api/feedback/verify-rated?template=${encodeURIComponent(tpl)}`;
-      const res = await fetch(url, {
-        method: 'GET',
-        credentials: 'include',
-      });
-
-      if (!res.ok) {
-        return false;
-      }
-
-      const json = await res.json();
-
-      // If the endpoint says the user already rated, don't show the modal
-      if (json.rated) {
-        setIsReviewed(true);
-        setShowRating(false);
-        return true;
-      }
-
-      setShowRating(true);
-      return false;
-    } catch (err) {
-      return false;
-    }
-  }
-  const handleDownload = async () => {
-    // Print dialog may block; verify after print returns
+  const handleDownload = () => {
     window.print();
-    try {
-      await checkIsRated();
-    } catch (err) {
-    }
+    isDownloaded=true;
   };
 
   const TemplateComponent =
@@ -153,67 +112,6 @@ export default function ResumePreview() {
           </div>
         </div>
       </div>
-      {/* Rating Modal */}
-      {showRating && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-40">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-            <h3 className="text-lg font-bold text-center mb-3">Rate your download</h3>
-            <p className="text-sm text-gray-600 text-center mb-4">Please leave a rating and an optional comment</p>
-
-            <div className="flex justify-center gap-2 mb-4">
-              {[1,2,3,4,5].map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setRatingScore(s)}
-                  className={`text-3xl ${s <= ratingScore ? 'text-yellow-400' : 'text-gray-300'}`}
-                >
-                  ★
-                </button>
-              ))}
-            </div>
-
-            <textarea
-              value={ratingComment}
-              onChange={(e) => setRatingComment(e.target.value)}
-              placeholder="Leave a comment (optional)"
-              className="w-full border border-gray-200 rounded-md p-3 mb-4 text-sm"
-              rows={4}
-            />
-
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => setShowRating(false)}
-                className="px-4 py-2 rounded-md bg-gray-100 text-gray-700 font-medium"
-              >
-                Later
-              </button>
-              <button
-                onClick={async () => {
-                  setSubmitting(true);
-                  try {
-                    const res = await fetch('/api/feedback/rating', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      credentials: 'include',
-                      body: JSON.stringify({ score: ratingScore, comment: ratingComment, template: resumeData?.template }),
-                    });
-                    if (!res.ok) throw new Error('Failed to submit rating');
-                    setShowRating(false);
-                  } catch (err) {
-                    alert('Failed to submit rating');
-                  } finally {
-                    setSubmitting(false);
-                  }
-                }}
-                className="px-4 py-2 rounded-md bg-yellow-500 text-black font-semibold"
-                disabled={submitting}
-              >
-                {submitting ? 'Posting...' : 'Post'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

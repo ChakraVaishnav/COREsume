@@ -53,7 +53,7 @@ export default function ResumePreview() {
     try {
       const tpl = resumeData?.template;
       if (!tpl) {
-
+        console.warn('No template available to verify rating');
         return false;
       }
 
@@ -63,11 +63,14 @@ export default function ResumePreview() {
         credentials: 'include',
       });
 
+      console.debug('verify-rated status', res.status);
       if (!res.ok) {
+        console.error('verify-rated returned non-OK', res.status);
         return false;
       }
 
       const json = await res.json();
+      console.debug('verify-rated json', json);
 
       // If the endpoint says the user already rated, don't show the modal
       if (json.rated) {
@@ -79,6 +82,7 @@ export default function ResumePreview() {
       setShowRating(true);
       return false;
     } catch (err) {
+      console.error('Failed to verify rating status', err);
       return false;
     }
   }
@@ -88,6 +92,7 @@ export default function ResumePreview() {
     try {
       await checkIsRated();
     } catch (err) {
+      console.error('Error during rating verification after print', err);
     }
   };
 
@@ -195,11 +200,12 @@ export default function ResumePreview() {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
                       credentials: 'include',
-                      body: JSON.stringify({ score: ratingScore, comment: ratingComment, template: resumeData?.template }),
+                      body: JSON.stringify({ score: ratingScore, comment: ratingComment }),
                     });
                     if (!res.ok) throw new Error('Failed to submit rating');
                     setShowRating(false);
                   } catch (err) {
+                    console.error(err);
                     alert('Failed to submit rating');
                   } finally {
                     setSubmitting(false);

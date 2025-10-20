@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { PrismaClient } from "../../../generated/prisma"; // adjust if needed
 import bcrypt from "bcryptjs";
 import { serialize } from "cookie";
-import jwt from "jsonwebtoken";
+
 const prisma = new PrismaClient();
 
 export async function POST(req) {
@@ -65,7 +65,6 @@ export async function POST(req) {
       where: { id: otpRecord.id },
     });
 
-    
     const payload = { id: user.id, email: user.email };
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
     const cookieString = serialize("token", token, {
@@ -73,7 +72,7 @@ export async function POST(req) {
     secure: process.env.NODE_ENV === "development",
     maxAge: 3600,
     path: "/",
-    sameSite: "lax",
+    sameSite: "strict",
   });
   return NextResponse.json(
     { message: "Signup successful" },
