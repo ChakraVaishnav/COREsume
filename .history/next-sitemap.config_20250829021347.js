@@ -1,5 +1,5 @@
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
-    siteUrl: 'https://coresume.in',
+    siteUrl: 'https://coresume.vercel.app',
     generateRobotsTxt: true,
   };
