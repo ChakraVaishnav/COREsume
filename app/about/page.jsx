@@ -1,6 +1,7 @@
 "use client";
 
 import PageLayout from "@/components/PageLayout";
+import AdUnit from "@/components/AdUnit";
 
 export default function AboutPage() {
   return (
@@ -35,7 +36,11 @@ export default function AboutPage() {
           updated with the latest resume trends and ATS requirements to ensure your resume stands out 
           in the competitive job market.
         </p>
+
+        <div className="mt-8">
+          <AdUnit slot="3878228967" />
+        </div>
       </div>
     </PageLayout>
   );
-} 
+}
