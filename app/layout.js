@@ -89,13 +89,21 @@ export default function RootLayout({ children }) {
         <meta name="twitter:title" content={metadata.twitter.title} />
         <meta name="twitter:description" content={metadata.twitter.description} />
         <meta name="twitter:image" content={metadata.twitter.images[0]} />
-  <script type='text/javascript' src='//pl27901593.effectivegatecpm.com/e3/25/a4/e325a46cf2a1eeb4b33181c8cd52ff37.js'></script>
+       <Script
+          id="effectivegatecpm-head"
+          src="//pl27901593.effectivegatecpm.com/e3/25/a4/e325a46cf2a1eeb4b33181c8cd52ff37.js"
+          strategy="beforeInteractive"
+        />
       </Head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
-          <script type='text/javascript' src='//pl27901593.effectivegatecpm.com/e3/25/a4/e325a46cf2a1eeb4b33181c8cd52ff37.js'></script>
+          <Script
+          id="effectivegatecpm-head"
+          src="//pl27901593.effectivegatecpm.com/e3/25/a4/e325a46cf2a1eeb4b33181c8cd52ff37.js"
+          strategy="beforeInteractive"
+        />
         {children}
       </body>
     </html>
