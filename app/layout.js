@@ -2,7 +2,7 @@ import { Geist, Geist_Mono, Merriweather } from "next/font/google";
 import "./globals.css";
 import { Inter } from 'next/font/google';
 import Head from "next/head";
-
+import Script from "next/script";
 const inter = Inter({ subsets: ['latin'] });
 const merri = Merriweather({ subsets: ['latin'], weight: ['400','700'], display: 'swap', variable: '--font-merri' });
 const geistSans = Geist({
@@ -89,11 +89,6 @@ export default function RootLayout({ children }) {
         <meta name="twitter:title" content={metadata.twitter.title} />
         <meta name="twitter:description" content={metadata.twitter.description} />
         <meta name="twitter:image" content={metadata.twitter.images[0]} />
-       <Script
-          id="effectivegatecpm-head"
-          src="//pl27901593.effectivegatecpm.com/e3/25/a4/e325a46cf2a1eeb4b33181c8cd52ff37.js"
-          strategy="beforeInteractive"
-        />
       </Head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
