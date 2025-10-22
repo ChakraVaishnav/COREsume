@@ -95,6 +95,7 @@ export default function RootLayout({ children }) {
         suppressHydrationWarning
       >
         <meta name="google-adsense-account" content="ca-pub-6429806131272523"/>
+          <meta name="monetag" content="aca6454f87bca0a37dae9cbd473dca10">
         {children}
       </body>
     </html>
