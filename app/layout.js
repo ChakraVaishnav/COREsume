@@ -94,11 +94,6 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
-          <Script
-          id="effectivegatecpm-head"
-          src="//pl27901593.effectivegatecpm.com/e3/25/a4/e325a46cf2a1eeb4b33181c8cd52ff37.js"
-          strategy="beforeInteractive"
-        />
         {children}
       </body>
     </html>
