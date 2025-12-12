@@ -126,7 +126,3 @@ Use `/api/export/excel` (SheetJS) to export Prisma data into `.xlsx` (requires v
 - Remove `console.log`/`console.error` from production (already handled).
 - Use `.history/` snapshots and backups for env/config tracking.
 - Check Supabase status if you see intermittent 500 errors from Prisma.
-
----
-
-Feel free to flesh out sections with screenshots, badges, or the promotional video from your `public/` folder to create a richer README.
