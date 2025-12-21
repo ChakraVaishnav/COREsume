@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FiArrowLeft } from "react-icons/fi";
@@ -10,103 +10,42 @@ export default function SignUp() {
     username: "",
     email: "",
     password: "",
-    otp: "",
   });
 
-  const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState(null);
   const [error, setError] = useState(null);
   const [agreed, setAgreed] = useState(false);
-  const [resendCooldown, setResendCooldown] = useState(0);
 
   const router = useRouter();
-
-  useEffect(() => {
-    if (resendCooldown > 0) {
-      const interval = setInterval(() => {
-        setResendCooldown((prev) => prev - 1);
-      }, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [resendCooldown]);
 
   const handleChange = (e) =>
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
-  const sendOtp = async (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
     setError(null);
-    setMessage(null);
 
-    if (!form.email) return setError("Please enter a valid email");
+    if (!form.email || !form.username || !form.password) {
+      return setError("Please fill in all fields");
+    }
     if (!agreed) return setError("You must agree to the Terms and Conditions");
 
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/send-otp", {
+      const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: form.email }),
+        body: JSON.stringify({
+          username: form.username,
+          email: form.email,
+          password: form.password
+        }),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to send OTP");
+      if (!res.ok) throw new Error(data.error || "Signup failed");
 
-      setMessage("OTP sent to your email!");
-      setStep(2);
-      setResendCooldown(30); // Start cooldown on first OTP too
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const resendOtp = async () => {
-    if (resendCooldown > 0) return;
-
-    setError(null);
-    setMessage(null);
-    setLoading(true);
-
-    try {
-      const res = await fetch("/api/auth/send-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: form.email, forceResend: true }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to resend OTP");
-
-      setMessage("OTP resent to your email!");
-      setResendCooldown(30); // Reset cooldown
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const verifyOtp = async (e) => {
-    e.preventDefault();
-    setError(null);
-    setMessage(null);
-
-    if (!form.otp) return setError("Please enter the OTP");
-
-    setLoading(true);
-    try {
-      const res = await fetch("/api/auth/verify-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Verification failed");
-
+      // Redirect to dashboard on successful signup
       router.push("/dashboard");
     } catch (err) {
       setError(err.message);
@@ -128,109 +67,57 @@ export default function SignUp() {
       <div className="w-full max-w-lg bg-white rounded-3xl shadow-2xl p-10 sm:p-14 border border-black/5">
         <h1 className="text-3xl font-bold text-center text-black mb-6 tracking-tight select-none">
           Create your COREsume Account
-      </h1>
-        {step === 1 && (
-          <form onSubmit={sendOtp} className="space-y-6">
-            <FancyInput
-              name="username"
-              placeholder="Username"
-              value={form.username}
-              onChange={handleChange}
-              required
+        </h1>
+        <form onSubmit={handleSignup} className="space-y-6">
+          <FancyInput
+            name="username"
+            placeholder="Username"
+            value={form.username}
+            onChange={handleChange}
+            required
+          />
+          <FancyInput
+            name="email"
+            type="email"
+            placeholder="Email"
+            value={form.email}
+            onChange={handleChange}
+            required
+          />
+          <FancyInput
+            name="password"
+            type="password"
+            placeholder="Password (min 6 characters)"
+            value={form.password}
+            onChange={handleChange}
+            minLength={6}
+            required
+          />
+
+          <div className="flex items-start gap-2 text-sm text-gray-600">
+            <input
+              type="checkbox"
+              id="terms"
+              checked={agreed}
+              onChange={() => setAgreed(!agreed)}
+              className="mt-1"
             />
-            <FancyInput
-              name="email"
-              type="email"
-              placeholder="Email"
-              value={form.email}
-              onChange={handleChange}
-              required
-            />
-            <FancyInput
-              name="password"
-              type="password"
-              placeholder="Password (min 6 characters)"
-              value={form.password}
-              onChange={handleChange}
-              minLength={6}
-              required
-            />
-
-            <div className="flex items-start gap-2 text-sm text-gray-600">
-              <input
-                type="checkbox"
-                id="terms"
-                checked={agreed}
-                onChange={() => setAgreed(!agreed)}
-                className="mt-1"
-              />
-              <label htmlFor="terms">
-                I agree to the{" "}
-                <Link
-                  href="/terms"
-                  className="text-yellow-600 hover:underline font-medium"
-                  target="_blank"
-                >
-                  Terms and Conditions
-                </Link>
-              </label>
-            </div>
-
-            <SubmitButton loading={loading} text="Send OTP" />
-          </form>
-        )}
-
-        {step === 2 && (
-          <form onSubmit={verifyOtp} className="space-y-6">
-            <div className="text-center mb-4">
-              <h2 className="text-lg font-semibold text-gray-700">
-                Verify Your Email
-              </h2>
-              <p className="text-sm text-gray-500 mt-1">
-                Enter the 6-digit OTP sent to{" "}
-                <span className="font-medium text-yellow-600">
-                  {form.email}
-                </span>
-              </p>
-            </div>
-
-            <div className="flex justify-center">
-              <input
-                name="otp"
-                value={form.otp}
-                onChange={handleChange}
-                placeholder="Enter OTP"
-                pattern="\d{6}"
-                maxLength={6}
-                required
-                className="w-2/3 sm:w-1/2 px-6 py-3 text-lg tracking-widest text-center rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition placeholder:text-gray-400 text-gray-900 font-bold shadow-sm"
-              />
-            </div>
-
-            <SubmitButton loading={loading} text="Verify & Sign Up" />
-
-            <div className="text-center mt-2">
-              <button
-                type="button"
-                onClick={resendOtp}
-                disabled={loading || resendCooldown > 0}
-                className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-3 rounded-xl transition shadow-lg disabled:opacity-60"
+            <label htmlFor="terms">
+              I agree to the{" "}
+              <Link
+                href="/terms"
+                className="text-yellow-600 hover:underline font-medium"
+                target="_blank"
               >
-                {resendCooldown > 0
-                  ? `Resend in ${resendCooldown}s`
-                  : "Resend OTP"}
-              </button>
-            </div>
-          </form>
-        )}
+                Terms and Conditions
+              </Link>
+            </label>
+          </div>
 
+          <SubmitButton loading={loading} text="Create Account" />
+        </form>
         {error && (
           <p className="mt-5 text-red-600 font-medium text-center">{error}</p>
-        )}
-        {message && (
-          <p className="mt-5 text-green-600 font-medium text-center">
-            {message}
-          </p>
         )}
 
         <p className="text-center text-gray-600 text-sm mt-6">
