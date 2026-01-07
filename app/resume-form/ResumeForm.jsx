@@ -40,6 +40,7 @@ function ResumeForm() {
   // Toast state
   const [showToast, setShowToast] = useState(false);
   const [showToastRequired, setShowToastRequired] = useState(false);
+  const [showErrorToast, setShowErrorToast] = useState(false); // New Error Toast State
 
   // Auto-hide the "required" toast after 5 seconds
   useEffect(() => {
@@ -47,6 +48,102 @@ function ResumeForm() {
     const t = setTimeout(() => setShowToastRequired(false), 5000);
     return () => clearTimeout(t);
   }, [showToastRequired]);
+
+  // Auto-hide error toast
+  useEffect(() => {
+    if (!showErrorToast) return;
+    const t = setTimeout(() => setShowErrorToast(false), 5000);
+    return () => clearTimeout(t);
+  }, [showErrorToast]);
+
+  // ... (existing code) ...
+
+  // Actually run the AI suggestion
+  const runAISuggestion = async (type, payload) => {
+    let url = "";
+    let body = {};
+    if (type === "summary") {
+      url = "/api/ai/generate-summary";
+      body = {
+        jobRole: payload.jobRole,
+        experienceLevel: payload.experienceLevel,
+      };
+    } else if (type === "skills") {
+      url = "/api/ai/generate-skills";
+      body = {
+        jobRole: payload.jobRole,
+        experienceLevel: payload.experienceLevel,
+      };
+    } else if (type === "experience") {
+      url = "/api/ai/quantify-experience";
+      body = {
+        description: payload.description,
+        jobRole: payload.jobRole,
+        experienceLevel: payload.experienceLevel,
+      };
+    } else if (type === "project-generate") {
+      url = "/api/ai/generate-project-description";
+      body = {
+        projectTitle: payload.projectTitle,
+        jobRole: payload.jobRole,
+        experienceLevel: payload.experienceLevel,
+      };
+    } else if (type === "project-enhance") {
+      url = "/api/ai/enhance-project-description";
+      body = {
+        projectTitle: payload.projectTitle,
+        description: payload.description,
+        jobRole: payload.jobRole,
+        experienceLevel: payload.experienceLevel,
+      };
+    }
+
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) {
+        throw new Error("API responded with an error");
+      }
+
+      const data = await res.json();
+
+      // Additional check for error field in valid 200 JSON
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      // Update form based on type
+      if (type === "summary" && data.summary) {
+        setForm((prev) => ({ ...prev, summary: data.summary }));
+      } else if (type === "skills" && data.skills) {
+        setForm((prev) => ({ ...prev, skills: data.skills }));
+      } else if (type === "experience" && data.quantifiedDescription) {
+        handleChange(
+          { target: { value: data.quantifiedDescription } },
+          payload.path
+        );
+      } else if (type === "project-generate" && data.projectDescription) {
+        handleChange(
+          { target: { value: data.projectDescription } },
+          payload.path
+        );
+      } else if (type === "project-enhance" && data.enhancedDescription) {
+        handleChange(
+          { target: { value: data.enhancedDescription } },
+          payload.path
+        );
+      }
+      return true;
+    } catch (e) {
+      console.error("AI Generation Error:", e);
+      setShowErrorToast(true); // Trigger the error toast
+      return false; // Return false so credits are NOT deducted
+    }
+  };
 
   // Load "dontRemind" from localStorage
   useEffect(() => {
@@ -190,84 +287,13 @@ function ResumeForm() {
       setPendingAISuggestion(null);
     }
     // Otherwise, show warning popup
-    else{
+    else {
       setPendingAISuggestion({ type, payload });
-    setShowWarning(true);
+      setShowWarning(true);
     }
   };
 
-  // Actually run the AI suggestion
-  const runAISuggestion = async (type, payload) => {
-    let url = "";
-    let body = {};
-    if (type === "summary") {
-      url = "/api/ai/generate-summary";
-      body = {
-        jobRole: payload.jobRole,
-        experienceLevel: payload.experienceLevel,
-      };
-    } else if (type === "skills") {
-      url = "/api/ai/generate-skills";
-      body = {
-        jobRole: payload.jobRole,
-        experienceLevel: payload.experienceLevel,
-      };
-    } else if (type === "experience") {
-      url = "/api/ai/quantify-experience";
-      body = {
-        description: payload.description,
-        jobRole: payload.jobRole,
-        experienceLevel: payload.experienceLevel,
-      };
-    } else if (type === "project-generate") {
-      url = "/api/ai/generate-project-description";
-      body = {
-        projectTitle: payload.projectTitle,
-        jobRole: payload.jobRole,
-        experienceLevel: payload.experienceLevel,
-      };
-    } else if (type === "project-enhance") {
-      url = "/api/ai/enhance-project-description";
-      body = {
-        projectTitle: payload.projectTitle,
-        description: payload.description,
-        jobRole: payload.jobRole,
-        experienceLevel: payload.experienceLevel,
-      };
-    }
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    try {
-      const data = await res.json();
-    // Update form based on type
-    if (type === "summary" && data.summary) {
-      setForm((prev) => ({ ...prev, summary: data.summary }));
-    } else if (type === "skills" && data.skills) {
-      setForm((prev) => ({ ...prev, skills: data.skills }));
-    } else if (type === "experience" && data.quantifiedDescription) {
-      handleChange(
-        { target: { value: data.quantifiedDescription } },
-        payload.path
-      );
-    } else if (type === "project-generate" && data.projectDescription) {
-      handleChange(
-        { target: { value: data.projectDescription } },
-        payload.path
-      );
-    } else if (type === "project-enhance" && data.enhancedDescription) {
-      handleChange(
-        { target: { value: data.enhancedDescription } },
-        payload.path
-      );
-    }
-      return true;
-    } catch (e) {
-      return false;
-    }
-  };
+
 
   // Warning popup confirm
   const handleWarningConfirm = async () => {
@@ -306,6 +332,31 @@ function ResumeForm() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
       <Navbar />
       <div className="max-w-4xl mx-auto p-6 space-y-8">
+        {/* Error Toast */}
+        {showErrorToast && (
+          <div className="fixed top-4 right-4 bg-white text-red-600 px-6 py-4 rounded-xl shadow-2xl border border-red-100 z-50 flex flex-col gap-2 min-w-[300px] animate-in slide-in-from-right-10 fade-in duration-300">
+            <div className="flex items-center gap-3">
+              <div className="bg-red-100 p-2 rounded-full">
+                <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+              </div>
+              <div className="flex-1">
+                <p className="font-bold text-gray-900">AI Service unavailable</p>
+                <p className="text-sm text-gray-600">Please try again later. Our CORE AI is not responding properly now.</p>
+              </div>
+            </div>
+            {/* Loader Bar */}
+            <div className="w-full bg-red-100 h-1 rounded-full overflow-hidden mt-1">
+              <div className="h-full bg-red-500 transition-all duration-[5000ms] ease-linear w-0" style={{ width: showErrorToast ? '0%' : '100%', animation: 'progress 5s linear forwards' }}></div>
+              <style jsx>{`
+                @keyframes progress {
+                  from { width: 100%; }
+                  to { width: 0%; }
+                }
+              `}</style>
+            </div>
+          </div>
+        )}
+
         {/* Toast for insufficient credits */}
         {showToast && (
           <div className="fixed top-4 right-4 bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-3 rounded-xl shadow-lg border border-red-400 z-50">
@@ -383,7 +434,7 @@ function ResumeForm() {
               </button>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-3 bg-gradient-to-r from-yellow-50 to-yellow-100 p-4 rounded-xl border border-yellow-200">
             <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
             <p className="text-black">
@@ -523,7 +574,7 @@ function ResumeForm() {
                 if (credits <= 0) {
                   setShowToast(true);
                   setTimeout(() => {
-                  router.push("/pricing");
+                    router.push("/pricing");
                   }, 1800);
                   return;
                 }
