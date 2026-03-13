@@ -1,0 +1,141 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+
+export default function ExecutiveEdgeTemplate() {
+  const [form, setForm] = useState(null);
+
+  useEffect(() => {
+    const data = localStorage.getItem('resumeFormData');
+    if (data) {
+      const parsed = JSON.parse(data);
+      if (!Array.isArray(parsed.experience)) {
+        parsed.experience = [{ role: '', company: '', duration: '', description: '' }];
+      }
+      if (!Array.isArray(parsed.projects)) {
+        parsed.projects = [{ name: '', description: '', link: '' }];
+      }
+      setForm(parsed);
+    }
+  }, []);
+
+  if (!form) return <p className="text-center p-8 text-sm">Loading resume...</p>;
+
+  const { personalInfo, summary, skills, education, experience, projects, achievements, interests } = form;
+
+  const hasContent = (section) => {
+    if (!section) return false;
+    if (Array.isArray(section)) {
+      return section.some((item) => Object.values(item).some((value) => value && value.trim() !== ''));
+    }
+    return section.trim() !== '';
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto p-8 text-[12px] leading-[1.5] font-sans text-black">
+      <header className="mb-5 bg-gray-900 text-white p-4 rounded-sm print:rounded-none">
+        <h1 className="text-[23px] font-bold tracking-[0.05em] text-white">{personalInfo.name}</h1>
+        {form.appliedJob && <p className="text-[13px] font-semibold mt-1 text-gray-100">{form.appliedJob}</p>}
+        <p className="text-[11px] mt-2 text-gray-200">
+          <a href={`mailto:${personalInfo.email}`} className="text-white no-underline">{personalInfo.email}</a>
+          {' | '}
+          {personalInfo.phone}
+          {personalInfo.linkedin && (
+            <>
+              {' | '}
+              <a href={personalInfo.linkedin} className="text-white no-underline">LinkedIn</a>
+            </>
+          )}
+          {personalInfo.github && (
+            <>
+              {' | '}
+              <a href={personalInfo.github} className="text-white no-underline">GitHub</a>
+            </>
+          )}
+          {personalInfo.portfolio && (
+            <>
+              {' | '}
+              <a href={personalInfo.portfolio} className="text-white no-underline">Portfolio</a>
+            </>
+          )}
+        </p>
+      </header>
+
+      <div className="grid grid-cols-3 gap-6">
+        <aside className="col-span-1 border-r border-gray-300 pr-4">
+          {hasContent(skills) && (
+            <Section title="Skills">
+              <p className="whitespace-pre-line">{skills}</p>
+            </Section>
+          )}
+
+          {hasContent(education) && (
+            <Section title="Education">
+              <p className="whitespace-pre-line">{education}</p>
+            </Section>
+          )}
+
+          {hasContent(achievements) && (
+            <Section title="Achievements">
+              <p className="whitespace-pre-line">{achievements}</p>
+            </Section>
+          )}
+
+          {hasContent(interests) && (
+            <Section title="Interests">
+              <p className="whitespace-pre-line">{interests}</p>
+            </Section>
+          )}
+        </aside>
+
+        <main className="col-span-2">
+          {hasContent(summary) && (
+            <Section title="Executive Summary">
+              <p className="whitespace-pre-line">{summary}</p>
+            </Section>
+          )}
+
+          {hasContent(experience) && (
+            <Section title="Experience">
+              {experience.map((exp, index) => (
+                <div key={index} className="mb-3">
+                  <h3 className="text-[12px] font-bold">{exp.role} | {exp.company}</h3>
+                  <p className="text-[11px] text-gray-600">{exp.duration}</p>
+                  <p className="whitespace-pre-line">{exp.description}</p>
+                </div>
+              ))}
+            </Section>
+          )}
+
+          {hasContent(projects) && (
+            <Section title="Projects">
+              {projects.map((project, index) => (
+                <div key={index} className="mb-3">
+                  <h3 className="text-[12px] font-bold">
+                    {project.link ? (
+                      <a href={project.link} target="_blank" rel="noopener noreferrer" className="text-black no-underline">
+                        {project.name}
+                      </a>
+                    ) : (
+                      project.name
+                    )}
+                  </h3>
+                  <p className="whitespace-pre-line">{project.description}</p>
+                </div>
+              ))}
+            </Section>
+          )}
+        </main>
+      </div>
+    </div>
+  );
+}
+
+function Section({ title, children }) {
+  return (
+    <section className="mb-4">
+      <h2 className="text-[12px] font-bold uppercase border-b border-gray-400 pb-1 mb-2">{title}</h2>
+      {children}
+    </section>
+  );
+}

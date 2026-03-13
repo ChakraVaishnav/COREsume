@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "../../../generated/prisma";
+import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import { serialize } from "cookie";
-import jwt from "jsonwebtoken";
-const prisma = new PrismaClient();
+import { createSession } from "@/lib/auth/session";
+import { appendSetCookieHeaders } from "@/lib/auth/token";
+
 export async function POST(req) {
   try {
     const { email, password } = await req.json();
@@ -15,21 +15,11 @@ export async function POST(req) {
     // Verify password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
-    const payload = { id: user.id, email: user.email };
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
 
-const cookieString = serialize("token", token, {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production", // only true in production
-  maxAge: 3600,
-  path: "/",
-  sameSite: "lax", // or "strict" if you don’t need cross-site requests
-});
+    const session = await createSession({ id: user.id, email: user.email });
 
-  return NextResponse.json(
-    { message: "Login successful" },
-    { status: 200, headers: { "Set-Cookie": cookieString } }
-  );
+    const response = NextResponse.json({ message: "Login successful" }, { status: 200 });
+    return appendSetCookieHeaders(response, session.cookieHeaders);
   }catch (error) {
   return NextResponse.json({ error: "Something went wrong", details: error.message }, { status: 500 });
 }

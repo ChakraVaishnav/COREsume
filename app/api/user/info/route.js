@@ -1,26 +1,26 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "../../../generated/prisma";
-import { parse } from "cookie";
-import { verify } from "jsonwebtoken";
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
+import { authenticateRequest } from "@/lib/auth/session";
+import { appendSetCookieHeaders } from "@/lib/auth/token";
+
 export async function GET(req) {
   try {
-    const cookieHeader = req.headers.get("cookie") || "";
-    const cookies = parse(cookieHeader);
-    const token = cookies.token;
-    if(!token){
+    const auth = await authenticateRequest(req);
+    if (!auth) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }   
-    const payload = verify(token, process.env.JWT_SECRET); 
+    }
 
     const user = await prisma.user.findUnique({
-      where: { id: payload.id },
-      select: {username: true, email: true},
-    }); 
-    if(!user){
+      where: { id: auth.userId },
+      select: { username: true, email: true },
+    });
+
+    if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-    return NextResponse.json(user, { status: 200 });
+
+    const response = NextResponse.json(user, { status: 200 });
+    return appendSetCookieHeaders(response, auth.cookieHeaders);
 
   } catch (error) {
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 });

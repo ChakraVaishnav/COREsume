@@ -1,25 +1,20 @@
-import { PrismaClient } from "../../../generated/prisma";
+import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { parse } from "cookie";
-import jwt from "jsonwebtoken";
+import { authenticateRequest } from "@/lib/auth/session";
+import { appendSetCookieHeaders } from "@/lib/auth/token";
 
-const prisma = new PrismaClient();
 export async function POST(req) {
   try {
-    const cookieHeader = req.headers.get("cookie") || "";
-    const cookies = parse(cookieHeader);
-    const token = cookies.token;
-    if (!token) {
+    const auth = await authenticateRequest(req);
+    if (!auth) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const { currentPassword, newPassword } = await req.json();
 
     // Get user by token
-    const payload = jwt.verify(token, process.env.JWT_SECRET);
-    const id = payload.id;
     const user = await prisma.user.findUnique(
-      { where: { id } ,
+      { where: { id: auth.userId } ,
       select :{  password: true }}
     );
 
@@ -34,11 +29,12 @@ export async function POST(req) {
 
     const hashed = await bcrypt.hash(newPassword, 10);
     await prisma.user.update({
-      where: { id },
+      where: { id: auth.userId },
       data: { password: hashed },
     });
 
-    return NextResponse.json({ message: "Password updated successfully" }, { status: 200 });
+    const response = NextResponse.json({ message: "Password updated successfully" }, { status: 200 });
+    return appendSetCookieHeaders(response, auth.cookieHeaders);
 
   } catch (error) {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

@@ -1,38 +1,128 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import MinimalistTemplate from "@/app/templates/single-column";
+import SidebarEleganceTemplate from "@/app/templates/two-column";
+import TimelineProTemplate from "@/app/templates/timeline";
+import PremiumSingleColumnResume from "@/app/templates/premium-single-column";
+import PremiumTwoColumnTemplate from "@/app/templates/premium-two-column";
+import AtsClassicTemplate from "@/app/templates/ats-classic";
+import ExecutiveEdgeTemplate from "@/app/templates/executive-edge";
+import ImpactGridTemplate from "@/app/templates/impact-grid";
+import CompactProTemplate from "@/app/templates/compact-pro";
+
+const SAMPLE_DATA = {
+  personalInfo: {
+    name: "Alexandra Morgan",
+    email: "alex.morgan@email.com",
+    phone: "+1 (555) 234-5678",
+    linkedin: "https://linkedin.com/in/alexmorgan",
+    github: "https://github.com/alexmorgan",
+    portfolio: "https://alexmorgan.dev",
+  },
+  appliedJob: "Senior Software Engineer",
+  summary:
+    "Results-driven software engineer with 6+ years building scalable web applications. Specialized in React, Node.js, and cloud infrastructure. Led teams delivering products used by 500K+ users.",
+  skills:
+    "Programming: JavaScript, TypeScript, Python\nFrameworks: React, Next.js, Node.js\nDatabases: PostgreSQL, MongoDB, Redis\nCloud: AWS, Docker, Kubernetes",
+  education: "B.S. Computer Science\nState University, 2018\nGPA: 3.8/4.0",
+  experience: [
+    {
+      role: "Senior Frontend Engineer",
+      company: "TechCorp Inc.",
+      duration: "2021 – Present",
+      description:
+        "• Led development of React dashboard serving 200K daily active users\n• Reduced page load time by 45% through code splitting and lazy loading\n• Mentored 4 junior engineers and established frontend coding standards",
+    },
+    {
+      role: "Software Engineer",
+      company: "StartupXYZ",
+      duration: "2019 – 2021",
+      description:
+        "• Built RESTful APIs handling 10M+ requests/day using Node.js\n• Migrated legacy codebase to TypeScript, reducing runtime errors by 60%",
+    },
+  ],
+  projects: [
+    {
+      name: "DevPortfolio — Open Source Portfolio Builder",
+      description:
+        "• Built with Next.js, TypeScript, and Tailwind CSS\n• 2,400+ GitHub stars; used by developers in 40+ countries\n• Automated deployment via GitHub Actions CI/CD pipeline",
+      link: "https://github.com/alexmorgan/devportfolio",
+    },
+  ],
+  achievements:
+    "• AWS Certified Solutions Architect (2022)\n• Engineering Excellence Award, TechCorp 2023\n• Speaker at ReactConf 2022",
+  interests: "Open source contribution, technical writing, rock climbing",
+};
+
+function TemplatePreview({ Component }) {
+  const SCALE = 0.42;
+  return (
+    <div
+      className="w-full overflow-hidden bg-white border-b border-gray-100"
+      style={{ height: "300px", position: "relative" }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: "50%",
+          transform: `translateX(-50%) scale(${SCALE})`,
+          transformOrigin: "top center",
+          width: "900px",
+          pointerEvents: "none",
+          userSelect: "none",
+        }}
+      >
+        <Component />
+      </div>
+    </div>
+  );
+}
 
 export default function Dashboard() {
   const [mounted, setMounted] = useState(false);
   const [credits, setCredits] = useState(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const originalDataRef = useRef(null);
+  const previewSetupRef = useRef(false);
 
-  // Run on client mount
   useEffect(() => {
     setMounted(true);
     checkAuth();
   }, []);
 
-  // Check authentication and fetch credits
+  // Restore original localStorage data when leaving dashboard
+  useEffect(() => {
+    return () => {
+      if (previewSetupRef.current) {
+        if (originalDataRef.current !== null) {
+          localStorage.setItem("resumeFormData", originalDataRef.current);
+        } else {
+          localStorage.removeItem("resumeFormData");
+        }
+      }
+    };
+  }, []);
+
   const checkAuth = async () => {
     try {
       const res = await fetch("/api/user/credits", {
         method: "GET",
-        credentials: "include", // send HttpOnly cookie
+        credentials: "include",
       });
 
       const data = await res.json();
       setCredits(data.credits);
       if (!res.ok) {
-        router.push("/login"); // redirect if not logged in
+        router.push("/login");
         return;
       }
-      
     } catch (err) {
       router.push("/login");
     } finally {
@@ -42,13 +132,26 @@ export default function Dashboard() {
 
   if (!mounted || loading) return null;
 
+  // Store sample data in ResumePreviewData (dedicated preview key, never touches real user data)
+  // Then temporarily copy it into resumeFormData so templates can render — restored on unmount
+  if (!previewSetupRef.current) {
+    localStorage.setItem("ResumePreviewData", JSON.stringify(SAMPLE_DATA));
+    originalDataRef.current = localStorage.getItem("resumeFormData");
+    localStorage.setItem("resumeFormData", localStorage.getItem("ResumePreviewData"));
+    previewSetupRef.current = true;
+  }
+
   // Templates
   const allTemplates = [
-    { name: "Minimalist", slug: "minimalist", image: "/Demo1.jpg", description: "Clean, single-column layout with a modern look." },
-    { name: "Sidebar Elegance", slug: "sidebar-elegance", image: "/Demo2.png", description: "Two-column layout with sidebar for key info." },
-    { name: "Chronical Classic", slug: "timeline", image: "/Demo3.png", description: "Chronological timeline layout that flows through your experience — showing you’ve been legit since day one." },
-    { name: "Professional Pro Template", slug: "premium-single-column", image: "/Demo4.png", description: "Professional single-column layout with clean section dividers, perfect for ATS systems." },
-    { name: "Premium Professional", slug: "premium-two-column", image: "/Demo5.png", description: "Premium two-column layout with elegant design and clear sectioning, ideal for showcasing your skills and experience." },
+    { name: "Classic Professional", slug: "minimalist", Component: MinimalistTemplate, description: "Clean, single-column layout with a timeless professional presentation." },
+    { name: "Executive Sidebar", slug: "sidebar-elegance", Component: SidebarEleganceTemplate, description: "Structured two-column design with a polished side panel for key details." },
+    { name: "Career Timeline", slug: "timeline", Component: TimelineProTemplate, description: "Chronological timeline layout designed to present career progression with clarity and authority." },
+    { name: "Professional Elite", slug: "premium-single-column", Component: PremiumSingleColumnResume, description: "Refined single-column format with disciplined spacing and strong ATS performance." },
+    { name: "Apex One", slug: "premium-two-column", Component: PremiumTwoColumnTemplate, description: "Balanced two-column layout with an executive tone and clean readability." },
+    { name: "ATS Classic", slug: "ats-classic", Component: AtsClassicTemplate, description: "Bold single-column structure with crisp section headers designed for excellent ATS parsing." },
+    { name: "Executive Edge", slug: "executive-edge", Component: ExecutiveEdgeTemplate, description: "Executive style with a focused side panel for skills, education, and key achievements." },
+    { name: "Impact Grid", slug: "impact-grid", Component: ImpactGridTemplate, description: "Balanced grid layout that surfaces summary, skills, and impact sections without sacrificing ATS compatibility." },
+    { name: "Compact Pro", slug: "compact-pro", Component: CompactProTemplate, description: "High-density one-page resume layout optimized for experienced candidates and recruiter quick scans." },
   ];
 
   // Tips
@@ -62,11 +165,11 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Navbar />
+    <div className="min-h-screen bg-gray-50 flex flex-col pt-16">
+      <Navbar fixed />
 
       {/* Hero Section */}
-      <main className="flex-grow">
+      <main className="grow">
         <section className="text-center px-4 sm:px-6 pt-12 pb-8">
           <h1 className="text-4xl sm:text-5xl font-extrabold text-black leading-tight mb-4">
             Build Your Job-Winning Resume with <span className="text-black">CORE</span><span className="text-yellow-400">sume</span>
@@ -85,12 +188,12 @@ export default function Dashboard() {
         <section className="max-w-6xl mx-auto px-4 pb-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {allTemplates.map((template, index) => (
-              <div key={index} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300 border border-gray-200">
-                <img src={template.image} alt={`${template.name} Resume`} className="w-full object-contain bg-gray-50" style={{ maxHeight: "400px" }} />
-                <div className="p-6">
+              <div key={index} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300 border border-gray-200 flex flex-col h-full">
+                <TemplatePreview Component={template.Component} />
+                <div className="p-6 flex flex-col grow">
                   <h3 className="text-xl font-semibold mb-2 text-black">{template.name}</h3>
-                  <p className="text-gray-600 mb-4">{template.description}</p>
-                  <Link href={`/resume-form?template=${template.slug}`} className="block w-full text-center py-3 bg-yellow-400 text-black rounded-lg hover:bg-yellow-500 transition font-medium">
+                  <p className="text-gray-600 mb-4 grow">{template.description}</p>
+                  <Link href={`/resume-form?template=${template.slug}`} className="block w-full text-center py-3 bg-yellow-400 text-black rounded-lg hover:bg-yellow-500 transition font-medium mt-auto">
                     Use This Template
                   </Link>
                 </div>

@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "../../../generated/prisma";
+import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import { serialize } from "cookie";
-import jwt from "jsonwebtoken";
-
-const prisma = new PrismaClient();
+import { createSession } from "@/lib/auth/session";
+import { appendSetCookieHeaders } from "@/lib/auth/token";
 
 export async function POST(req) {
   try {
@@ -41,23 +39,9 @@ export async function POST(req) {
       },
     });
 
-    // Create JWT token
-    const payload = { id: user.id, email: user.email };
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
-
-    // Set cookie
-    const cookieString = serialize("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 3600, // 1 hour
-      path: "/",
-      sameSite: "lax",
-    });
-
-    return NextResponse.json(
-      { message: "Signup successful" },
-      { status: 200, headers: { "Set-Cookie": cookieString } }
-    );
+    const session = await createSession({ id: user.id, email: user.email });
+    const response = NextResponse.json({ message: "Signup successful" }, { status: 200 });
+    return appendSetCookieHeaders(response, session.cookieHeaders);
   } catch (error) {
     return NextResponse.json(
       { error: "Something went wrong", details: error.message },

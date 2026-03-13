@@ -31,6 +31,12 @@ function ResumeForm() {
   const [template, setTemplate] = useState("single-column");
   const [credits, setCredits] = useState(null);
   const isInitialLoad = useRef(true);
+  const [leftPercent, setLeftPercent] = useState(55);
+  const isDragging = useRef(false);
+  const containerRef = useRef(null);
+  const [previewScale, setPreviewScale] = useState(0.5);
+  const [previewKey, setPreviewKey] = useState(0);
+  const previewContainerRef = useRef(null);
 
   // Warning popup state
   const [showWarning, setShowWarning] = useState(false);
@@ -55,6 +61,42 @@ function ResumeForm() {
     const t = setTimeout(() => setShowErrorToast(false), 5000);
     return () => clearTimeout(t);
   }, [showErrorToast]);
+
+  // Drag-to-resize pane width
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isDragging.current || !containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const pct = Math.min(Math.max((x / rect.width) * 100, 25), 75);
+      setLeftPercent(pct);
+    };
+    const handleMouseUp = () => { isDragging.current = false; };
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, []);
+
+  // Auto-fit template preview to container width
+  useEffect(() => {
+    const el = previewContainerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      const w = entry.contentRect.width;
+      setPreviewScale(Math.round((w / 794) * 1000) / 1000);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // Debounce form changes → re-mount template preview (reads from localStorage)
+  useEffect(() => {
+    const t = setTimeout(() => setPreviewKey((k) => k + 1), 400);
+    return () => clearTimeout(t);
+  }, [form]);
 
   // ... (existing code) ...
 
@@ -328,13 +370,15 @@ function ResumeForm() {
     }
   };
 
+  const activeTemplate = templates.find((t) => t.slug === template);
+  const LiveTemplateComponent = activeTemplate?.component;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
-      <Navbar />
-      <div className="max-w-4xl mx-auto p-6 space-y-8">
-        {/* Error Toast */}
+    <div className="h-screen overflow-hidden flex flex-col bg-gray-50 pt-16">
+      <Navbar fixed />
+      {/* Error Toast */}
         {showErrorToast && (
-          <div className="fixed top-4 right-4 bg-white text-red-600 px-6 py-4 rounded-xl shadow-2xl border border-red-100 z-50 flex flex-col gap-2 min-w-[300px] animate-in slide-in-from-right-10 fade-in duration-300">
+          <div className="fixed top-4 right-4 bg-white text-red-600 px-6 py-4 rounded-xl shadow-2xl border border-red-100 z-50 flex flex-col gap-2 min-w-75 animate-in slide-in-from-right-10 fade-in duration-300">
             <div className="flex items-center gap-3">
               <div className="bg-red-100 p-2 rounded-full">
                 <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
@@ -346,7 +390,7 @@ function ResumeForm() {
             </div>
             {/* Loader Bar */}
             <div className="w-full bg-red-100 h-1 rounded-full overflow-hidden mt-1">
-              <div className="h-full bg-red-500 transition-all duration-[5000ms] ease-linear w-0" style={{ width: showErrorToast ? '0%' : '100%', animation: 'progress 5s linear forwards' }}></div>
+              <div className="h-full bg-red-500 transition-all duration-5000 ease-linear w-0" style={{ width: showErrorToast ? '0%' : '100%', animation: 'progress 5s linear forwards' }}></div>
               <style jsx>{`
                 @keyframes progress {
                   from { width: 100%; }
@@ -359,13 +403,13 @@ function ResumeForm() {
 
         {/* Toast for insufficient credits */}
         {showToast && (
-          <div className="fixed top-4 right-4 bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-3 rounded-xl shadow-lg border border-red-400 z-50">
+          <div className="fixed top-4 right-4 bg-linear-to-r from-red-500 to-red-600 text-white px-6 py-3 rounded-xl shadow-lg border border-red-400 z-50">
             <p className="font-semibold">Insufficient Credits!</p>
             <p className="text-sm">Redirecting to pricing page...</p>
           </div>
         )}
         {showToastRequired && (
-          <div className="fixed top-4 right-4 bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-3 rounded-xl shadow-lg border border-red-400 z-50">
+          <div className="fixed top-4 right-4 bg-linear-to-r from-red-500 to-red-600 text-white px-6 py-3 rounded-xl shadow-lg border border-red-400 z-50">
             <p className="font-semibold">Job role and exp level are needed</p>
           </div>
         )}
@@ -399,7 +443,7 @@ function ResumeForm() {
                 </button>
                 <button
                   onClick={handleWarningConfirm}
-                  className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black rounded-xl hover:from-yellow-600 hover:to-yellow-700 font-semibold transition-all duration-200 shadow-lg"
+                  className="px-6 py-3 bg-linear-to-r from-yellow-500 to-yellow-600 text-black rounded-xl hover:from-yellow-600 hover:to-yellow-700 font-semibold transition-all duration-200 shadow-lg"
                 >
                   Confirm
                 </button>
@@ -408,8 +452,13 @@ function ResumeForm() {
           </div>
         )}
 
-        {/* Header Section */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+      {/* Split layout: Form (left) | Drag handle | Live Preview (right) */}
+      <div ref={containerRef} className="flex-1 flex overflow-hidden" style={{userSelect: isDragging.current ? 'none' : 'auto'}}>
+        {/* LEFT: scrollable form pane */}
+        <div style={{width: `${leftPercent}%`}} className="overflow-y-auto shrink-0 min-w-0">
+          <div className="p-6 space-y-8">
+            {/* Header Section */}
+            <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
           <div className="flex justify-between items-center mb-6">
             <div>
               <h1 className="text-3xl font-bold text-black mb-2">
@@ -422,7 +471,7 @@ function ResumeForm() {
             <div className="flex gap-3">
               <button
                 onClick={() => router.push("/dashboard")}
-                className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-black px-6 py-3 rounded-xl hover:from-yellow-600 hover:to-yellow-700 font-bold transition-all duration-200 shadow-md hover:shadow-lg"
+                className="bg-linear-to-r from-yellow-500 to-yellow-600 text-black px-6 py-3 rounded-xl hover:from-yellow-600 hover:to-yellow-700 font-bold transition-all duration-200 shadow-md hover:shadow-lg"
               >
                 Dashboard
               </button>
@@ -435,11 +484,11 @@ function ResumeForm() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 bg-gradient-to-r from-yellow-50 to-yellow-100 p-4 rounded-xl border border-yellow-200">
+          <div className="flex items-center gap-3 bg-linear-to-r from-yellow-50 to-yellow-100 p-4 rounded-xl border border-yellow-200">
             <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
             <p className="text-black">
               Template:{" "}
-              <strong className="text-yellow-600">{template}</strong>
+              <strong className="text-yellow-600">{activeTemplate?.name || template}</strong>
             </p>
           </div>
         </div>
@@ -487,7 +536,7 @@ function ResumeForm() {
         </div>
 
         {/* AI Input Suggestions Section */}
-        <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-2xl shadow-lg p-8 border border-yellow-200">
+        <div className="bg-linear-to-r from-yellow-50 to-yellow-100 rounded-2xl shadow-lg p-8 border border-yellow-200">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
               <svg
@@ -582,7 +631,7 @@ function ResumeForm() {
                 const experienceLevel = form.experienceLevel || "";
                 handleAISuggestion("summary", { jobRole, experienceLevel });
               }}
-              className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-black px-4 py-2 rounded-xl font-bold transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2 hover:from-yellow-600 hover:to-yellow-700"
+              className="bg-linear-to-r from-yellow-500 to-yellow-600 text-black px-4 py-2 rounded-xl font-bold transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2 hover:from-yellow-600 hover:to-yellow-700"
             >
               <svg
                 className="w-4 h-4"
@@ -649,18 +698,9 @@ function ResumeForm() {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
-                <svg
-                  className="w-4 h-4 text-black"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
-                  />
+                <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18" />
                 </svg>
               </div>
               <h2 className="text-2xl font-bold text-black">Skills</h2>
@@ -671,7 +711,7 @@ function ResumeForm() {
                 const experienceLevel = form.experienceLevel || "";
                 handleAISuggestion("skills", { jobRole, experienceLevel });
               }}
-              className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-black px-4 py-2 rounded-xl font-bold transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2 hover:from-yellow-600 hover:to-yellow-700"
+              className="bg-linear-to-r from-yellow-500 to-yellow-600 text-black px-4 py-2 rounded-xl font-bold transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2 hover:from-yellow-600 hover:to-yellow-700"
             >
               <svg
                 className="w-4 h-4"
@@ -703,24 +743,21 @@ function ResumeForm() {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
-                <svg
-                  className="w-4 h-4 text-black"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2V8a2 2 0 012-2V6" />
+                <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" />
+                  <line strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} x1="12" y1="12" x2="12" y2="12" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M2 13h20" />
                 </svg>
               </div>
               <h2 className="text-2xl font-bold text-black">Work Experience</h2>
             </div>
             <button
               onClick={addExperience}
-              className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-black px-4 py-2 rounded-xl hover:from-yellow-600 hover:to-yellow-700 font-bold transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2"
+              className="bg-linear-to-r from-yellow-500 to-yellow-600 text-black px-4 py-2 rounded-xl hover:from-yellow-600 hover:to-yellow-700 font-bold transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2"
             >
               <svg
                 className="w-4 h-4"
@@ -831,7 +868,7 @@ function ResumeForm() {
                         path: `experience.${index}.description`,
                       });
                     }}
-                    className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-black px-3 py-1 rounded-lg hover:from-yellow-600 hover:to-yellow-700 text-sm font-bold transition-all duration-200 flex items-center gap-1"
+                    className="bg-linear-to-r from-yellow-500 to-yellow-600 text-black px-3 py-1 rounded-lg hover:from-yellow-600 hover:to-yellow-700 text-sm font-bold transition-all duration-200 flex items-center gap-1"
                   >
                     <svg
                       className="w-3 h-3"
@@ -866,24 +903,16 @@ function ResumeForm() {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
-                <svg
-                  className="w-4 h-4 text-black"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
                 </svg>
               </div>
               <h2 className="text-2xl font-bold text-black">Projects</h2>
             </div>
             <button
               onClick={addProject}
-              className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-black px-4 py-2 rounded-xl hover:from-yellow-600 hover:to-yellow-700 font-bold transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2"
+              className="bg-linear-to-r from-yellow-500 to-yellow-600 text-black px-4 py-2 rounded-xl hover:from-yellow-600 hover:to-yellow-700 font-bold transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2"
             >
               <svg
                 className="w-4 h-4"
@@ -986,7 +1015,7 @@ function ResumeForm() {
                           path: `projects.${index}.description`,
                         });
                       }}
-                      className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-black px-3 py-1 rounded-lg hover:from-yellow-600 hover:to-yellow-700 text-sm font-bold transition-all duration-200 flex items-center gap-1"
+                      className="bg-linear-to-r from-yellow-500 to-yellow-600 text-black px-3 py-1 rounded-lg hover:from-yellow-600 hover:to-yellow-700 text-sm font-bold transition-all duration-200 flex items-center gap-1"
                     >
                       <svg
                         className="w-3 h-3"
@@ -1026,7 +1055,7 @@ function ResumeForm() {
                           path: `projects.${index}.description`,
                         });
                       }}
-                      className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-black px-3 py-1 rounded-lg hover:from-yellow-600 hover:to-yellow-700 text-sm font-bold transition-all duration-200 flex items-center gap-1"
+                      className="bg-linear-to-r from-yellow-500 to-yellow-600 text-black px-3 py-1 rounded-lg hover:from-yellow-600 hover:to-yellow-700 text-sm font-bold transition-all duration-200 flex items-center gap-1"
                     >
                       <svg
                         className="w-3 h-3"
@@ -1122,10 +1151,39 @@ function ResumeForm() {
         <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
           <button
             onClick={handleSubmit}
-            className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-black py-4 rounded-xl hover:from-yellow-600 hover:to-yellow-700 font-bold text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+            className="w-full bg-linear-to-r from-yellow-500 to-yellow-600 text-black py-4 rounded-xl hover:from-yellow-600 hover:to-yellow-700 font-bold text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
           >
             🚀 Generate Your Resume
           </button>
+        </div>
+          </div>
+        </div>
+
+        {/* Drag handle */}
+        <div
+          className="w-1.5 bg-gray-300 hover:bg-yellow-400 cursor-col-resize shrink-0 transition-colors flex items-center justify-center group"
+          onMouseDown={(e) => { isDragging.current = true; e.preventDefault(); }}
+        >
+          <div className="w-0.5 h-20 bg-gray-500 group-hover:bg-yellow-600 rounded-full transition-colors" />
+        </div>
+
+        {/* RIGHT: actual template live preview pane */}
+        <div className="flex-1 overflow-y-auto bg-gray-200 min-w-0">
+          <div className="p-4 space-y-3">
+            <div className="flex items-center justify-between bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-2.5">
+              <h3 className="text-sm font-bold text-black">📄 Live Preview — <span className="text-yellow-600">{activeTemplate?.name || template}</span></h3>
+              <span className="text-xs text-gray-600 font-medium">Auto-updates while you type</span>
+            </div>
+            <div ref={previewContainerRef} className="w-full overflow-hidden rounded-xl shadow-lg border border-gray-300 bg-white">
+              {LiveTemplateComponent ? (
+                <div style={{ zoom: previewScale }}>
+                  <LiveTemplateComponent key={previewKey} />
+                </div>
+              ) : (
+                <div className="p-10 text-center text-gray-400 text-sm">Select a template to preview</div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

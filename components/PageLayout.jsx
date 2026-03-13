@@ -8,7 +8,7 @@ export default function PageLayout({ children, title }) {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <div className="max-w-4xl mx-auto w-full px-4 py-8">
+      <div className="max-w-7xl mx-auto w-full px-6 py-8">
         <button
           onClick={() => router.back()}
           className="flex items-center text-gray-600 hover:text-yellow-500 transition mb-8"

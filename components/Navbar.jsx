@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { FiRefreshCw } from "react-icons/fi"; // Refresh icon
 
-export default function Navbar() {
+export default function Navbar({ fixed = false }) {
   const [credits, setCredits] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -41,7 +41,11 @@ export default function Navbar() {
   };
 
   return (
-    <header className="w-full bg-white border-b border-gray-200">
+    <header
+      className={`w-full bg-white border-b border-gray-200 ${
+        fixed ? "fixed top-0 left-0 right-0 z-40" : ""
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
         {/* Logo */}
         <Link href="/dashboard" className="text-xl font-bold tracking-tight">

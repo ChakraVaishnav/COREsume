@@ -7,6 +7,11 @@ import TwoColumnTemplate from '../templates/two-column';
 import TimelineTemplate from '../templates/timeline';
 import PremiumSingleColumnResume from '../templates/premium-single-column';
 import PremiumTwoColumnTemplate from '../templates/premium-two-column';
+import AtsClassicTemplate from '../templates/ats-classic';
+import ExecutiveEdgeTemplate from '../templates/executive-edge';
+import ImpactGridTemplate from '../templates/impact-grid';
+import CompactProTemplate from '../templates/compact-pro';
+import { templates } from '../utils/template';
 import Navbar from "@/components/Navbar";
 
 export default function ResumePreview() {
@@ -101,19 +106,28 @@ export default function ResumePreview() {
           : resumeData?.template === 'premium-single-column'
             ? PremiumSingleColumnResume
             : resumeData?.template === 'premium-two-column'
-            ? PremiumTwoColumnTemplate
-            : SingleColumnTemplate;
+              ? PremiumTwoColumnTemplate
+              : resumeData?.template === 'ats-classic'
+                ? AtsClassicTemplate
+                : resumeData?.template === 'executive-edge'
+                  ? ExecutiveEdgeTemplate
+                  : resumeData?.template === 'impact-grid'
+                    ? ImpactGridTemplate
+                    : resumeData?.template === 'compact-pro'
+                      ? CompactProTemplate
+                      : SingleColumnTemplate;
+  const activeTemplate = templates.find((template) => template.slug === resumeData?.template);
 
   if (loading) return <div className="flex justify-center items-center min-h-screen text-black">Loading...</div>;
   if (error) return <div className="flex justify-center items-center min-h-screen text-red-500">{error}</div>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 flex flex-col pt-16 print:pt-0">
       <div className="print:hidden">
-        <Navbar />
+        <Navbar fixed />
       </div>
 
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-8 print:p-0">
+      <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 p-8 print:p-0">
 
         {/* Controls */}
         <div className="max-w-4xl mx-auto mb-8 print:hidden">
@@ -121,7 +135,7 @@ export default function ResumePreview() {
             <div className="flex justify-between items-center">
               <button
                 onClick={() => router.push('/resume-form')}
-                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-gray-100 to-gray-200 text-black border-2 border-gray-300 rounded-xl hover:from-gray-200 hover:to-gray-300 font-semibold transition-all duration-200 shadow-md"
+                className="flex items-center gap-2 px-6 py-3 bg-linear-to-r from-gray-100 to-gray-200 text-black border-2 border-gray-300 rounded-xl hover:from-gray-200 hover:to-gray-300 font-semibold transition-all duration-200 shadow-md"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -130,12 +144,12 @@ export default function ResumePreview() {
               </button>
               
               <div className="text-center">
-                <p className="text-sm text-gray-600">Estimated resume pages: <span className="font-bold text-black">{pageCount}</span></p>
+                <p className="text-sm text-gray-600">{activeTemplate?.name || "Resume Preview"} • Pages: <span className="font-bold text-black">{pageCount}</span></p>
               </div>
 
               <button
                 onClick={handleDownload}
-                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black border-2 border-yellow-400 rounded-xl hover:from-yellow-600 hover:to-yellow-700 font-semibold transition-all duration-200 shadow-lg"
+                className="flex items-center gap-2 px-6 py-3 bg-linear-to-r from-yellow-500 to-yellow-600 text-black border-2 border-yellow-400 rounded-xl hover:from-yellow-600 hover:to-yellow-700 font-semibold transition-all duration-200 shadow-lg"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
