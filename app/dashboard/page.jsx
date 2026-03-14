@@ -165,12 +165,12 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col pt-16">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar fixed />
 
       {/* Hero Section */}
-      <main className="grow">
-        <section className="text-center px-4 sm:px-6 pt-12 pb-8">
+      <main className="grow pt-16">
+        <section className="text-center px-4 sm:px-6 pt-4 sm:pt-8 pb-8">
           <h1 className="text-4xl sm:text-5xl font-extrabold text-black leading-tight mb-4">
             Build Your Job-Winning Resume with <span className="text-black">CORE</span><span className="text-yellow-400">sume</span>
           </h1>
@@ -180,7 +180,7 @@ export default function Dashboard() {
         </section>
 
         {/* Templates Section */}
-        <section className="text-center py-8">
+        <section className="text-center py-6">
           <h2 className="text-3xl font-bold text-black mb-4">Choose Your Resume Template ✨</h2>
           <p className="text-gray-600 max-w-2xl mx-auto">Start free or unlock premium polished designs — all ATS friendly.</p>
         </section>

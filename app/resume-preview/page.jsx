@@ -122,34 +122,33 @@ export default function ResumePreview() {
   if (error) return <div className="flex justify-center items-center min-h-screen text-red-500">{error}</div>;
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 flex flex-col pt-16 print:pt-0">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 flex flex-col print:pt-0">
       <div className="print:hidden">
         <Navbar fixed />
       </div>
 
-      <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 p-8 print:p-0">
-
+      <main className="flex-1 pt-16 px-3 sm:px-6 lg:px-8 pb-6 sm:pb-10 print:p-0">
         {/* Controls */}
-        <div className="max-w-4xl mx-auto mb-8 print:hidden">
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-            <div className="flex justify-between items-center">
+        <div className="max-w-4xl mx-auto mt-3 sm:mt-6 mb-4 sm:mb-8 print:hidden">
+          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-100">
+            <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center md:justify-between">
               <button
                 onClick={() => router.push('/resume-form')}
-                className="flex items-center gap-2 px-6 py-3 bg-linear-to-r from-gray-100 to-gray-200 text-black border-2 border-gray-300 rounded-xl hover:from-gray-200 hover:to-gray-300 font-semibold transition-all duration-200 shadow-md"
+                className="w-full md:w-auto justify-center flex items-center gap-2 px-5 py-3 bg-linear-to-r from-gray-100 to-gray-200 text-black border-2 border-gray-300 rounded-xl hover:from-gray-200 hover:to-gray-300 font-semibold transition-all duration-200 shadow-md"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
                 Back to Form
               </button>
-              
-              <div className="text-center">
+
+              <div className="text-center order-first md:order-none">
                 <p className="text-sm text-gray-600">{activeTemplate?.name || "Resume Preview"} • Pages: <span className="font-bold text-black">{pageCount}</span></p>
               </div>
 
               <button
                 onClick={handleDownload}
-                className="flex items-center gap-2 px-6 py-3 bg-linear-to-r from-yellow-500 to-yellow-600 text-black border-2 border-yellow-400 rounded-xl hover:from-yellow-600 hover:to-yellow-700 font-semibold transition-all duration-200 shadow-lg"
+                className="w-full md:w-auto justify-center flex items-center gap-2 px-5 py-3 bg-linear-to-r from-yellow-500 to-yellow-600 text-black border-2 border-yellow-400 rounded-xl hover:from-yellow-600 hover:to-yellow-700 font-semibold transition-all duration-200 shadow-lg"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -162,11 +161,11 @@ export default function ResumePreview() {
 
         {/* Resume Preview */}
         <div className="max-w-4xl mx-auto">
-          <div id="resume-container" className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8 print:shadow-none print:p-0 print:border-0 print:rounded-none">
+          <div id="resume-container" className="bg-white rounded-2xl shadow-xl border border-gray-200 p-3 sm:p-8 print:shadow-none print:p-0 print:border-0 print:rounded-none">
             <TemplateComponent />
           </div>
         </div>
-      </div>
+      </main>
       {/* Rating Modal */}
       {showRating && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-40">

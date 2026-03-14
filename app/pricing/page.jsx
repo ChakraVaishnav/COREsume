@@ -151,9 +151,9 @@ export default function Pricing() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
+      <Navbar fixed />
 
-      <div className="max-w-6xl mx-auto px-4 py-12">
+      <div className="max-w-6xl mx-auto px-4 pt-20 pb-12">
         <Link
           href="/dashboard"
           className="inline-block mb-6 text-yellow-500 font-medium hover:underline"

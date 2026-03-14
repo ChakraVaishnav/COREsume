@@ -34,6 +34,8 @@ function ResumeForm() {
   const [leftPercent, setLeftPercent] = useState(55);
   const isDragging = useRef(false);
   const containerRef = useRef(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [mobileView, setMobileView] = useState("edit");
   const [previewScale, setPreviewScale] = useState(0.5);
   const [previewKey, setPreviewKey] = useState(0);
   const previewContainerRef = useRef(null);
@@ -65,6 +67,7 @@ function ResumeForm() {
   // Drag-to-resize pane width
   useEffect(() => {
     const handleMouseMove = (e) => {
+      if (isMobile) return;
       if (!isDragging.current || !containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
       const x = e.clientX - rect.left;
@@ -78,6 +81,20 @@ function ResumeForm() {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
+  }, [isMobile]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (!mobile) {
+        setMobileView("edit");
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   // Auto-fit template preview to container width
@@ -374,7 +391,7 @@ function ResumeForm() {
   const LiveTemplateComponent = activeTemplate?.component;
 
   return (
-    <div className="h-screen overflow-hidden flex flex-col bg-gray-50 pt-16">
+    <div className="h-screen overflow-hidden flex flex-col bg-gray-50">
       <Navbar fixed />
       {/* Error Toast */}
         {showErrorToast && (
@@ -453,13 +470,16 @@ function ResumeForm() {
         )}
 
       {/* Split layout: Form (left) | Drag handle | Live Preview (right) */}
-      <div ref={containerRef} className="flex-1 flex overflow-hidden" style={{userSelect: isDragging.current ? 'none' : 'auto'}}>
+      <div ref={containerRef} className="flex-1 flex overflow-hidden pt-16" style={{userSelect: isDragging.current ? 'none' : 'auto'}}>
         {/* LEFT: scrollable form pane */}
-        <div style={{width: `${leftPercent}%`}} className="overflow-y-auto shrink-0 min-w-0">
-          <div className="p-6 space-y-8">
+        <div
+          style={{ width: isMobile ? "100%" : `${leftPercent}%` }}
+          className={`${isMobile && mobileView !== "edit" ? "hidden" : "block"} overflow-y-auto shrink-0 min-w-0`}
+        >
+          <div className="p-4 sm:p-6 space-y-6 sm:space-y-8 pb-28 md:pb-6">
             {/* Header Section */}
-            <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
-          <div className="flex justify-between items-center mb-6">
+            <div className="bg-white rounded-2xl shadow-lg p-5 sm:p-8 border border-gray-100">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
             <div>
               <h1 className="text-3xl font-bold text-black mb-2">
                 Create Your Resume
@@ -468,16 +488,16 @@ function ResumeForm() {
                 Build a professional resume with AI-powered suggestions
               </p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
               <button
                 onClick={() => router.push("/dashboard")}
-                className="bg-linear-to-r from-yellow-500 to-yellow-600 text-black px-6 py-3 rounded-xl hover:from-yellow-600 hover:to-yellow-700 font-bold transition-all duration-200 shadow-md hover:shadow-lg"
+                className="w-full sm:w-auto bg-linear-to-r from-yellow-500 to-yellow-600 text-black px-6 py-3 rounded-xl hover:from-yellow-600 hover:to-yellow-700 font-bold transition-all duration-200 shadow-md hover:shadow-lg"
               >
                 Dashboard
               </button>
               <button
                 onClick={clearForm}
-                className="border-2 border-gray-400 text-gray-700 px-6 py-3 rounded-xl hover:bg-gray-50 font-semibold transition-all duration-200"
+                className="w-full sm:w-auto border-2 border-gray-400 text-gray-700 px-6 py-3 rounded-xl hover:bg-gray-50 font-semibold transition-all duration-200"
               >
                 Clear Form
               </button>
@@ -494,7 +514,7 @@ function ResumeForm() {
         </div>
 
         {/* Personal Info Section */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+        <div className="bg-white rounded-2xl shadow-lg p-5 sm:p-8 border border-gray-100">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
               <svg
@@ -536,7 +556,7 @@ function ResumeForm() {
         </div>
 
         {/* AI Input Suggestions Section */}
-        <div className="bg-linear-to-r from-yellow-50 to-yellow-100 rounded-2xl shadow-lg p-8 border border-yellow-200">
+        <div className="bg-linear-to-r from-yellow-50 to-yellow-100 rounded-2xl shadow-lg p-5 sm:p-8 border border-yellow-200">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
               <svg
@@ -596,8 +616,8 @@ function ResumeForm() {
         </div>
 
         {/* Summary Section */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
-          <div className="flex items-center justify-between mb-6">
+        <div className="bg-white rounded-2xl shadow-lg p-5 sm:p-8 border border-gray-100">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
                 <svg
@@ -631,7 +651,7 @@ function ResumeForm() {
                 const experienceLevel = form.experienceLevel || "";
                 handleAISuggestion("summary", { jobRole, experienceLevel });
               }}
-              className="bg-linear-to-r from-yellow-500 to-yellow-600 text-black px-4 py-2 rounded-xl font-bold transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2 hover:from-yellow-600 hover:to-yellow-700"
+              className="w-full sm:w-auto justify-center bg-linear-to-r from-yellow-500 to-yellow-600 text-black px-4 py-2 rounded-xl font-bold transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2 hover:from-yellow-600 hover:to-yellow-700"
             >
               <svg
                 className="w-4 h-4"
@@ -659,7 +679,7 @@ function ResumeForm() {
         </div>
 
         {/* Education Section */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+        <div className="bg-white rounded-2xl shadow-lg p-5 sm:p-8 border border-gray-100">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
               <svg
@@ -694,8 +714,8 @@ function ResumeForm() {
         </div>
 
         {/* Skills Section */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
-          <div className="flex items-center justify-between mb-6">
+        <div className="bg-white rounded-2xl shadow-lg p-5 sm:p-8 border border-gray-100">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
                 <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -711,7 +731,7 @@ function ResumeForm() {
                 const experienceLevel = form.experienceLevel || "";
                 handleAISuggestion("skills", { jobRole, experienceLevel });
               }}
-              className="bg-linear-to-r from-yellow-500 to-yellow-600 text-black px-4 py-2 rounded-xl font-bold transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2 hover:from-yellow-600 hover:to-yellow-700"
+              className="w-full sm:w-auto justify-center bg-linear-to-r from-yellow-500 to-yellow-600 text-black px-4 py-2 rounded-xl font-bold transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2 hover:from-yellow-600 hover:to-yellow-700"
             >
               <svg
                 className="w-4 h-4"
@@ -739,8 +759,8 @@ function ResumeForm() {
         </div>
 
         {/* Experience Section */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
-          <div className="flex items-center justify-between mb-6">
+        <div className="bg-white rounded-2xl shadow-lg p-5 sm:p-8 border border-gray-100">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
                 <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -757,7 +777,7 @@ function ResumeForm() {
             </div>
             <button
               onClick={addExperience}
-              className="bg-linear-to-r from-yellow-500 to-yellow-600 text-black px-4 py-2 rounded-xl hover:from-yellow-600 hover:to-yellow-700 font-bold transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2"
+              className="w-full sm:w-auto justify-center bg-linear-to-r from-yellow-500 to-yellow-600 text-black px-4 py-2 rounded-xl hover:from-yellow-600 hover:to-yellow-700 font-bold transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2"
             >
               <svg
                 className="w-4 h-4"
@@ -781,7 +801,7 @@ function ResumeForm() {
               key={index}
               className="bg-gray-50 rounded-xl p-6 mb-6 border border-gray-200"
             >
-              <div className="flex justify-between items-center mb-4">
+              <div className="flex justify-between items-start sm:items-center mb-4 gap-2">
                 <h3 className="text-lg font-semibold text-black">
                   Experience {index + 1}
                 </h3>
@@ -842,7 +862,7 @@ function ResumeForm() {
               </div>
 
               <div className="space-y-2">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                   <label className="text-sm font-semibold text-black">
                     Description
                   </label>
@@ -868,7 +888,7 @@ function ResumeForm() {
                         path: `experience.${index}.description`,
                       });
                     }}
-                    className="bg-linear-to-r from-yellow-500 to-yellow-600 text-black px-3 py-1 rounded-lg hover:from-yellow-600 hover:to-yellow-700 text-sm font-bold transition-all duration-200 flex items-center gap-1"
+                    className="w-full sm:w-auto justify-center bg-linear-to-r from-yellow-500 to-yellow-600 text-black px-3 py-1.5 rounded-lg hover:from-yellow-600 hover:to-yellow-700 text-sm font-bold transition-all duration-200 flex items-center gap-1"
                   >
                     <svg
                       className="w-3 h-3"
@@ -899,8 +919,8 @@ function ResumeForm() {
         </div>
 
         {/* Projects Section */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
-          <div className="flex items-center justify-between mb-6">
+        <div className="bg-white rounded-2xl shadow-lg p-5 sm:p-8 border border-gray-100">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
                 <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -912,7 +932,7 @@ function ResumeForm() {
             </div>
             <button
               onClick={addProject}
-              className="bg-linear-to-r from-yellow-500 to-yellow-600 text-black px-4 py-2 rounded-xl hover:from-yellow-600 hover:to-yellow-700 font-bold transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2"
+              className="w-full sm:w-auto justify-center bg-linear-to-r from-yellow-500 to-yellow-600 text-black px-4 py-2 rounded-xl hover:from-yellow-600 hover:to-yellow-700 font-bold transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2"
             >
               <svg
                 className="w-4 h-4"
@@ -936,7 +956,7 @@ function ResumeForm() {
               key={index}
               className="bg-gray-50 rounded-xl p-6 mb-6 border border-gray-200"
             >
-              <div className="flex justify-between items-center mb-4">
+              <div className="flex justify-between items-start sm:items-center mb-4 gap-2">
                 <h3 className="text-lg font-semibold text-black">
                   Project {index + 1}
                 </h3>
@@ -988,11 +1008,11 @@ function ResumeForm() {
               </div>
 
               <div className="space-y-2">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                   <label className="text-sm font-semibold text-black">
                     Description
                   </label>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                     <button
                       onClick={() => {
                         if (credits <= 0) {
@@ -1015,7 +1035,7 @@ function ResumeForm() {
                           path: `projects.${index}.description`,
                         });
                       }}
-                      className="bg-linear-to-r from-yellow-500 to-yellow-600 text-black px-3 py-1 rounded-lg hover:from-yellow-600 hover:to-yellow-700 text-sm font-bold transition-all duration-200 flex items-center gap-1"
+                      className="w-full sm:w-auto justify-center bg-linear-to-r from-yellow-500 to-yellow-600 text-black px-3 py-1.5 rounded-lg hover:from-yellow-600 hover:to-yellow-700 text-sm font-bold transition-all duration-200 flex items-center gap-1"
                     >
                       <svg
                         className="w-3 h-3"
@@ -1055,7 +1075,7 @@ function ResumeForm() {
                           path: `projects.${index}.description`,
                         });
                       }}
-                      className="bg-linear-to-r from-yellow-500 to-yellow-600 text-black px-3 py-1 rounded-lg hover:from-yellow-600 hover:to-yellow-700 text-sm font-bold transition-all duration-200 flex items-center gap-1"
+                      className="w-full sm:w-auto justify-center bg-linear-to-r from-yellow-500 to-yellow-600 text-black px-3 py-1.5 rounded-lg hover:from-yellow-600 hover:to-yellow-700 text-sm font-bold transition-all duration-200 flex items-center gap-1"
                     >
                       <svg
                         className="w-3 h-3"
@@ -1089,7 +1109,7 @@ function ResumeForm() {
         {/* Additional Sections */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Achievements Section */}
-          <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+          <div className="bg-white rounded-2xl shadow-lg p-5 sm:p-8 border border-gray-100">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
                 <svg
@@ -1118,7 +1138,7 @@ function ResumeForm() {
           </div>
 
           {/* Interests Section */}
-          <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+          <div className="bg-white rounded-2xl shadow-lg p-5 sm:p-8 border border-gray-100">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
                 <svg
@@ -1148,7 +1168,7 @@ function ResumeForm() {
         </div>
 
         {/* Generate Resume Button */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+        <div className="bg-white rounded-2xl shadow-lg p-5 sm:p-8 border border-gray-100">
           <button
             onClick={handleSubmit}
             className="w-full bg-linear-to-r from-yellow-500 to-yellow-600 text-black py-4 rounded-xl hover:from-yellow-600 hover:to-yellow-700 font-bold text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
@@ -1160,18 +1180,20 @@ function ResumeForm() {
         </div>
 
         {/* Drag handle */}
-        <div
-          className="w-1.5 bg-gray-300 hover:bg-yellow-400 cursor-col-resize shrink-0 transition-colors flex items-center justify-center group"
-          onMouseDown={(e) => { isDragging.current = true; e.preventDefault(); }}
-        >
-          <div className="w-0.5 h-20 bg-gray-500 group-hover:bg-yellow-600 rounded-full transition-colors" />
-        </div>
+        {!isMobile && (
+          <div
+            className="w-1.5 bg-gray-300 hover:bg-yellow-400 cursor-col-resize shrink-0 transition-colors flex items-center justify-center group"
+            onMouseDown={(e) => { isDragging.current = true; e.preventDefault(); }}
+          >
+            <div className="w-0.5 h-20 bg-gray-500 group-hover:bg-yellow-600 rounded-full transition-colors" />
+          </div>
+        )}
 
         {/* RIGHT: actual template live preview pane */}
-        <div className="flex-1 overflow-y-auto bg-gray-200 min-w-0">
-          <div className="p-4 space-y-3">
+        <div className={`${isMobile && mobileView !== "preview" ? "hidden" : "block"} flex-1 overflow-y-auto bg-gray-200 min-w-0`}>
+          <div className="p-4 space-y-3 pb-28 md:pb-4">
             <div className="flex items-center justify-between bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-2.5">
-              <h3 className="text-sm font-bold text-black">📄 Live Preview — <span className="text-yellow-600">{activeTemplate?.name || template}</span></h3>
+              <h3 className="text-sm font-bold text-black">📄 Preview — <span className="text-yellow-600">{activeTemplate?.name || template}</span></h3>
               <span className="text-xs text-gray-600 font-medium">Auto-updates while you type</span>
             </div>
             <div ref={previewContainerRef} className="w-full overflow-hidden rounded-xl shadow-lg border border-gray-300 bg-white">
@@ -1186,6 +1208,33 @@ function ResumeForm() {
           </div>
         </div>
       </div>
+
+      {isMobile && (
+        <div className="md:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-white border border-gray-300 rounded-full shadow-lg p-1 flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setMobileView("edit")}
+            className={`px-4 py-2 rounded-full text-sm font-semibold transition ${
+              mobileView === "edit"
+                ? "bg-yellow-500 text-black"
+                : "text-gray-700 hover:bg-gray-100"
+            }`}
+          >
+            Edit
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileView("preview")}
+            className={`px-4 py-2 rounded-full text-sm font-semibold transition ${
+              mobileView === "preview"
+                ? "bg-yellow-500 text-black"
+                : "text-gray-700 hover:bg-gray-100"
+            }`}
+          >
+            Preview
+          </button>
+        </div>
+      )}
     </div>
   );
 }
