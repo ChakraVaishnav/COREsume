@@ -16,8 +16,6 @@ model User {
   password  String
   creds     Int     @default(0)
   unlimited Boolean @default(false)
-  refreshTokenHash      String?
-  refreshTokenExpiresAt DateTime?
   ratings   Rating[]
 }
 

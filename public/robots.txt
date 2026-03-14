@@ -1,9 +1,20 @@
 # *
 User-agent: *
 Allow: /
+Disallow: /login
+Disallow: /signup
+Disallow: /forgot-password
+Disallow: /change-password
+Disallow: /dashboard
+Disallow: /pricing
+Disallow: /profile
+Disallow: /resume-form
+Disallow: /resume-preview
+Disallow: /templates
+Disallow: /api
 
 # Host
-Host: https://coresume.vercel.app
+Host: https://coresume.in
 
 # Sitemaps
-Sitemap: https://coresume.vercel.app/sitemap.xml
+Sitemap: https://coresume.in/sitemap.xml
