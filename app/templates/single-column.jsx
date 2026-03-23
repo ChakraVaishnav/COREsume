@@ -26,7 +26,7 @@ export default function SingleColumnTemplate() {
 
   if (!form) return <p className="text-center p-8 text-sm">Loading resume...</p>;
 
-  const { personalInfo, summary, skills, education, experience, projects, achievements, interests } = form;
+  const { personalInfo, summary, skills, education, experience, projects, achievements, interests, codingProfiles, customSections } = form;
 
   // Helper function to check if a section has content
   const hasContent = (section) => {
@@ -128,7 +128,40 @@ export default function SingleColumnTemplate() {
         </section>
       )}
 
+      {/* Coding Profiles */}
+      {Array.isArray(codingProfiles) && codingProfiles.some(p => p.platform || p.username) && (
+        <section className="mb-2">
+          <h2 className="font-semibold border-b border-gray-300 mb-0.5 uppercase text-[11px]">Coding Profiles</h2>
+          <p>
+            {codingProfiles.filter(p => p.platform || p.username).map((profile, index) => (
+              <span key={index}>
+                {index > 0 && ' | '}
+                {profile.platform && <span className="font-semibold">{profile.platform}: </span>}
+                {profile.link ? (
+                  <a href={profile.link} target="_blank" rel="noopener noreferrer" className="text-black no-underline hover:text-yellow-500 transition">
+                    {profile.username || profile.link}
+                  </a>
+                ) : (
+                  <span>{profile.username}</span>
+                )}
+              </span>
+            ))}
+          </p>
+        </section>
+      )}
+
+      {/* Custom Sections */}
+      {Array.isArray(customSections) && customSections.map((section, index) => (
+        section.title || section.content ? (
+          <section key={index} className="mb-2">
+            <h2 className="font-semibold border-b border-gray-300 mb-0.5 uppercase text-[11px]">{section.title || 'Custom Section'}</h2>
+            <p className="whitespace-pre-line">{section.content}</p>
+          </section>
+        ) : null
+      ))}
+
     </div>
     
   );
     }
+

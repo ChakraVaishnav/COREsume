@@ -29,6 +29,8 @@ export default function TimelineTemplate() {
     projects,
     achievements,
     interests,
+    codingProfiles,
+    customSections,
   } = form;
 
   const hasContent = (section) => {
@@ -155,6 +157,42 @@ export default function TimelineTemplate() {
           </div>
         </section>
       )}
+
+      {/* Coding Profiles */}
+      {Array.isArray(codingProfiles) && codingProfiles.some(p => p.platform || p.username) && (
+        <section className="mb-4">
+          <h2 className="font-bold uppercase text-[13px] mb-1">Coding Profiles</h2>
+          <div className="pl-2 border-l-2 border-black ml-2">
+            <p className="pl-2">
+              {codingProfiles.filter(p => p.platform || p.username).map((profile, index) => (
+                <span key={index}>
+                  {index > 0 && ' | '}
+                  {profile.platform && <span className="font-semibold">{profile.platform}: </span>}
+                  {profile.link ? (
+                    <a href={profile.link} target="_blank" rel="noopener noreferrer" className="text-black no-underline">
+                      {profile.username || profile.link}
+                    </a>
+                  ) : (
+                    <span>{profile.username}</span>
+                  )}
+                </span>
+              ))}
+            </p>
+          </div>
+        </section>
+      )}
+
+      {/* Custom Sections */}
+      {Array.isArray(customSections) && customSections.map((section, index) => (
+        section.title || section.content ? (
+          <section key={index} className="mb-4">
+            <h2 className="font-bold uppercase text-[13px] mb-1">{section.title || 'Custom Section'}</h2>
+            <div className="pl-2 border-l-2 border-black ml-2">
+              <p className="pl-2 whitespace-pre-line">{section.content}</p>
+            </div>
+          </section>
+        ) : null
+      ))}
     </div>
   );
 }

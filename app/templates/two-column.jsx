@@ -26,7 +26,7 @@ export default function TwoColumnTemplate({ data }) {
 
   if (!form) return <p className="text-center p-8 text-sm">Loading resume...</p>;
 
-  const { personalInfo, summary, skills, education, experience, projects, achievements, interests } = form;
+  const { personalInfo, summary, skills, education, experience, projects, achievements, interests, codingProfiles, customSections } = form;
 
   // Helper function to check if a section has content
   const hasContent = (section) => {
@@ -128,6 +128,36 @@ export default function TwoColumnTemplate({ data }) {
               ))}
             </Section>
           )}
+
+          {/* Coding Profiles */}
+          {Array.isArray(codingProfiles) && codingProfiles.some(p => p.platform || p.username) && (
+            <Section title="Coding Profiles">
+              <p>
+                {codingProfiles.filter(p => p.platform || p.username).map((profile, index) => (
+                  <span key={index}>
+                    {index > 0 && ' | '}
+                    {profile.platform && <span className="font-semibold">{profile.platform}: </span>}
+                    {profile.link ? (
+                      <a href={profile.link} target="_blank" rel="noopener noreferrer" className="text-black no-underline hover:text-yellow-500 transition">
+                        {profile.username || profile.link}
+                      </a>
+                    ) : (
+                      <span>{profile.username}</span>
+                    )}
+                  </span>
+                ))}
+              </p>
+            </Section>
+          )}
+
+          {/* Custom Sections */}
+          {Array.isArray(customSections) && customSections.map((section, index) => (
+            section.title || section.content ? (
+              <Section key={index} title={section.title || 'Custom Section'}>
+                <p className="whitespace-pre-line">{section.content}</p>
+              </Section>
+            ) : null
+          ))}
         </main>
       </div>
     </div>

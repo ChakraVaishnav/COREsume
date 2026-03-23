@@ -59,7 +59,7 @@ export default function Navbar({ fixed = false }) {
         fixed ? "fixed inset-x-0 top-0 z-50" : ""
       }`}
     >
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex justify-between items-center h-16">
+      <div className="w-full px-4 sm:px-8 flex justify-between items-center h-16">
         {/* Logo */}
         <Link href="/dashboard" className="text-xl font-bold tracking-tight">
           <h1 className="text-2xl sm:text-4xl font-black tracking-tight flex items-center">

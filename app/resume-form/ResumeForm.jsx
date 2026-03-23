@@ -22,6 +22,8 @@ const DEFAULT_FORM = {
   achievements: "",
   projects: [{ name: "", description: "", link: "" }],
   interests: "",
+  codingProfiles: [{ platform: "", username: "", link: "" }],
+  customSections: [],
 };
 
 function ResumeForm() {
@@ -300,6 +302,52 @@ function ResumeForm() {
       ...prev,
       projects: prev.projects.filter((_, i) => i !== index),
     }));
+  };
+
+  // Coding Profiles handlers
+  const addCodingProfile = () => {
+    setForm((prev) => ({
+      ...prev,
+      codingProfiles: [...(prev.codingProfiles || []), { platform: "", username: "", link: "" }],
+    }));
+  };
+
+  const removeCodingProfile = (index) => {
+    setForm((prev) => ({
+      ...prev,
+      codingProfiles: (prev.codingProfiles || []).filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleCodingProfileChange = (index, field, value) => {
+    setForm((prev) => {
+      const updated = [...(prev.codingProfiles || [])];
+      updated[index] = { ...updated[index], [field]: value };
+      return { ...prev, codingProfiles: updated };
+    });
+  };
+
+  // Custom Sections handlers
+  const addCustomSection = () => {
+    setForm((prev) => ({
+      ...prev,
+      customSections: [...(prev.customSections || []), { title: "", content: "" }],
+    }));
+  };
+
+  const removeCustomSection = (index) => {
+    setForm((prev) => ({
+      ...prev,
+      customSections: (prev.customSections || []).filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleCustomSectionChange = (index, field, value) => {
+    setForm((prev) => {
+      const updated = [...(prev.customSections || [])];
+      updated[index] = { ...updated[index], [field]: value };
+      return { ...prev, customSections: updated };
+    });
   };
 
   const clearForm = () => {
@@ -1165,6 +1213,158 @@ function ResumeForm() {
               placeholder="e.g. • Open Source Contribution&#10;• Machine Learning&#10;• Reading Tech Blogs&#10;• Playing Guitar"
             />
           </div>
+        </div>
+
+        {/* Coding Profiles Section */}
+        <div className="bg-white rounded-2xl shadow-lg p-5 sm:p-8 border border-gray-100">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-black">Coding Profiles</h2>
+            </div>
+            <button
+              onClick={addCodingProfile}
+              className="w-full sm:w-auto justify-center bg-linear-to-r from-yellow-500 to-yellow-600 text-black px-4 py-2 rounded-xl hover:from-yellow-600 hover:to-yellow-700 font-bold transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Add Profile
+            </button>
+          </div>
+
+          {(form.codingProfiles || []).map((profile, index) => (
+            <div key={index} className="bg-gray-50 rounded-xl p-5 mb-4 border border-gray-200">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-base font-semibold text-black">Profile {index + 1}</h3>
+                {index > 0 && (
+                  <button
+                    onClick={() => removeCodingProfile(index)}
+                    className="text-red-500 hover:text-red-700 transition-colors"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-black">Platform Name</label>
+                  <input
+                    placeholder="e.g. LeetCode, Codeforces"
+                    value={profile.platform}
+                    onChange={(e) => handleCodingProfileChange(index, "platform", e.target.value)}
+                    className="w-full border-2 border-gray-200 bg-white p-3 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all duration-200"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-black">Username</label>
+                  <input
+                    placeholder="e.g. john_doe"
+                    value={profile.username}
+                    onChange={(e) => handleCodingProfileChange(index, "username", e.target.value)}
+                    className="w-full border-2 border-gray-200 bg-white p-3 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all duration-200"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-black">Profile Link</label>
+                  <input
+                    placeholder="e.g. https://leetcode.com/john_doe"
+                    value={profile.link}
+                    onChange={(e) => handleCodingProfileChange(index, "link", e.target.value)}
+                    className="w-full border-2 border-gray-200 bg-white p-3 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all duration-200"
+                  />
+                </div>
+              </div>
+              {profile.link && profile.username && (
+                <p className="mt-2 text-xs text-gray-500">
+                  Preview: <a href={profile.link} target="_blank" rel="noopener noreferrer" className="text-yellow-600 underline font-medium">{profile.username}</a>
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Custom Sections */}
+        <div className="bg-white rounded-2xl shadow-lg p-5 sm:p-8 border border-gray-100">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-black">Custom Sections</h2>
+                <p className="text-sm text-gray-500 mt-0.5">Create your own sections with any content</p>
+              </div>
+            </div>
+            <button
+              onClick={addCustomSection}
+              className="w-full sm:w-auto justify-center bg-linear-to-r from-yellow-500 to-yellow-600 text-black px-4 py-2 rounded-xl hover:from-yellow-600 hover:to-yellow-700 font-bold transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Add Custom Section
+            </button>
+          </div>
+
+          {(form.customSections || []).length === 0 && (
+            <div className="text-center py-8 text-gray-400">
+              <svg className="w-10 h-10 mx-auto mb-2 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                  d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <p className="text-sm">No custom sections yet. Add one to include anything you like — Languages, Certifications, Volunteer Work, etc.</p>
+            </div>
+          )}
+
+          {(form.customSections || []).map((section, index) => (
+            <div key={index} className="bg-gray-50 rounded-xl p-5 mb-4 border border-gray-200">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-base font-semibold text-black">Custom Section {index + 1}</h3>
+                <button
+                  onClick={() => removeCustomSection(index)}
+                  className="text-red-500 hover:text-red-700 transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-black">Section Title</label>
+                  <input
+                    placeholder="e.g. Languages, Certifications, Volunteer Work"
+                    value={section.title}
+                    onChange={(e) => handleCustomSectionChange(index, "title", e.target.value)}
+                    className="w-full border-2 border-gray-200 bg-white p-3 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all duration-200"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-black">Content</label>
+                  <textarea
+                    value={section.content}
+                    onChange={(e) => handleCustomSectionChange(index, "content", e.target.value)}
+                    className="w-full border-2 border-gray-200 bg-white p-4 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all duration-200"
+                    rows={4}
+                    placeholder="Write anything here — bullet points, paragraph, or any format you prefer..."
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* Generate Resume Button */}

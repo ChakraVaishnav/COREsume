@@ -21,7 +21,7 @@ export default function AtsClassicTemplate() {
 
   if (!form) return <p className="text-center p-8 text-sm">Loading resume...</p>;
 
-  const { personalInfo, summary, skills, education, experience, projects, achievements, interests } = form;
+  const { personalInfo, summary, skills, education, experience, projects, achievements, interests, codingProfiles, customSections } = form;
 
   const hasContent = (section) => {
     if (!section) return false;
@@ -134,6 +134,36 @@ export default function AtsClassicTemplate() {
               ))}
             </MainSection>
           )}
+
+          {/* Coding Profiles */}
+          {Array.isArray(codingProfiles) && codingProfiles.some(p => p.platform || p.username) && (
+            <MainSection title="Coding Profiles">
+              <p>
+                {codingProfiles.filter(p => p.platform || p.username).map((profile, index) => (
+                  <span key={index}>
+                    {index > 0 && ' | '}
+                    {profile.platform && <span className="font-semibold">{profile.platform}: </span>}
+                    {profile.link ? (
+                      <a href={profile.link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                        {profile.username || profile.link}
+                      </a>
+                    ) : (
+                      <span>{profile.username}</span>
+                    )}
+                  </span>
+                ))}
+              </p>
+            </MainSection>
+          )}
+
+          {/* Custom Sections */}
+          {Array.isArray(customSections) && customSections.map((section, index) => (
+            section.title || section.content ? (
+              <MainSection key={index} title={section.title || 'Custom Section'}>
+                <p className="whitespace-pre-line">{section.content}</p>
+              </MainSection>
+            ) : null
+          ))}
         </main>
       </div>
     </div>
