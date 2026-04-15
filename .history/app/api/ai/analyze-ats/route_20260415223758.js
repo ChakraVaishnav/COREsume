@@ -1,10 +1,10 @@
 // app/api/ai/analyze-ats/route.js
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import pdfParse from "pdf-parse";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 const groqApiKey = process.env.GROQ_API_KEY || "";
 const groqModel = process.env.GROQ_MODEL || "llama-3.1-8b-instant";
-const isDebugLogsEnabled = process.env.ATS_DEBUG_LOGS === "true" || process.env.NODE_ENV !== "production";
 
 const BASE_PROMPT = `You are an ATS (Applicant Tracking System) expert. Analyze the resume and return a JSON object with exactly this structure (do not include markdown, code fences, or extra text - only valid JSON):
 
@@ -62,15 +62,6 @@ function summarizeGroqError(status, message) {
   };
 }
 
-function debugLog(event, payload) {
-  if (!isDebugLogsEnabled) return;
-  console.info(event, payload);
-}
-
-function errorLog(event, payload) {
-  console.error(event, payload);
-}
-
 function parseModelJson(text) {
   const cleaned = String(text || "")
     .trim()
@@ -81,8 +72,6 @@ function parseModelJson(text) {
 }
 
 async function parsePdfTextFromBuffer(pdfBuffer) {
-  // Use internal parser module directly to avoid pdf-parse index debug side effects in Next bundling.
-  const { default: pdfParse } = await import("pdf-parse/lib/pdf-parse.js");
   const parsed = await pdfParse(pdfBuffer);
   return (parsed?.text || "").trim();
 }
@@ -110,12 +99,10 @@ async function analyzeWithGroq({ resumeText, requestId }) {
   if (!res.ok) {
     const bodyText = await res.text();
     const errorSummary = summarizeGroqError(res.status, bodyText);
-    errorLog("[ATS_GROQ_FAILED]", {
+    console.error("[ATS_GROQ_FAILED]", {
       requestId,
       model: groqModel,
-      status: errorSummary.status,
-      isQuotaOrRateLimit: errorSummary.isQuotaOrRateLimit,
-      message: errorSummary.message,
+      ...errorSummary,
     });
     const groqError = new Error(errorSummary.message);
     groqError.status = res.status;
@@ -126,7 +113,7 @@ async function analyzeWithGroq({ resumeText, requestId }) {
   const outputText = payload?.choices?.[0]?.message?.content || "";
   const parsed = parseModelJson(outputText);
 
-  debugLog("[ATS_GROQ_SUCCESS]", {
+  console.info("[ATS_GROQ_SUCCESS]", {
     requestId,
     model: groqModel,
   });
@@ -153,8 +140,9 @@ export async function POST(req) {
     let result = null;
     const modelErrors = [];
 
-    debugLog("[ATS_ANALYZE_START]", {
+    console.info("[ATS_ANALYZE_START]", {
       requestId,
+      fileName: file.name || "unknown",
       mimeType: file.type || "application/pdf",
       size: file.size || null,
       models,
@@ -175,7 +163,7 @@ export async function POST(req) {
         const text = response.response.text().trim();
         result = parseModelJson(text);
 
-        debugLog("[ATS_MODEL_SUCCESS]", {
+        console.info("[ATS_MODEL_SUCCESS]", {
           requestId,
           modelName,
         });
@@ -183,38 +171,31 @@ export async function POST(req) {
       } catch (err) {
         const errorSummary = summarizeGeminiError(err);
         modelErrors.push({ modelName, ...errorSummary });
-        errorLog("[ATS_MODEL_FAILED]", {
+        console.error("[ATS_MODEL_FAILED]", {
           requestId,
           modelName,
-          status: errorSummary.status,
-          isQuotaOrRateLimit: errorSummary.isQuotaOrRateLimit,
-          message: errorSummary.message,
+          ...errorSummary,
         });
       }
     }
 
     if (!result) {
       const quotaIssueDetected = modelErrors.some((e) => e.isQuotaOrRateLimit);
-      errorLog("[ATS_ALL_MODELS_FAILED]", {
+      console.error("[ATS_ALL_MODELS_FAILED]", {
         requestId,
         quotaIssueDetected,
-        modelErrors: modelErrors.map((e) => ({
-          modelName: e.modelName,
-          status: e.status,
-          isQuotaOrRateLimit: e.isQuotaOrRateLimit,
-          message: e.message,
-        })),
+        modelErrors,
       });
 
       try {
         const resumeText = await parsePdfTextFromBuffer(pdfBuffer);
         if (!resumeText) {
-          errorLog("[ATS_GROQ_SKIPPED_NO_TEXT]", { requestId });
+          console.error("[ATS_GROQ_SKIPPED_NO_TEXT]", { requestId });
           return Response.json({ error: "AI analysis failed. Please try again." }, { status: 500 });
         }
         result = await analyzeWithGroq({ resumeText, requestId });
       } catch (groqErr) {
-        errorLog("[ATS_GROQ_FATAL]", {
+        console.error("[ATS_GROQ_FATAL]", {
           requestId,
           message: groqErr?.message || "Unknown Groq fallback error",
           status: groqErr?.status || null,
@@ -223,10 +204,10 @@ export async function POST(req) {
       }
     }
 
-    debugLog("[ATS_ANALYZE_SUCCESS]", { requestId });
+    console.info("[ATS_ANALYZE_SUCCESS]", { requestId });
     return Response.json(result);
   } catch (err) {
-    errorLog("[ATS_ANALYZE_FATAL]", {
+    console.error("[ATS_ANALYZE_FATAL]", {
       requestId,
       message: err?.message || "Unknown fatal error",
       stack: err?.stack,
