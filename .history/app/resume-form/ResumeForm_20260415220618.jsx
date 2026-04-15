@@ -44,17 +44,17 @@ function normalizeResumeFormData(raw) {
     summary: safe.summary || "",
     experience: Array.isArray(safe.experience) && safe.experience.length
       ? safe.experience
-      : [{ role: "", company: "", duration: "", description: "" }],
+      : DEFAULT_FORM.experience,
     education: safe.education || "",
     skills: safe.skills || "",
     achievements: safe.achievements || "",
     projects: Array.isArray(safe.projects) && safe.projects.length
       ? safe.projects
-      : [{ name: "", description: "", link: "" }],
+      : DEFAULT_FORM.projects,
     interests: safe.interests || "",
     codingProfiles: Array.isArray(safe.codingProfiles) && safe.codingProfiles.length
       ? safe.codingProfiles
-      : [{ platform: "", username: "", link: "" }],
+      : DEFAULT_FORM.codingProfiles,
     customSections: Array.isArray(safe.customSections) ? safe.customSections : [],
   };
 }

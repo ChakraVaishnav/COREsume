@@ -224,7 +224,7 @@ export default function ResumeFromPdfPage() {
           {/* Back */}
           <button
             onClick={() => router.push("/dashboard")}
-            className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-800 text-sm font-medium mt-6 mb-6 transition-colors"
+            className="inline-flex items-center gap-2 text-gray-500 hover:text-black text-sm font-medium mt-6 mb-6 transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -235,7 +235,7 @@ export default function ResumeFromPdfPage() {
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             {/* ── LEFT PANEL ── */}
             <div className="w-full lg:w-[380px] lg:shrink-0">
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-1">Resume from Existing PDF</h1>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-black mb-1">Resume from Existing PDF</h1>
               <p className="text-gray-500 text-sm mb-6">
                 Upload your resume PDF — AI extracts all your data and fills the form. No typing needed.
               </p>
@@ -245,8 +245,8 @@ export default function ResumeFromPdfPage() {
                 {STEPS.map((s, i) => (
                   <div key={i} className="flex items-center gap-1">
                     <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                      step > i ? "bg-yellow-500 text-white"
-                      : step === i ? "bg-yellow-300 text-gray-900"
+                      step > i ? "bg-black text-yellow-400"
+                      : step === i ? "bg-yellow-400 text-black"
                       : "bg-gray-200 text-gray-400"
                     }`}>
                       {step > i ? (
@@ -255,7 +255,7 @@ export default function ResumeFromPdfPage() {
                         </svg>
                       ) : (i + 1)}
                     </div>
-                    <span className={`text-xs font-medium hidden sm:block ${step === i ? "text-gray-900 font-bold" : "text-gray-400"}`}>{s}</span>
+                    <span className={`text-xs font-medium hidden sm:block ${step === i ? "text-black font-bold" : "text-gray-400"}`}>{s}</span>
                     {i < STEPS.length - 1 && <div className="w-4 h-px bg-gray-300 mx-1" />}
                   </div>
                 ))}
@@ -275,7 +275,7 @@ export default function ResumeFromPdfPage() {
                 onClick={() => fileRef.current?.click()}
                 className={`flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-10 cursor-pointer transition-all duration-200 mb-5 ${
                   dragOver ? "border-yellow-400 bg-yellow-50"
-                  : file ? "border-yellow-300 bg-yellow-50"
+                  : file ? "border-black bg-yellow-50"
                   : "border-gray-300 bg-white hover:border-yellow-400 hover:bg-yellow-50"
                 }`}
               >
@@ -284,11 +284,11 @@ export default function ResumeFromPdfPage() {
                 {file ? (
                   <>
                     <div className="w-12 h-12 rounded-full bg-yellow-400 flex items-center justify-center mb-3">
-                      <svg className="w-6 h-6 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
-                    <p className="font-bold text-gray-900 text-sm text-center break-all">{file.name}</p>
+                    <p className="font-bold text-black text-sm text-center break-all">{file.name}</p>
                     <p className="text-xs text-gray-400 mt-1">Click to change file</p>
                   </>
                 ) : (
@@ -308,7 +308,7 @@ export default function ResumeFromPdfPage() {
               <button
                 onClick={() => file && setStep(1)}
                 disabled={!file || step > 0}
-                className="w-full py-3.5 rounded-xl font-bold text-gray-900 bg-yellow-400 hover:bg-yellow-500 transition-all shadow-md hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full py-3.5 rounded-xl font-bold text-black bg-yellow-400 hover:bg-yellow-500 transition-all shadow-md hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -326,7 +326,7 @@ export default function ResumeFromPdfPage() {
                   "Resume form opens pre-filled — just review & generate",
                 ].map((item, i) => (
                   <div key={i} className="flex items-start gap-3 mb-3 last:mb-0">
-                    <div className="w-6 h-6 rounded-full bg-yellow-400 text-gray-900 text-xs font-black flex items-center justify-center shrink-0 mt-0.5">
+                    <div className="w-6 h-6 rounded-full bg-yellow-400 text-black text-xs font-black flex items-center justify-center shrink-0 mt-0.5">
                       {i + 1}
                     </div>
                     <p className="text-sm text-gray-600">{item}</p>
@@ -353,7 +353,7 @@ export default function ResumeFromPdfPage() {
               {step === 1 && mounted && (
                 <div>
                   <div className="mb-5">
-                    <h2 className="text-xl font-extrabold text-gray-900 mb-1">Choose Your Template</h2>
+                    <h2 className="text-xl font-extrabold text-black mb-1">Choose Your Template</h2>
                     <p className="text-gray-500 text-sm">Click a template to extract your data and open the form.</p>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-5">
@@ -367,15 +367,15 @@ export default function ResumeFromPdfPage() {
                           <TemplatePreview Component={t.Component} />
                           {/* Hover overlay */}
                           <div className="absolute inset-0 bg-yellow-400/0 group-hover:bg-yellow-400/10 transition-all duration-300 flex items-center justify-center">
-                            <span className="opacity-0 group-hover:opacity-100 transition-all duration-200 bg-yellow-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
+                            <span className="opacity-0 group-hover:opacity-100 transition-all duration-200 bg-black text-yellow-400 text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
                               Use This Template
                             </span>
                           </div>
                         </div>
                         <div className="p-4 flex flex-col grow">
-                          <h3 className="font-bold text-gray-900 text-sm mb-1">{t.name}</h3>
+                          <h3 className="font-bold text-black text-sm mb-1">{t.name}</h3>
                           <p className="text-gray-400 text-xs grow">{t.desc}</p>
-                          <button className="mt-3 w-full py-2 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-gray-900 text-xs font-bold transition-colors">
+                          <button className="mt-3 w-full py-2 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-black text-xs font-bold transition-colors">
                             Select Template
                           </button>
                         </div>
@@ -393,7 +393,7 @@ export default function ResumeFromPdfPage() {
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
                     </svg>
                   </div>
-                  <h2 className="text-2xl font-extrabold text-gray-900 mb-2">Extracting Your Data…</h2>
+                  <h2 className="text-2xl font-extrabold text-black mb-2">Extracting Your Data…</h2>
                   <p className="text-gray-500 text-sm max-w-xs">
                     AI is reading your resume and filling in your information. This usually takes 5–15 seconds.
                   </p>
