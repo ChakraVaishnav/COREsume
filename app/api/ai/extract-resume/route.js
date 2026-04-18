@@ -14,7 +14,7 @@ export async function POST(req) {
 
     // Import pdfjs-dist without the worker mechanism for Node environments
     const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
-    pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdfjs-dist/legacy/build/pdf.worker.mjs';
 
     // Step 1: Extract Text Items
     const doc = await pdfjsLib.getDocument({ 
