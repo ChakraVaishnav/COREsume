@@ -59,6 +59,8 @@ const SAMPLE_DATA = {
   interests: "Open source contribution, technical writing, rock climbing",
 };
 
+const SAMPLE_DATA_STR = JSON.stringify(SAMPLE_DATA);
+
 function TemplatePreview({ Component }) {
   const SCALE = 0.42;
   return (
@@ -94,6 +96,29 @@ export default function TemplatesPage() {
     checkAuth();
   }, []);
 
+  // Save the real resumeFormData, inject SAMPLE_DATA for previews,
+  // and restore the real data when the user leaves this page.
+  useEffect(() => {
+    // Save the user's real data (could be null if they have none)
+    const original = localStorage.getItem("resumeFormData");
+
+    // Write SAMPLE_DATA so template components can render with it
+    localStorage.setItem("resumeFormData", SAMPLE_DATA_STR);
+    localStorage.setItem("ResumePreviewData", SAMPLE_DATA_STR);
+    localStorage.setItem("skipMigration", "true");
+
+    return () => {
+      // Restore the user's real data on unmount (before resume-form loads)
+      if (original !== null) {
+        localStorage.setItem("resumeFormData", original);
+      } else {
+        localStorage.removeItem("resumeFormData");
+      }
+      localStorage.removeItem("ResumePreviewData");
+      localStorage.removeItem("skipMigration");
+    };
+  }, []);
+
   const checkAuth = async () => {
     try {
       const res = await fetch("/api/user/credits", {
@@ -112,10 +137,6 @@ export default function TemplatesPage() {
   };
 
   if (!mounted || loading) return null;
-
-  // Set sample data for template previews (uses its own key, never touches resumeFormData)
-  localStorage.setItem("ResumePreviewData", JSON.stringify(SAMPLE_DATA));
-  localStorage.setItem("resumeFormData", JSON.stringify(SAMPLE_DATA));
 
   const allTemplates = [
     { name: "Classic Professional", slug: "minimalist", Component: MinimalistTemplate, type: "free", description: "Clean, single-column layout with a timeless professional presentation." },

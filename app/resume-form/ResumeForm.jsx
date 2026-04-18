@@ -267,9 +267,13 @@ function ResumeForm() {
             // Sync localStorage so the live-preview pane is up-to-date
             localStorage.setItem("resumeFormData", JSON.stringify(normalized));
           } else {
-            // No resume in DB yet — check localStorage for legacy data (one-time migration)
+            // No resume in DB yet — check localStorage for legacy data (one-time migration).
+            // Skip if the templates page set a flag to avoid treating SAMPLE_DATA as real data.
+            const skipMigration = localStorage.getItem("skipMigration") === "true";
+            localStorage.removeItem("skipMigration"); // always clear the flag
+
             const legacy = localStorage.getItem("resumeFormData");
-            if (legacy) {
+            if (legacy && !skipMigration) {
               try {
                 const parsed = JSON.parse(legacy);
                 const normalized = normalizeResumeFormData(parsed);
@@ -288,7 +292,7 @@ function ResumeForm() {
                 localStorage.removeItem("resumeFormData");
               }
             } else {
-              // Truly a new user — show empty fields
+              // New user, or user arrived from templates page — show empty fields
               setForm(DEFAULT_FORM);
               localStorage.removeItem("resumeFormData");
             }
