@@ -261,20 +261,51 @@ function ResumeForm() {
         if (res.ok) {
           const { data } = await res.json();
           if (data && typeof data === "object") {
+            // DB has data — use it as source of truth
             const normalized = normalizeResumeFormData(data);
             setForm(normalized);
             // Sync localStorage so the live-preview pane is up-to-date
             localStorage.setItem("resumeFormData", JSON.stringify(normalized));
           } else {
-            // No resume in DB yet — show empty fields
-            setForm(DEFAULT_FORM);
-            localStorage.removeItem("resumeFormData");
+            // No resume in DB yet — check localStorage for legacy data (one-time migration)
+            const legacy = localStorage.getItem("resumeFormData");
+            if (legacy) {
+              try {
+                const parsed = JSON.parse(legacy);
+                const normalized = normalizeResumeFormData(parsed);
+                setForm(normalized);
+                localStorage.setItem("resumeFormData", JSON.stringify(normalized));
+
+                // Migrate to DB in the background — fire-and-forget
+                fetch("/api/resume/save", {
+                  method: "POST",
+                  credentials: "include",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ data: normalized }),
+                }).catch(() => {});
+              } catch {
+                setForm(DEFAULT_FORM);
+                localStorage.removeItem("resumeFormData");
+              }
+            } else {
+              // Truly a new user — show empty fields
+              setForm(DEFAULT_FORM);
+              localStorage.removeItem("resumeFormData");
+            }
           }
         }
       } catch {
-        // Network error — show empty fields
-        setForm(DEFAULT_FORM);
-        localStorage.removeItem("resumeFormData");
+        // Network error — fall back to localStorage if available
+        const legacy = localStorage.getItem("resumeFormData");
+        if (legacy) {
+          try {
+            setForm(normalizeResumeFormData(JSON.parse(legacy)));
+          } catch {
+            setForm(DEFAULT_FORM);
+          }
+        } else {
+          setForm(DEFAULT_FORM);
+        }
       } finally {
         isInitialLoad.current = false;
       }
