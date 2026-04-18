@@ -1554,7 +1554,7 @@ function ResumeForm() {
 
       {/* PDF Extraction Warning Toast */}
       {showExtractedToast && (
-        <div className="fixed top-20 right-4 sm:right-8 z-[100] max-w-sm w-full transition-all duration-300 transform translate-y-0 opacity-100">
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] max-w-sm w-full transition-all duration-300 opacity-100">
           <style>{`
             @keyframes load-bar-shrink {
               from { width: 100%; }
