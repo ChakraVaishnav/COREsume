@@ -216,7 +216,7 @@ export default function ResumeFromPdfPage() {
         body: JSON.stringify({ data: normalized }),
       });
 
-      router.push(`/resume-form?template=${slug}`);
+      router.push(`/resume-form?template=${slug}&extracted=1`);
     } catch (e) {
       setError(e.message || "Failed to extract resume data. Please try again.");
       setStep(1);

@@ -57,7 +57,8 @@ export async function POST(req) {
   "customSections": []
 }
 
-If a field has no data, use an empty string "" or an empty array []. Extract every detail present in the resume accurately.`;
+If a field has no data, use an empty string "" or an empty array []. Extract every detail present in the resume accurately.
+CRITICAL: Please actively try to find and extract embedded hyperlinks / URLs (e.g., behind text like "LinkedIn", "GitHub", "Portfolio") within the PDF document's structure/metadata if accessible.`;
 
     const models = ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-1.5-pro"];
     let result = null;

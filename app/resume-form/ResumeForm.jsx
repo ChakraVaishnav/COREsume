@@ -84,6 +84,22 @@ function ResumeForm() {
   const [showToast, setShowToast] = useState(false);
   const [showToastRequired, setShowToastRequired] = useState(false);
   const [showErrorToast, setShowErrorToast] = useState(false); // New Error Toast State
+  const [showExtractedToast, setShowExtractedToast] = useState(false); // Extraction Warning
+
+  // Handle PDF extraction warning toast
+  useEffect(() => {
+    if (searchParams.get("extracted") === "1") {
+      setShowExtractedToast(true);
+      router.replace(`/resume-form?template=${template}`);
+    }
+  }, [searchParams, router, template]);
+
+  // Auto-hide extracted toast after 5 seconds
+  useEffect(() => {
+    if (!showExtractedToast) return;
+    const t = setTimeout(() => setShowExtractedToast(false), 5000);
+    return () => clearTimeout(t);
+  }, [showExtractedToast]);
 
   // Auto-hide the "required" toast after 5 seconds
   useEffect(() => {
@@ -1535,6 +1551,39 @@ function ResumeForm() {
           </button>
         </div>
       )}
+
+      {/* PDF Extraction Warning Toast */}
+      {showExtractedToast && (
+        <div className="fixed top-20 right-4 sm:right-8 z-[100] max-w-sm w-full transition-all duration-300 transform translate-y-0 opacity-100">
+          <style>{`
+            @keyframes load-bar-shrink {
+              from { width: 100%; }
+              to { width: 0%; }
+            }
+          `}</style>
+          <div className="bg-red-50 border-2 border-red-500 rounded-xl shadow-[0_10px_40px_-10px_rgba(239,68,68,0.5)] p-4 overflow-hidden relative">
+            <div className="flex items-start gap-3 pb-2">
+              <svg className="w-6 h-6 text-red-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <div>
+                <h4 className="font-bold text-red-800 text-sm mb-1">Verify Embedded Links!</h4>
+                <p className="text-xs text-red-700 font-medium">Few embedded links might not have extracted. Please verify and place your links manually.</p>
+              </div>
+              <button onClick={() => setShowExtractedToast(false)} className="text-red-400 hover:text-red-600 transition-colors ml-auto">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            {/* Loader bar */}
+            <div className="absolute bottom-0 left-0 h-1.5 bg-red-200 w-full">
+              <div className="h-full bg-red-500" style={{ animation: 'load-bar-shrink 5s linear forwards' }} />
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
