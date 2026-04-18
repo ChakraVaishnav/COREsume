@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
@@ -88,24 +88,10 @@ export default function TemplatesPage() {
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const originalDataRef = useRef(null);
-  const previewSetupRef = useRef(false);
 
   useEffect(() => {
     setMounted(true);
     checkAuth();
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (previewSetupRef.current) {
-        if (originalDataRef.current !== null) {
-          localStorage.setItem("resumeFormData", originalDataRef.current);
-        } else {
-          localStorage.removeItem("resumeFormData");
-        }
-      }
-    };
   }, []);
 
   const checkAuth = async () => {
@@ -127,12 +113,9 @@ export default function TemplatesPage() {
 
   if (!mounted || loading) return null;
 
-  if (!previewSetupRef.current) {
-    localStorage.setItem("ResumePreviewData", JSON.stringify(SAMPLE_DATA));
-    originalDataRef.current = localStorage.getItem("resumeFormData");
-    localStorage.setItem("resumeFormData", localStorage.getItem("ResumePreviewData"));
-    previewSetupRef.current = true;
-  }
+  // Set sample data for template previews (uses its own key, never touches resumeFormData)
+  localStorage.setItem("ResumePreviewData", JSON.stringify(SAMPLE_DATA));
+  localStorage.setItem("resumeFormData", JSON.stringify(SAMPLE_DATA));
 
   const allTemplates = [
     { name: "Classic Professional", slug: "minimalist", Component: MinimalistTemplate, type: "free", description: "Clean, single-column layout with a timeless professional presentation." },

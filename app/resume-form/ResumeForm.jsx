@@ -245,27 +245,42 @@ function ResumeForm() {
     setDontRemind(remindVal === "true");
   }, []);
 
-  // ✅ Load saved form/template from localStorage (once)
+  // ✅ Load saved form from DB on mount (falls back to empty fields if none exists)
   useEffect(() => {
-    if (isInitialLoad.current) {
-      const savedForm = localStorage.getItem("resumeFormData");
-      const savedTemplate = localStorage.getItem("resumeTemplate");
+    if (!isInitialLoad.current) return;
 
-      if (savedForm) {
-        try {
-          const parsed = JSON.parse(savedForm);
-          setForm(normalizeResumeFormData(parsed));
-        } catch {
-          setForm(DEFAULT_FORM);
+    const savedTemplate = localStorage.getItem("resumeTemplate");
+    if (savedTemplate) setTemplate(savedTemplate);
+
+    async function fetchResumeFromDB() {
+      try {
+        const res = await fetch("/api/resume/get", {
+          method: "GET",
+          credentials: "include",
+        });
+        if (res.ok) {
+          const { data } = await res.json();
+          if (data && typeof data === "object") {
+            const normalized = normalizeResumeFormData(data);
+            setForm(normalized);
+            // Sync localStorage so the live-preview pane is up-to-date
+            localStorage.setItem("resumeFormData", JSON.stringify(normalized));
+          } else {
+            // No resume in DB yet — show empty fields
+            setForm(DEFAULT_FORM);
+            localStorage.removeItem("resumeFormData");
+          }
         }
+      } catch {
+        // Network error — show empty fields
+        setForm(DEFAULT_FORM);
+        localStorage.removeItem("resumeFormData");
+      } finally {
+        isInitialLoad.current = false;
       }
-      if (savedTemplate) setTemplate(savedTemplate);
-
-      // Ensure only resumeFormData is used as source of truth on this page.
-      localStorage.removeItem("ResumePreviewData");
-
-      isInitialLoad.current = false;
     }
+
+    fetchResumeFromDB();
   }, []);
 
   // ✅ Update template from searchParams
@@ -401,6 +416,17 @@ function ResumeForm() {
   };
 
   const handleSubmit = () => {
+    // Fire-and-forget: save to DB in the background, don't wait
+    const currentForm = normalizeResumeFormData(form);
+    fetch("/api/resume/save", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ data: currentForm }),
+    }).catch(() => {
+      // silently ignore — we don't block navigation on this
+    });
+
     router.push("/resume-preview");
   };
 

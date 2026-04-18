@@ -10,13 +10,14 @@ datasource db {
 }
         
 model User {
-  id        Int     @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   username  String
-  email     String  @unique
+  email     String   @unique
   password  String
-  creds     Int     @default(0)
-  unlimited Boolean @default(false)
+  creds     Int      @default(0)
+  unlimited Boolean  @default(false)
   ratings   Rating[]
+  resume    Resume?
 }
 
 model Otp {
@@ -35,4 +36,12 @@ model Rating {
   comment   String?
   template  String
   createdAt DateTime @default(now())
+}
+
+model Resume {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int      @unique
+  data      Json
+  updatedAt DateTime @updatedAt
 }
