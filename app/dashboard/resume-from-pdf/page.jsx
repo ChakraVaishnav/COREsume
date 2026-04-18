@@ -206,6 +206,16 @@ export default function ResumeFromPdfPage() {
       const normalized = normalizeExtractedResumeData(data);
       localStorage.removeItem("ResumePreviewData");
       localStorage.setItem("resumeFormData", JSON.stringify(normalized));
+
+      // Persist the extracted data to the database before redirecting
+      // We await this so the resume-form page doesn't fetch old/empty data on mount
+      await fetch("/api/resume/save", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: normalized }),
+      });
+
       router.push(`/resume-form?template=${slug}`);
     } catch (e) {
       setError(e.message || "Failed to extract resume data. Please try again.");
