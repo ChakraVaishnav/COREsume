@@ -174,7 +174,7 @@ export default function TemplatesPage() {
                   <p className="text-gray-600 text-xs sm:text-sm mb-4 sm:mb-5 grow">{template.description}</p>
                   <Link
                     href={`/resume-form?template=${template.slug}`}
-                    className="block w-full text-center py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black rounded-xl hover:from-yellow-500 hover:to-yellow-600 transition font-bold shadow-md hover:shadow-lg mt-auto"
+                    className="block w-full text-center py-3 bg-linear-to-r from-yellow-400 to-yellow-500 text-black rounded-xl hover:from-yellow-500 hover:to-yellow-600 transition font-bold shadow-md hover:shadow-lg mt-auto"
                   >
                     Use This Template
                   </Link>

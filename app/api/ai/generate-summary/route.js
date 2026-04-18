@@ -14,22 +14,13 @@ export async function POST(req) {
     }
 
     const experienceContext = experienceLevel ? ` with ${experienceLevel} experience` : '';
-    const prompt = `Write a professional resume summary for a ${jobRole}${experienceContext}. 
-    
-    Format the response exactly like this example:
-    Motivated and detail-oriented Computer Science undergraduate with a strong foundation in software development and problem-solving.
-    Demonstrates leadership, adaptability, and a commitment to continuous learning. Experienced in academic projects and team collaboration,
-    with a passion for building meaningful solutions and growing in a dynamic work environment.
-    
-    Make it:
-    - Professional and formal
-    - Optimized for Applicant Tracking Systems (ATS)
-    - 3-4 sentences maximum
-    - Highlight key strengths and qualities relevant to the job role
-    - Include soft skills like leadership, adaptability, problem-solving
-    - Mention experience level and passion for growth
-    
-    Return only the summary text, no other text or explanations, it should be in 3-4 lines no extras.`;
+    const prompt = `Write a professional 3-4 sentence resume summary for a ${jobRole}${experienceContext}.
+Example: Detail-oriented developer with a foundation in software building and problem-solving. Skilled in React and team collaboration.
+Rules:
+- Professional/ATS-friendly
+- Max 4 lines
+- Include key strengths and soft skills
+- Return ONLY the summary text.`;
     const summary = await generateGeminiResponse(prompt);
 
     return new Response(JSON.stringify({ summary }), {

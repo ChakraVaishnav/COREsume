@@ -13,27 +13,16 @@ export async function POST(req) {
       });
     }
 
-    const prompt = `Generate a comprehensive list of skills for a ${jobRole} with ${experienceLevel} experience level. 
-    
-    Format the response exactly like this example:
-    • Programming Languages: Java, JavaScript
-    • Web Development: HTML5, CSS3, JavaScript, React.js
-    • Back-End Frameworks: Spring Boot
-    • Databases: PostgreSQL, MySQL
-    • Development Concepts: OOPS concepts, DBMS, DSA
-    • Tools: Git (basic version control)
-    
-    Include relevant categories based on the job role. Common categories are:
-    - Programming Languages
-    - Web Development
-    - Back-End Frameworks
-    - Front-End Frameworks
-    - Databases
-    - Cloud Platforms
-    - Development Concepts
-    - Tools & Technologies
-    
-    Return only the formatted skills list with bullet points and categories, no other text or explanations.`;
+    const prompt = `List technical skills for a ${jobRole} (${experienceLevel} level). 
+Example:
+• Languages: Java, JS
+• Web: HTML5, CSS3, React
+• Backend: Node, Express
+
+Rules:
+- Categorized by bullet points (•)
+- Professional/ATS-friendly
+- Only include the list, no intro/outro.`;
 
     const skills = await generateGeminiResponse(prompt);
 

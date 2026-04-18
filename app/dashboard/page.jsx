@@ -75,6 +75,20 @@ export default function Dashboard() {
       icon: (
         <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d="M17 8l4 4m0 0l-4 4m4-4H3m3-7h8m-8 14h8" />
+        </svg>
+      ),
+      title: "Apply to Jobs Instantly",
+      desc: "Search jobs related to your resume, get AI fit analysis, and apply in one click.",
+      action: "Find Matching Jobs →",
+      href: "/dashboard/jobs",
+      badge: "AI Powered",
+      comingSoon: false,
+    },
+    {
+      icon: (
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
             d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
         </svg>
       ),
@@ -120,7 +134,7 @@ export default function Dashboard() {
             {features.map((f, i) => (
               <div key={i} className={`relative rounded-2xl overflow-hidden shadow-md border border-gray-200 bg-white flex flex-col transition-all duration-300 ${f.comingSoon ? "opacity-70" : "hover:shadow-xl hover:-translate-y-1"}`}>
                 {/* Yellow top stripe */}
-                <div className="h-1.5 w-full bg-gradient-to-r from-yellow-400 to-yellow-500" />
+                <div className="h-1.5 w-full bg-linear-to-r from-yellow-400 to-yellow-500" />
                 <div className="p-5 flex flex-col grow">
                   {f.badge && (
                     <span className={`inline-block self-start text-[10px] font-bold px-2.5 py-0.5 rounded-full mb-3 ${f.badge === "Coming Soon" ? "bg-gray-100 text-gray-500" : "bg-yellow-100 text-yellow-700"

@@ -15,9 +15,13 @@ model User {
   email     String   @unique
   password  String
   creds     Int      @default(0)
+  jobsInDb  Int      @default(0)
+  totalJobsSearched Int @default(0)
   unlimited Boolean  @default(false)
   ratings   Rating[]
   resume    Resume?
+  jobs      Job[]
+  jobUsage  JobUsage?
 }
 
 model Otp {
@@ -44,4 +48,55 @@ model Resume {
   userId    Int      @unique
   data      Json
   updatedAt DateTime @updatedAt
+}
+
+model Job {
+  id                  String    @id @default(cuid())
+  userId              Int
+  searchId            String
+
+  jobTitle            String
+  companyName         String
+  jobDescription      String    @db.Text
+  skillsRequired      String[]
+  experienceRequired  String?
+  location            String?
+  salary              String?
+  jobLink             String
+  postedDate          String?
+  source              String?
+
+  matchScore          Int
+  fitLabel            String
+  missingSkills       String[]
+  strengths           String[]
+  reasoning           String    @db.Text
+  aiSummary           String?   @db.Text
+  whyItMatches        String?   @db.Text
+  resumeImprovements  String[]
+
+  tier                String
+  createdAt           DateTime  @default(now())
+  expiresAt           DateTime
+
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([searchId])
+  @@index([expiresAt])
+}
+
+model JobUsage {
+  id            String    @id @default(cuid())
+  userId        Int       @unique
+  date          String
+  searchCount   Int       @default(0)
+  jobsFetched   Int       @default(0)
+  tier          String    @default("free")
+  credits       Int       @default(0)
+  creditsUsed   Int       @default(0)
+  lastSearchAt  DateTime?
+  updatedAt     DateTime  @updatedAt
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

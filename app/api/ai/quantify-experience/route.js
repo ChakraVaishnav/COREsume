@@ -13,30 +13,18 @@ export async function POST(req) {
       });
     }
 
-    const prompt = `Transform this work experience description into 3-4 quantified, professional resume bullet points:
+    const prompt = `Quantify this work experience into 3-4 professional ATS bullet points:
+"${description}" (Role: ${jobRole || 'Dev'}, Level: ${experienceLevel || 'Entry'})
 
-    Original description: "${description}"
-    Job role: ${jobRole || 'Software Developer'}
-    Experience level: ${experienceLevel || 'Entry level'}
+Example:
+• Built 5+ React apps, improving engagement by 30%
+• Reduced latency by 40% through query optimization
 
-    Format the response exactly like this example:
-    • Built and maintained 5+ web applications with React.js, resulting in 30% improvement in user engagement
-    • Managed a team of 3 developers to deliver a mobile app that increased customer satisfaction by 25%
-    • Enhanced database queries reducing page load time by 40% and improving overall system performance
-    • Coordinated with cross-functional teams to launch new features and resolve technical issues
-
-    Make each bullet point:
-    - Quantified with specific numbers, percentages, or metrics
-    - Professional and action-oriented
-    - Relevant to the job role
-    - Optimized for Applicant Tracking Systems (ATS)
-    - Use diverse strong action verbs at the beginning (avoid repeating "developed", "implemented", "created")
-    - Exactly ONE line per bullet point (no line breaks within bullet points)
-    - Avoid repetitive words or phrases across different bullet points (no word should appear more than 2 times total)
-    - Ensure perfect spelling and grammar
-    - Keep each bullet point concise and impactful
-
-    Return only the bullet points with the • symbol, no other text or explanations.`;
+Rules:
+- High impact with metrics (%, numbers)
+- Start with strong, unique action verbs
+- One line per bullet
+- Return ONLY bullets with the • symbol.`;
 
     const quantifiedDescription = await generateGeminiResponse(prompt);
 
