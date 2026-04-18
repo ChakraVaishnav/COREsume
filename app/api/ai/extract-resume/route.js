@@ -13,11 +13,15 @@ export async function POST(req) {
     const uint8Array = new Uint8Array(arrayBuffer);
 
     // Import pdfjs-dist without the worker mechanism for Node environments
-    const pdfjsLib = require("pdfjs-dist/legacy/build/pdf.js");
+    const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
     pdfjsLib.GlobalWorkerOptions.workerSrc = '';
 
     // Step 1: Extract Text Items
-    const doc = await pdfjsLib.getDocument({ data: uint8Array, useSystemFonts: true }).promise;
+    const doc = await pdfjsLib.getDocument({ 
+      data: uint8Array, 
+      disableFontFace: true,
+      verbosely: false
+    }).promise;
     const allItems = [];
 
     for (let pageNum = 1; pageNum <= doc.numPages; pageNum++) {
@@ -286,6 +290,6 @@ export async function POST(req) {
 
   } catch (err) {
     console.error("Local Rules Extract error:", err);
-    return NextResponse.json({ error: "Failed to extract resume data locally." }, { status: 500 });
+    return NextResponse.json({ error: "Parser Error: " + (err.message || "Unknown error") }, { status: 500 });
   }
 }
