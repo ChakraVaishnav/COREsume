@@ -5,7 +5,7 @@ export default function TwoColumnTemplate({ data }) {
   const [form, setForm] = useState(null);
 
   useEffect(() => {
-    const data = localStorage.getItem('resumeFormData');
+    const data = localStorage.getItem('ResumePreviewData') || localStorage.getItem('resumeFormData');
     if (data) {
       const parsed = JSON.parse(data);
 

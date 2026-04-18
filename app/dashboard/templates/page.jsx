@@ -96,26 +96,13 @@ export default function TemplatesPage() {
     checkAuth();
   }, []);
 
-  // Save the real resumeFormData, inject SAMPLE_DATA for previews,
-  // and restore the real data when the user leaves this page.
+  // Inject SAMPLE_DATA for previews (templates read ResumePreviewData)
+  // We do NOT modify resumeFormData here so user data remains safe.
   useEffect(() => {
-    // Save the user's real data (could be null if they have none)
-    const original = localStorage.getItem("resumeFormData");
-
-    // Write SAMPLE_DATA so template components can render with it
-    localStorage.setItem("resumeFormData", SAMPLE_DATA_STR);
     localStorage.setItem("ResumePreviewData", SAMPLE_DATA_STR);
-    localStorage.setItem("skipMigration", "true");
 
     return () => {
-      // Restore the user's real data on unmount (before resume-form loads)
-      if (original !== null) {
-        localStorage.setItem("resumeFormData", original);
-      } else {
-        localStorage.removeItem("resumeFormData");
-      }
       localStorage.removeItem("ResumePreviewData");
-      localStorage.removeItem("skipMigration");
     };
   }, []);
 
