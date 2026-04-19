@@ -201,7 +201,15 @@ export default function ResumeFromPdfPage() {
     formData.append("resume", file);
     try {
       const res = await fetch("/api/ai/extract-resume", { method: "POST", body: formData });
-      const data = await res.json();
+      const raw = await res.text();
+      let data;
+
+      try {
+        data = raw ? JSON.parse(raw) : {};
+      } catch {
+        throw new Error("Extraction service returned an invalid response. Please try again.");
+      }
+
       if (!res.ok || data.error) throw new Error(data.error || "Extraction failed");
       const normalized = normalizeExtractedResumeData(data);
       localStorage.removeItem("ResumePreviewData");
@@ -244,7 +252,7 @@ export default function ResumeFromPdfPage() {
 
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             {/* ── LEFT PANEL ── */}
-            <div className="w-full lg:w-[380px] lg:shrink-0">
+            <div className="w-full lg:w-95 lg:shrink-0">
               <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-1">Resume from Existing PDF</h1>
               <p className="text-gray-500 text-sm mb-6">
                 Upload your resume PDF — AI extracts all your data and fills the form. No typing needed.
