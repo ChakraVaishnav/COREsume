@@ -52,17 +52,35 @@ export async function GET(req, context) {
     }
 
     const { searchParams } = new URL(req.url);
-    const takeRaw = Number.parseInt(searchParams.get("take") || "100", 10);
-    const take = Number.isFinite(takeRaw) ? Math.min(500, Math.max(1, takeRaw)) : 100;
+    const takeRaw = Number.parseInt(searchParams.get("take") || "50", 10);
+    const offsetRaw = Number.parseInt(searchParams.get("offset") || "0", 10);
+    const take = Number.isFinite(takeRaw) ? Math.min(200, Math.max(1, takeRaw)) : 50;
+    const offset = Number.isFinite(offsetRaw) ? Math.max(0, offsetRaw) : 0;
 
     const model = prisma[cfg.model];
     const [items, total] = await Promise.all([
-      model.findMany({ take, orderBy: cfg.orderBy }),
+      model.findMany({
+        take,
+        skip: offset,
+        orderBy: cfg.orderBy,
+      }),
       model.count(),
     ]);
 
+    const nextOffset = offset + items.length;
+    const hasMore = nextOffset < total;
+
     return withAdminCookies(
-      NextResponse.json({ resource, total, count: items.length, items }),
+      NextResponse.json({
+        resource,
+        total,
+        count: items.length,
+        offset,
+        take,
+        nextOffset,
+        hasMore,
+        items,
+      }),
       admin.cookieHeaders
     );
   } catch (err) {

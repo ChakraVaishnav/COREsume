@@ -101,7 +101,7 @@ html {
 .site-footer a { color: var(--primary-yellow); }
 .site-muted { color: var(--muted-gray); }
 
-a {
+a:not([class*="text-"]) {
   color: inherit;
 }
 
