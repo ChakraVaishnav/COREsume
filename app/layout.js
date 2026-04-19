@@ -3,6 +3,7 @@ import "./globals.css";
 import { Inter } from 'next/font/google';
 import Head from "next/head";
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/react";
 const inter = Inter({ subsets: ['latin'] });
 const merri = Merriweather({ subsets: ['latin'], weight: ['400','700'], display: 'swap', variable: '--font-merri' });
 const geistSans = Geist({
@@ -95,6 +96,7 @@ export default function RootLayout({ children }) {
         suppressHydrationWarning
       >
         {children}
+        <Analytics />
       </body>
     </html>
   );

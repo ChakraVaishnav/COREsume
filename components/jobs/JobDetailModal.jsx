@@ -34,12 +34,8 @@ export default function JobDetailModal({ job, onClose }) {
         </div>
 
         <div className="max-h-[65vh] space-y-5 overflow-y-auto p-5">
-          <Section title="Why this matches you">
-            <p className="text-sm text-gray-700">{job.whyItMatches || "-"}</p>
-          </Section>
-
-          <Section title="AI Summary">
-            <p className="text-sm text-gray-700">{job.aiSummary || "-"}</p>
+          <Section title="AI Reasoning">
+            <p className="whitespace-pre-line text-sm text-gray-700">{job.reasoning || "-"}</p>
           </Section>
 
           <Section title="Your Strengths">
@@ -50,13 +46,9 @@ export default function JobDetailModal({ job, onClose }) {
             <PillList items={job.missingSkills} className="bg-red-100 text-red-700" />
           </Section>
 
-          <Section title="How to improve your resume">
+          <Section title="ATS Keywords To Add">
             {Array.isArray(job.resumeImprovements) && job.resumeImprovements.length > 0 ? (
-              <ol className="list-decimal space-y-1 pl-5 text-sm text-gray-700">
-                {job.resumeImprovements.map((item, idx) => (
-                  <li key={`${item}-${idx}`}>{item}</li>
-                ))}
-              </ol>
+              <PillList items={job.resumeImprovements} className="bg-blue-100 text-blue-700" />
             ) : (
               <p className="text-sm text-gray-700">-</p>
             )}

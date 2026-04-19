@@ -68,6 +68,7 @@ export async function POST(req) {
     }
 
     let rawJobs;
+    let partialJobsMessage = "";
     try {
       rawJobs = await fetchJobs(jobQuery, location || "India", jobLimit);
     } catch (err) {
@@ -78,7 +79,19 @@ export async function POST(req) {
         location: location || "India",
       });
 
-      if (fetchError === "JOB_FETCH_EMPTY") {
+      if (err?.code === "JOB_FETCH_INSUFFICIENT" && Array.isArray(err?.jobs) && err.jobs.length > 0) {
+        const found = Number(err.found || err.jobs.length);
+        const required = Number(err.required || jobLimit);
+
+        rawJobs = err.jobs;
+        partialJobsMessage = `We can only find ${found} jobs for this role openings in the selected country, we can't find others right now.`;
+        console.warn("Partial jobs fetched", {
+          query: jobQuery,
+          location: location || "India",
+          found,
+          required,
+        });
+      } else if (fetchError === "JOB_FETCH_EMPTY") {
         const response = NextResponse.json({
           searchId: null,
           jobCount: 0,
@@ -86,20 +99,7 @@ export async function POST(req) {
           message: "No jobs found for this query and location.",
         });
         return appendSetCookieHeaders(response, auth.cookieHeaders);
-      }
-
-      if (fetchError === "APIFY_AUTH_FAILED" || fetchError === "APIFY_TOKEN_MISSING") {
-        const response = NextResponse.json(
-          {
-            error: "JOB_FETCH_FAILED",
-            message: "Job provider is not configured correctly. Please try again shortly.",
-          },
-          { status: 503 }
-        );
-        return appendSetCookieHeaders(response, auth.cookieHeaders);
-      }
-
-      if (fetchError === "JOB_FETCH_FAILED") {
+      } else if (fetchError === "JOB_FETCH_FAILED") {
         const response = NextResponse.json({
           searchId: null,
           jobCount: 0,
@@ -107,16 +107,16 @@ export async function POST(req) {
           message: "Job provider is temporarily unavailable. Please try again in a few minutes.",
         });
         return appendSetCookieHeaders(response, auth.cookieHeaders);
+      } else {
+        const response = NextResponse.json(
+          {
+            error: "JOB_FETCH_FAILED",
+            message: "Could not fetch jobs. Try again.",
+          },
+          { status: 503 }
+        );
+        return appendSetCookieHeaders(response, auth.cookieHeaders);
       }
-
-      const response = NextResponse.json(
-        {
-          error: "JOB_FETCH_FAILED",
-          message: "Could not fetch jobs. Try again.",
-        },
-        { status: 503 }
-      );
-      return appendSetCookieHeaders(response, auth.cookieHeaders);
     }
 
     let analyzedJobs;
@@ -154,10 +154,10 @@ export async function POST(req) {
       missingSkills: Array.isArray(job.missingSkills) ? job.missingSkills : [],
       strengths: Array.isArray(job.strengths) ? job.strengths : [],
       reasoning: job.reasoning || "",
-      aiSummary: job.aiSummary || null,
-      whyItMatches: job.whyItMatches || null,
-      resumeImprovements: Array.isArray(job.resumeImprovements)
-        ? job.resumeImprovements
+      aiSummary: null,
+      whyItMatches: null,
+      resumeImprovements: Array.isArray(job.keywordsToAdd)
+        ? job.keywordsToAdd
         : [],
       tier,
       expiresAt,
@@ -222,11 +222,15 @@ export async function POST(req) {
 
     await recordUsage(auth.userId, tier, jobsToStore.length, creditsAfterSearch);
 
-    const response = NextResponse.json({
+    const responsePayload = {
       searchId,
       jobCount: jobsToStore.length,
       jobs: jobsToStore,
-    });
+      message: partialJobsMessage || null,
+      partialResults: Boolean(partialJobsMessage),
+    };
+
+    const response = NextResponse.json(responsePayload);
 
     return appendSetCookieHeaders(response, auth.cookieHeaders);
   } catch (err) {
