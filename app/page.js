@@ -148,6 +148,7 @@ export default function Home() {
   const [authChecked, setAuthChecked] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [openFaq, setOpenFaq] = useState(0);
+  const [showHeroResume, setShowHeroResume] = useState(true);
   const featuresRef = useRef(null);
   const resumeCardRef = useRef(null);
   const [resumeCardStyle, setResumeCardStyle] = useState({
@@ -167,6 +168,16 @@ export default function Home() {
       }
     };
     checkAuth();
+  }, []);
+
+  useEffect(() => {
+    const updateHeroResumeVisibility = () => {
+      setShowHeroResume(window.innerWidth >= 850);
+    };
+
+    updateHeroResumeVisibility();
+    window.addEventListener("resize", updateHeroResumeVisibility);
+    return () => window.removeEventListener("resize", updateHeroResumeVisibility);
   }, []);
 
   const scrollToFeatures = () => {
@@ -298,59 +309,61 @@ export default function Home() {
               </div>
             </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, x: 22 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.48, delay: 0.1 }}
-              className="order-1 flex justify-center lg:order-2 lg:justify-end"
-            >
-              <div className="relative w-full max-w-md">
-                <div
-                  ref={resumeCardRef}
-                  onMouseMove={handleResumeCardMove}
-                  onMouseLeave={resetResumeCard}
-                  style={{
-                    transform: resumeCardStyle.transform,
-                    boxShadow: resumeCardStyle.boxShadow,
-                    transition: "transform 120ms ease-out, box-shadow 120ms ease-out",
-                    transformStyle: "preserve-3d",
-                  }}
-                  className="relative h-133 overflow-hidden rounded-3xl border border-zinc-300 bg-white shadow-lg"
-                >
-                  <div className="flex h-14 items-center justify-between border-b border-zinc-300 bg-[#ececef] px-6">
-                    <div className="flex items-center gap-2">
-                      <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
-                      <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
-                      <span className="h-3 w-3 rounded-full bg-[#28c840]" />
+            {showHeroResume && (
+              <motion.div
+                initial={{ opacity: 0, x: 22 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.48, delay: 0.1 }}
+                className="order-1 flex justify-center lg:order-2 lg:justify-end"
+              >
+                <div className="relative w-full max-w-md">
+                  <div
+                    ref={resumeCardRef}
+                    onMouseMove={handleResumeCardMove}
+                    onMouseLeave={resetResumeCard}
+                    style={{
+                      transform: resumeCardStyle.transform,
+                      boxShadow: resumeCardStyle.boxShadow,
+                      transition: "transform 120ms ease-out, box-shadow 120ms ease-out",
+                      transformStyle: "preserve-3d",
+                    }}
+                    className="relative h-133 overflow-hidden rounded-3xl border border-zinc-300 bg-white shadow-lg"
+                  >
+                    <div className="flex h-14 items-center justify-between border-b border-zinc-300 bg-[#ececef] px-6">
+                      <div className="flex items-center gap-2">
+                        <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
+                        <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
+                        <span className="h-3 w-3 rounded-full bg-[#28c840]" />
+                      </div>
+                      <p className="text-[10px] font-medium text-zinc-500">my_resume.pdf</p>
+                      <p className="text-[10px] font-medium text-zinc-500">Saved</p>
                     </div>
-                    <p className="text-[10px] font-medium text-zinc-500">my_resume.pdf</p>
-                    <p className="text-[10px] font-medium text-zinc-500">Saved</p>
-                  </div>
 
-                  <div className="px-9 pt-8">
-                    <div className="h-4 w-44 rounded-md bg-zinc-900" />
-                    <div className="mt-4 h-3 w-28 rounded-md bg-zinc-400" />
+                    <div className="px-9 pt-8">
+                      <div className="h-4 w-44 rounded-md bg-zinc-900" />
+                      <div className="mt-4 h-3 w-28 rounded-md bg-zinc-400" />
 
-                    <div className="mt-6 h-0.5 w-full bg-zinc-300" />
-                    <div className="mt-5 h-3 w-24 rounded-md bg-yellow-400" />
+                      <div className="mt-6 h-0.5 w-full bg-zinc-300" />
+                      <div className="mt-5 h-3 w-24 rounded-md bg-yellow-400" />
 
-                    <div className="mt-5 space-y-3">
-                      <div className="h-2.5 w-11/12 rounded-full bg-zinc-300" />
-                      <div className="h-2.5 w-10/12 rounded-full bg-zinc-300" />
-                      <div className="h-2.5 w-9/12 rounded-full bg-zinc-300" />
-                      <div className="h-2.5 w-full rounded-full bg-zinc-300" />
-                      <div className="h-2.5 w-11/12 rounded-full bg-zinc-300" />
-                      <div className="h-2.5 w-3/4 rounded-full bg-zinc-300" />
-                      <div className="h-2.5 w-11/12 rounded-full bg-zinc-300" />
-                      <div className="h-2.5 w-10/12 rounded-full bg-zinc-300" />
-                      <div className="h-2.5 w-full rounded-full bg-zinc-300" />
-                      <div className="h-2.5 w-11/12 rounded-full bg-zinc-300" />
-                      <div className="h-2.5 w-10/12 rounded-full bg-zinc-300" />
+                      <div className="mt-5 space-y-3">
+                        <div className="h-2.5 w-11/12 rounded-full bg-zinc-300" />
+                        <div className="h-2.5 w-10/12 rounded-full bg-zinc-300" />
+                        <div className="h-2.5 w-9/12 rounded-full bg-zinc-300" />
+                        <div className="h-2.5 w-full rounded-full bg-zinc-300" />
+                        <div className="h-2.5 w-11/12 rounded-full bg-zinc-300" />
+                        <div className="h-2.5 w-3/4 rounded-full bg-zinc-300" />
+                        <div className="h-2.5 w-11/12 rounded-full bg-zinc-300" />
+                        <div className="h-2.5 w-10/12 rounded-full bg-zinc-300" />
+                        <div className="h-2.5 w-full rounded-full bg-zinc-300" />
+                        <div className="h-2.5 w-11/12 rounded-full bg-zinc-300" />
+                        <div className="h-2.5 w-10/12 rounded-full bg-zinc-300" />
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </motion.div>
+              </motion.div>
+            )}
           </div>
         </section>
 
