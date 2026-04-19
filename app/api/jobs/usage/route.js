@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticateRequest } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
-import { resolveTier } from "@/lib/jobs/rateLimit";
+import { getISTDateKey, getNextISTMidnightUTCDate } from "@/lib/jobs/rateLimit";
 
 export const runtime = "nodejs";
 
@@ -32,29 +32,19 @@ export async function GET(req) {
       where: { userId: auth.userId },
     });
 
-    const tier = resolveTier(user, usage);
-    const todayUTC = new Date().toISOString().split("T")[0];
-
-    const tomorrow = new Date();
-    tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
-    tomorrow.setUTCHours(0, 0, 0, 0);
-
-    if (tier === "free") {
-      const usedToday = usage?.date === todayUTC ? usage.searchCount : 0;
-      const response = NextResponse.json({
-        tier: "free",
-        searchesUsedToday: usedToday,
-        searchesRemainingToday: Math.max(0, 1 - usedToday),
-        resetsAt: tomorrow.toISOString(),
-      });
-
-      return appendSetCookieHeaders(response, auth.cookieHeaders);
-    }
+    const todayIST = getISTDateKey();
+    const usedToday = usage?.date === todayIST ? Number(usage.searchCount || 0) : 0;
+    const freeSearchesRemainingToday = Math.max(0, 1 - usedToday);
+    const creditsRemaining = Number(user.creds || 0);
 
     const response = NextResponse.json({
-      tier: "premium",
-      creditsRemaining: user.creds || 0,
-      creditsNeededPerSearch: 5,
+      freeSearchesUsedToday: usedToday,
+      freeSearchesRemainingToday,
+      freeResetsAt: getNextISTMidnightUTCDate().toISOString(),
+      creditsRemaining,
+      creditsNeededPerPremiumSearch: 5,
+      canUseFreeSearch: freeSearchesRemainingToday > 0,
+      canUsePremiumSearch: creditsRemaining >= 5,
     });
 
     return appendSetCookieHeaders(response, auth.cookieHeaders);

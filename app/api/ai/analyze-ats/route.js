@@ -1,5 +1,6 @@
 // app/api/ai/analyze-ats/route.js
 import { generateGeminiResponse } from "../../../utils/gemini";
+import { authenticateRequest } from "@/lib/auth/session";
 
 // ─── Configuration ────────────────────────────────────────────────────────────
 
@@ -164,6 +165,11 @@ export async function POST(req) {
   const requestId = `ats_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
   try {
+    const auth = await authenticateRequest(req);
+    if (!auth?.userId) {
+      return Response.json({ error: "UNAUTHORIZED", message: "Unauthorized" }, { status: 401 });
+    }
+
     const formData = await req.formData();
     const file = formData.get("resume");
     if (!file) return Response.json({ error: "No file provided" }, { status: 400 });

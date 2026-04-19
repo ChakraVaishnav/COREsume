@@ -1,20 +1,33 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "../../../generated/prisma"; // use your correct path
+import { prisma } from "@/lib/prisma";
+import { authenticateRequest } from "@/lib/auth/session";
 import crypto from "crypto";
-
-const prisma = new PrismaClient();
 
 export async function POST(req) {
   try {
+    const auth = await authenticateRequest(req);
+    if (!auth?.userId) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
     const {
       razorpay_order_id,
       razorpay_payment_id,
       razorpay_signature,
-      email,
       credits,
     } = await req.json();
 
-    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !email || !credits) {
+    const creditsToAdd = Number(credits);
+    if (
+      !razorpay_order_id ||
+      !razorpay_payment_id ||
+      !razorpay_signature ||
+      !Number.isFinite(creditsToAdd) ||
+      creditsToAdd <= 0
+    ) {
       return NextResponse.json(
         { success: false, error: "Missing payment or user info" },
         { status: 400 }
@@ -38,8 +51,8 @@ export async function POST(req) {
       );
     }
 
-    // Step 2: Find user by email
-    const user = await prisma.user.findUnique({ where: { email } });
+    // Step 2: Find authenticated user
+    const user = await prisma.user.findUnique({ where: { id: auth.userId } });
 
     if (!user) {
       return NextResponse.json(
@@ -49,10 +62,10 @@ export async function POST(req) {
     }
 
     // Step 3: Add credits
-    const updatedCredits = (user.creds || 0) + credits;
+    const updatedCredits = (user.creds || 0) + creditsToAdd;
 
     await prisma.user.update({
-      where: { email },
+      where: { id: auth.userId },
       data: { creds: updatedCredits },
     });
 

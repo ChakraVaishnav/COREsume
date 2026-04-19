@@ -16,6 +16,8 @@ export default function JobsDashboardPage() {
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadingJobs, setLoadingJobs] = useState(false);
+  const [loadingUsage, setLoadingUsage] = useState(true);
+  const [usage, setUsage] = useState(null);
   const [jobs, setJobs] = useState([]);
   const [activeFilter, setActiveFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
@@ -67,6 +69,27 @@ export default function JobsDashboardPage() {
     }
   };
 
+  const loadUsage = async () => {
+    try {
+      const res = await fetch("/api/jobs/usage", {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        setUsage(null);
+        return;
+      }
+
+      const data = await res.json();
+      setUsage(data);
+    } catch {
+      setUsage(null);
+    } finally {
+      setLoadingUsage(false);
+    }
+  };
+
   const checkAuthAndLoadJobs = async () => {
     try {
       const authRes = await fetch("/api/user/credits", {
@@ -79,7 +102,10 @@ export default function JobsDashboardPage() {
         return;
       }
 
-      await loadJobs({ page: 1, filter: "All" });
+      await Promise.all([
+        loadJobs({ page: 1, filter: "All" }),
+        loadUsage(),
+      ]);
     } catch {
       router.push("/login");
     } finally {
@@ -107,13 +133,22 @@ export default function JobsDashboardPage() {
               </svg>
               Back to Dashboard
             </button>
-            <UsageBadge />
+            <UsageBadge
+              usage={usage}
+              loading={loadingUsage}
+            />
           </div>
 
           <div className="space-y-5">
             <JobSearchPanel
+              usage={usage}
+              loadingUsage={loadingUsage}
+              onUsageRefresh={loadUsage}
               onSearchSuccess={async () => {
-                await loadJobs({ page: 1, filter: activeFilter });
+                await Promise.all([
+                  loadJobs({ page: 1, filter: activeFilter }),
+                  loadUsage(),
+                ]);
               }}
             />
 

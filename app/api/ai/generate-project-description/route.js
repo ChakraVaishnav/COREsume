@@ -1,9 +1,19 @@
 // app/api/ai/generate-project-description/route.js
 
 import { generateGeminiResponse } from "../../../utils/gemini";
+import { NextResponse } from "next/server";
+import { authenticateRequest } from "@/lib/auth/session";
 
 export async function POST(req) {
   try {
+    const auth = await authenticateRequest(req);
+    if (!auth?.userId) {
+      return NextResponse.json(
+        { error: "UNAUTHORIZED", message: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const { projectTitle, jobRole, experienceLevel } = body;
 

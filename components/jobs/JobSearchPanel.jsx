@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+const JOBS_DRAFT_STORAGE_KEY = "jobsSearchDraftV1";
+
 const STEPS = [
   "Fetching jobs from job boards...",
   "Analyzing with AI...",
@@ -151,7 +153,12 @@ function pushBlock(lines, title, value) {
   lines.push(`${title}\n${text}`);
 }
 
-export default function JobSearchPanel({ onSearchSuccess }) {
+export default function JobSearchPanel({
+  usage,
+  loadingUsage,
+  onUsageRefresh,
+  onSearchSuccess,
+}) {
   const [resumeSource, setResumeSource] = useState("db");
   const [resumeText, setResumeText] = useState("");
   const [resumeData, setResumeData] = useState(null);
@@ -161,8 +168,6 @@ export default function JobSearchPanel({ onSearchSuccess }) {
 
   const [jobQuery, setJobQuery] = useState("");
   const [location, setLocation] = useState("India");
-  const [usage, setUsage] = useState(null);
-  const [loadingUsage, setLoadingUsage] = useState(true);
   const [progressStep, setProgressStep] = useState(-1);
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
@@ -171,14 +176,11 @@ export default function JobSearchPanel({ onSearchSuccess }) {
   const usageText = useMemo(() => {
     if (!usage) return "";
 
-    if (usage.tier === "free") {
-      if (usage.searchesRemainingToday > 0) {
-        return "1 search remaining today";
-      }
-      return `Resets in ${formatResetText(usage.resetsAt)}`;
+    if (Number(usage.freeSearchesRemainingToday || 0) > 0) {
+      return `1 free search remaining today (resets 12:00 AM IST)`;
     }
 
-    return `${usage.creditsRemaining || 0} credits remaining`;
+    return `Free search resets in ${formatResetText(usage.freeResetsAt)} (12:00 AM IST)`;
   }, [usage]);
 
   const effectiveResumeText = useMemo(() => {
@@ -191,27 +193,6 @@ export default function JobSearchPanel({ onSearchSuccess }) {
 
     return String(resumeText || "").trim();
   }, [resumeSource, dbResumeText, resumeText]);
-
-  const loadUsage = async () => {
-    try {
-      const res = await fetch("/api/jobs/usage", {
-        method: "GET",
-        credentials: "include",
-      });
-
-      if (!res.ok) {
-        setUsage(null);
-        return;
-      }
-
-      const data = await res.json();
-      setUsage(data);
-    } catch {
-      setUsage(null);
-    } finally {
-      setLoadingUsage(false);
-    }
-  };
 
   const loadResumeData = async () => {
     try {
@@ -234,11 +215,13 @@ export default function JobSearchPanel({ onSearchSuccess }) {
       const extracted = extractResumeTextFromData(data);
       setDbResumeText(extracted);
 
-      if (extracted) {
-        setResumeSource("db");
-      } else {
-        setResumeSource("paste");
-      }
+      setResumeSource((prev) => {
+        if (prev === "paste") {
+          return "paste";
+        }
+
+        return extracted ? "db" : "paste";
+      });
     } catch {
       setResumeSource("paste");
       setDbResumeText("");
@@ -249,9 +232,50 @@ export default function JobSearchPanel({ onSearchSuccess }) {
   };
 
   useEffect(() => {
-    loadUsage();
+    try {
+      const raw = localStorage.getItem(JOBS_DRAFT_STORAGE_KEY);
+      if (raw) {
+        const draft = JSON.parse(raw);
+        if (draft && typeof draft === "object") {
+          if (typeof draft.resumeSource === "string") {
+            setResumeSource(draft.resumeSource === "db" ? "db" : "paste");
+          }
+
+          if (typeof draft.resumeText === "string") {
+            setResumeText(draft.resumeText);
+          }
+
+          if (typeof draft.jobQuery === "string") {
+            setJobQuery(draft.jobQuery);
+          }
+
+          if (typeof draft.location === "string" && draft.location.trim()) {
+            setLocation(draft.location);
+          }
+        }
+      }
+    } catch {
+      // Ignore draft restore errors.
+    }
+
     loadResumeData();
   }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        JOBS_DRAFT_STORAGE_KEY,
+        JSON.stringify({
+          resumeSource,
+          resumeText,
+          jobQuery,
+          location,
+        })
+      );
+    } catch {
+      // Ignore draft save errors.
+    }
+  }, [resumeSource, resumeText, jobQuery, location]);
 
   useEffect(() => {
     if (!toastMessage) {
@@ -303,7 +327,7 @@ export default function JobSearchPanel({ onSearchSuccess }) {
     }
   };
 
-  const handleSearch = async () => {
+  const handleSearch = async (searchMode) => {
     setError("");
     setInfo("");
     setProgressStep(0);
@@ -320,6 +344,7 @@ export default function JobSearchPanel({ onSearchSuccess }) {
           resumeText: effectiveResumeText,
           jobQuery,
           location,
+          searchMode,
         }),
       });
 
@@ -327,7 +352,7 @@ export default function JobSearchPanel({ onSearchSuccess }) {
 
       if (!res.ok) {
         if (data?.error === "LIMIT_REACHED") {
-          setError(`Daily limit reached. Resets at ${data.resetsAt || "next day"}`);
+          setError(data?.message || `Daily free search used. Resets at ${data.resetsAt || "12:00 AM IST"}`);
         } else if (data?.error === "JOB_FETCH_FAILED") {
           setError("Could not find jobs. Try different keywords.");
         } else if (data?.error === "LLM_FAILED") {
@@ -337,7 +362,9 @@ export default function JobSearchPanel({ onSearchSuccess }) {
         }
 
         setProgressStep(-1);
-        await loadUsage();
+        if (typeof onUsageRefresh === "function") {
+          await onUsageRefresh();
+        }
         return;
       }
 
@@ -354,7 +381,9 @@ export default function JobSearchPanel({ onSearchSuccess }) {
         setInfo(data.message);
       }
 
-      await loadUsage();
+      if (typeof onUsageRefresh === "function") {
+        await onUsageRefresh();
+      }
     } catch {
       setError("Something went wrong.");
       setProgressStep(-1);
@@ -362,6 +391,8 @@ export default function JobSearchPanel({ onSearchSuccess }) {
   };
 
   const canSearch = Boolean(effectiveResumeText) && Boolean(jobQuery.trim()) && progressStep !== 1;
+  const canUseFreeSearch = usage ? Boolean(usage.canUseFreeSearch) : true;
+  const canUsePremiumSearch = usage ? Boolean(usage.canUsePremiumSearch) : true;
   const showResumeDataMissing = resumeSource === "db" && !loadingResumeData && !dbResumeText;
 
   return (
@@ -465,15 +496,27 @@ export default function JobSearchPanel({ onSearchSuccess }) {
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="text-sm font-medium text-gray-700">
-            {loadingUsage ? "Loading usage..." : usageText}
+            {loadingUsage
+              ? "Loading usage..."
+              : `${usageText} • ${Number(usage?.creditsRemaining || 0)} credits remaining`}
           </div>
-          <button
-            onClick={handleSearch}
-            disabled={!canSearch || loadingResumeData}
-            className="rounded-xl bg-yellow-400 px-4 py-2.5 text-sm font-bold text-black hover:bg-yellow-500 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            Search Jobs
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => handleSearch("free")}
+              disabled={!canSearch || loadingResumeData || loadingUsage || !canUseFreeSearch}
+              className="rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-800 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              Use Your Free Search
+            </button>
+
+            <button
+              onClick={() => handleSearch("premium")}
+              disabled={!canSearch || loadingResumeData || loadingUsage || !canUsePremiumSearch}
+              className="rounded-xl bg-yellow-400 px-4 py-2.5 text-sm font-bold text-black hover:bg-yellow-500 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              Fetch Premium Job Posts Using 5 Credits
+            </button>
+          </div>
         </div>
 
         {progressStep >= 0 && (

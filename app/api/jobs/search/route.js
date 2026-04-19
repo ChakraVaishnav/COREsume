@@ -3,7 +3,7 @@ import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { fetchJobs } from "@/lib/jobs/apify";
 import { analyzeJobs } from "@/lib/jobs/analyze";
-import { checkLimit, recordUsage, resolveTier } from "@/lib/jobs/rateLimit";
+import { checkLimit, recordUsage } from "@/lib/jobs/rateLimit";
 import { authenticateRequest } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
 
@@ -19,7 +19,7 @@ export async function POST(req) {
       );
     }
 
-    const { resumeText, jobQuery, location } = await req.json();
+    const { resumeText, jobQuery, location, searchMode } = await req.json();
     if (!resumeText || !jobQuery) {
       return NextResponse.json(
         {
@@ -29,6 +29,8 @@ export async function POST(req) {
         { status: 400 }
       );
     }
+
+    const normalizedSearchMode = searchMode === "premium" ? "premium" : "free";
 
     const user = await prisma.user.findUnique({
       where: { id: auth.userId },
@@ -42,15 +44,9 @@ export async function POST(req) {
       );
     }
 
-    const existingUsage = await prisma.jobUsage.findUnique({
-      where: { userId: auth.userId },
-      select: { tier: true },
-    });
+    const jobLimit = normalizedSearchMode === "premium" ? 30 : 10;
 
-    const tier = resolveTier(user, existingUsage);
-    const jobLimit = tier === "premium" ? 30 : 10;
-
-    const limitCheck = await checkLimit(auth.userId, tier, user.creds || 0);
+    const limitCheck = await checkLimit(auth.userId, normalizedSearchMode, user.creds || 0);
     if (!limitCheck.allowed) {
       const response = NextResponse.json(
         {
@@ -159,7 +155,7 @@ export async function POST(req) {
       resumeImprovements: Array.isArray(job.keywordsToAdd)
         ? job.keywordsToAdd
         : [],
-      tier,
+      tier: normalizedSearchMode,
       expiresAt,
     }));
 
@@ -206,7 +202,7 @@ export async function POST(req) {
         totalJobsSearched: { increment: jobsToStore.length },
       };
 
-      if (tier === "premium") {
+      if (normalizedSearchMode === "premium") {
         userUpdateData.creds = { decrement: 5 };
       }
 
@@ -216,11 +212,11 @@ export async function POST(req) {
       });
     });
 
-    const creditsAfterSearch = tier === "premium"
+    const creditsAfterSearch = normalizedSearchMode === "premium"
       ? Math.max(0, (user.creds || 0) - 5)
       : user.creds || 0;
 
-    await recordUsage(auth.userId, tier, jobsToStore.length, creditsAfterSearch);
+    await recordUsage(auth.userId, normalizedSearchMode, jobsToStore.length, creditsAfterSearch);
 
     const responsePayload = {
       searchId,
@@ -228,6 +224,7 @@ export async function POST(req) {
       jobs: jobsToStore,
       message: partialJobsMessage || null,
       partialResults: Boolean(partialJobsMessage),
+      searchMode: normalizedSearchMode,
     };
 
     const response = NextResponse.json(responsePayload);

@@ -1,4 +1,6 @@
 import Razorpay from 'razorpay';
+import { NextResponse } from "next/server";
+import { authenticateRequest } from "@/lib/auth/session";
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZOR_PAY_ID,
@@ -6,19 +8,34 @@ const razorpay = new Razorpay({
 });
 
 export async function POST(req) {
-  const { plan } = await req.json();
-
   try {
+    const auth = await authenticateRequest(req);
+    if (!auth?.userId) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const { plan } = await req.json();
+    const planPrice = Number(plan?.price);
+    if (!Number.isFinite(planPrice) || planPrice <= 0) {
+      return NextResponse.json(
+        { success: false, error: "Invalid plan price" },
+        { status: 400 }
+      );
+    }
+
     const options = {
-      amount: plan.price * 100, // Razorpay needs amount in paise
+      amount: Math.round(planPrice * 100), // Razorpay needs amount in paise
       currency: 'INR',
       receipt: `receipt_order_${Date.now()}`,
     };
 
     const order = await razorpay.orders.create(options);
 
-    return Response.json({ success: true, order });
+    return NextResponse.json({ success: true, order });
   } catch (error) {
-    return Response.json({ success: false, error: 'Order creation failed' }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Order creation failed' }, { status: 500 });
   }
 }

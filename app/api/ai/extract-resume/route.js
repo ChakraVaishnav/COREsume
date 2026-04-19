@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { generateGeminiResponse } from "../../../utils/gemini";
+import { authenticateRequest } from "@/lib/auth/session";
 
 const EXTRACTION_PROMPT = `Extract resume data into JSON.
 JSON Template:
@@ -17,6 +18,14 @@ Rules:
 
 export async function POST(req) {
   try {
+    const auth = await authenticateRequest(req);
+    if (!auth?.userId) {
+      return NextResponse.json(
+        { error: "UNAUTHORIZED", message: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
     const formData = await req.formData();
     const file = formData.get("resume");
 

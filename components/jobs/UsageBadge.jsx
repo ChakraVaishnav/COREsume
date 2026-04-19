@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 
 function formatCountdown(resetsAt) {
   if (!resetsAt) return "";
@@ -16,52 +16,18 @@ function formatCountdown(resetsAt) {
   return `${hours}h ${minutes}m`;
 }
 
-export default function UsageBadge() {
-  const [loading, setLoading] = useState(true);
-  const [usage, setUsage] = useState(null);
-
-  const loadUsage = async () => {
-    try {
-      const res = await fetch("/api/jobs/usage", {
-        method: "GET",
-        credentials: "include",
-      });
-
-      if (!res.ok) {
-        setUsage(null);
-        return;
-      }
-
-      const data = await res.json();
-      setUsage(data);
-    } catch {
-      setUsage(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadUsage();
-
-    const interval = setInterval(loadUsage, 60000);
-    return () => clearInterval(interval);
-  }, []);
+export default function UsageBadge({ usage, loading }) {
 
   const text = useMemo(() => {
     if (!usage) {
       return "Usage unavailable";
     }
 
-    if (usage.tier === "free") {
-      if (usage.searchesRemainingToday > 0) {
-        return "1 search left today";
-      }
-
-      return `Resets in ${formatCountdown(usage.resetsAt)}`;
+    if (Number(usage.freeSearchesRemainingToday || 0) > 0) {
+      return `1 free search left today • ${Number(usage.creditsRemaining || 0)} credits`;
     }
 
-    return `${usage.creditsRemaining || 0} credits remaining`;
+    return `Free resets in ${formatCountdown(usage.freeResetsAt)} • ${Number(usage.creditsRemaining || 0)} credits`;
   }, [usage]);
 
   if (loading) {
