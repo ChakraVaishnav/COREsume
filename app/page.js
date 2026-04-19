@@ -1,124 +1,36 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import Footer from "@/components/Footer";
 
-const NAV_LINKS = [
-  { href: "#how", label: "How it works" },
-  { href: "#features", label: "Features" },
-  { href: "#pricing", label: "Pricing" },
-];
-
-const MARQUEE_ITEMS = [
-  "ATS Friendly",
-  "AI Powered",
-  "Instant PDF",
-  "Free Templates",
-  "Job Matching",
-  "Skill Analysis",
-  "Get Hired Faster",
-];
-
-const STEPS = [
+const WHY_CHOOSE = [
   {
-    title: "Create Account",
-    description: "Sign up in seconds and start from your dashboard immediately.",
+    title: "Create Your Account",
+    desc: "Sign up in seconds and start your resume-building journey with a clean interface.",
+    icon: "account",
   },
   {
-    title: "Pick a Template",
-    description: "Choose from ATS-friendly templates built for readability.",
+    title: "Pick a Template You Like",
+    desc: "Choose from modern, professional resume templates designed for ATS and recruiters.",
+    icon: "template",
   },
   {
-    title: "Fill Your Details",
-    description: "Use AI support to improve summary, skills, and experience content.",
+    title: "Fill In Your Details",
+    desc: "Add education, experience, and skills. Formatting is handled automatically.",
+    icon: "edit",
   },
   {
-    title: "Download PDF",
-    description: "Export a clean and recruiter-ready PDF instantly.",
+    title: "Download Your Resume",
+    desc: "Preview and export a polished ATS-friendly PDF quickly.",
+    icon: "download",
   },
 ];
 
-const FEATURES = [
-  {
-    title: "Real ATS Scoring",
-    description: "Check ATS compatibility before applying and fix gaps early.",
-    tag: "Instant Score",
-  },
-  {
-    title: "AI Writing Assist",
-    description: "Generate stronger bullet points, summaries, and skill lines.",
-    tag: "Gemini Powered",
-  },
-  {
-    title: "Job Match Analysis",
-    description: "Understand missing keywords and improve fit for target roles.",
-    tag: "Premium Feature",
-  },
-  {
-    title: "Clean PDF Export",
-    description: "Download professional resumes that render consistently.",
-    tag: "Instant Download",
-  },
-];
-
-const PLANS = [
-  {
-    name: "Starter",
-    price: "₹29",
-    period: "/ one-time",
-    credits: "5 Credits",
-    featured: false,
-    features: [
-      "1 Credit = 1 AI action",
-      "Summary Auto Generation",
-      "Skills Auto Generation",
-      "Experience Quantifying",
-      "Project Description Quantifying",
-    ],
-  },
-  {
-    name: "Value Pack",
-    price: "₹49",
-    period: "/ one-time",
-    credits: "10 Credits",
-    featured: true,
-    features: [
-      "1 Credit = 1 AI action",
-      "Summary Auto Generation",
-      "Skills Auto Generation",
-      "Experience Quantifying",
-      "Project Description Quantifying",
-    ],
-  },
-  {
-    name: "Ultra Value Pack",
-    price: "₹99",
-    period: "/ one-time",
-    credits: "25 Credits",
-    featured: false,
-    features: [
-      "1 Credit = 1 AI action",
-      "Summary Auto Generation",
-      "Skills Auto Generation",
-      "Experience Quantifying",
-      "Project Description Quantifying",
-    ],
-  },
-];
-
-const TESTIMONIALS = [
-  {
-    username: "akkaris",
-    rating: 5,
-    comment: "Easy to use platform",
-  },
-  {
-    username: "neeraj",
-    rating: 5,
-    comment: "Good the resume templates are professional",
-  },
+const REVIEWS = [
+  { username: "akkaris", rating: 5, comment: "Easy to use platform" },
+  { username: "neeraj", rating: 5, comment: "Good the resume templates are professional" },
   {
     username: "Sidhu",
     rating: 5,
@@ -128,31 +40,88 @@ const TESTIMONIALS = [
 
 const FAQS = [
   {
-    question: "Does COREsume work on mobile?",
-    answer: "Yes. COREsume is responsive and works on mobile, tablet, and desktop.",
+    question: "Does it work on mobile devices?",
+    answer:
+      "Yes. COREsume is supported on mobile and desktop. For best editing comfort, desktop is recommended.",
   },
   {
-    question: "Will my resume pass ATS systems?",
-    answer: "Templates are ATS-friendly, and scoring helps improve before applying.",
+    question: "How many templates can I choose from?",
+    answer: "You can explore all available templates before purchase and choose what fits your profile.",
   },
   {
-    question: "What format will I download?",
-    answer: "You can export a polished, ATS-friendly PDF instantly.",
+    question: "Will I get an editable version of the resume?",
+    answer: "You will get a polished PDF output from the builder flow.",
   },
   {
-    question: "Can I edit after downloading?",
-    answer: "Yes. Your data stays in your dashboard, so you can re-edit anytime.",
-  },
-  {
-    question: "Is my data secure?",
-    answer: "COREsume uses secure auth, protected APIs, and trusted payments.",
+    question: "Is my data safe and secure?",
+    answer: "Yes. COREsume uses secure auth flow and protected APIs.",
   },
 ];
 
-function CircleCheck() {
+function IconCheckCircle() {
   return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
-      <path d="M20 6L9 17l-5-5" />
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.25" aria-hidden>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M8 12.5l2.5 2.5L16 9.5" />
+    </svg>
+  );
+}
+
+function IconUserPlus() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <path d="M15 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="8.5" cy="7" r="3.5" />
+      <path d="M19 8v6" />
+      <path d="M16 11h6" />
+    </svg>
+  );
+}
+
+function IconTemplate() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <path d="M3 10h18" />
+      <path d="M9 10v10" />
+    </svg>
+  );
+}
+
+function IconEditDocument() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <path d="M14 2v6h6" />
+      <path d="M8 14h8" />
+      <path d="M8 18h5" />
+    </svg>
+  );
+}
+
+function IconDownload() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <path d="M7 10l5 5 5-5" />
+      <path d="M12 15V3" />
+    </svg>
+  );
+}
+
+function WhyCardIcon({ type }) {
+  if (type === "account") return <IconUserPlus />;
+  if (type === "template") return <IconTemplate />;
+  if (type === "edit") return <IconEditDocument />;
+  if (type === "download") return <IconDownload />;
+  return <IconCheckCircle />;
+}
+
+function IconFeature() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <path d="M12 3v18" />
+      <path d="M3 12h18" />
     </svg>
   );
 }
@@ -160,11 +129,11 @@ function CircleCheck() {
 function StarRow({ count }) {
   return (
     <div className="flex items-center gap-1 text-yellow-500" aria-label={`${count} out of 5 stars`}>
-      {Array.from({ length: 5 }).map((_, index) => (
+      {Array.from({ length: 5 }).map((_, i) => (
         <svg
-          key={index}
+          key={i}
           viewBox="0 0 24 24"
-          className={`h-4 w-4 ${index < count ? "opacity-100" : "opacity-30"}`}
+          className={`h-4 w-4 ${i < count ? "opacity-100" : "opacity-25"}`}
           fill="currentColor"
           aria-hidden
         >
@@ -176,483 +145,298 @@ function StarRow({ count }) {
 }
 
 export default function Home() {
-  const [openFaq, setOpenFaq] = useState(0);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
-  const [showHeroResume, setShowHeroResume] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [openFaq, setOpenFaq] = useState(0);
+  const featuresRef = useRef(null);
+  const resumeCardRef = useRef(null);
+  const [resumeCardStyle, setResumeCardStyle] = useState({
+    transform: "perspective(1200px) rotateX(0deg) rotateY(0deg) translate3d(0,0,0) scale(1)",
+    boxShadow: "0 16px 40px rgba(0,0,0,0.08), inset 0 0 0 rgba(0,0,0,0)",
+  });
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const res = await fetch("/api/user/info", { credentials: "include" });
         setIsAuthenticated(res.ok);
-      } catch (err) {
-        console.debug("auth check failed", err);
+      } catch {
+        setIsAuthenticated(false);
       } finally {
         setAuthChecked(true);
       }
     };
-
     checkAuth();
   }, []);
 
-  useEffect(() => {
-    const updateHeroVisibility = () => {
-      const shouldHideResume = window.innerWidth < 850 || window.innerHeight < 640;
-      setShowHeroResume(!shouldHideResume);
-    };
+  const scrollToFeatures = () => {
+    featuresRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
-    updateHeroVisibility();
-    window.addEventListener("resize", updateHeroVisibility);
-    return () => window.removeEventListener("resize", updateHeroVisibility);
-  }, []);
+  const handleResumeCardMove = (event) => {
+    const cardEl = resumeCardRef.current;
+    if (!cardEl) return;
+
+    const rect = cardEl.getBoundingClientRect();
+    const px = (event.clientX - rect.left) / rect.width;
+    const py = (event.clientY - rect.top) / rect.height;
+
+    const nx = Math.max(-1, Math.min(1, (px - 0.5) * 2));
+    const ny = Math.max(-1, Math.min(1, (py - 0.5) * 2));
+
+    const rotateY = -(nx * 7);
+    const rotateX = ny * 6;
+    const translateX = nx * 6;
+    const translateY = ny * 4;
+    const insetX = -nx * 18;
+    const insetY = -ny * 12;
+
+    setResumeCardStyle({
+      transform: `perspective(1200px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translate3d(${translateX.toFixed(2)}px, ${translateY.toFixed(2)}px, 0) scale(0.996)`,
+      boxShadow: `0 16px 40px rgba(0,0,0,0.08), inset ${insetX.toFixed(1)}px ${insetY.toFixed(1)}px 24px rgba(0,0,0,0.08)`,
+    });
+  };
+
+  const resetResumeCard = () => {
+    setResumeCardStyle({
+      transform: "perspective(1200px) rotateX(0deg) rotateY(0deg) translate3d(0,0,0) scale(1)",
+      boxShadow: "0 16px 40px rgba(0,0,0,0.08), inset 0 0 0 rgba(0,0,0,0)",
+    });
+  };
 
   return (
-    <div className="min-h-screen bg-white text-[#0f0f0f]">
-      <header className="sticky top-0 z-50 border-b border-zinc-200 bg-white/90 backdrop-blur-xl">
+    <div className="min-h-screen bg-[#f7f7f8] text-[#111827]">
+      <header className="sticky top-0 z-40 border-b border-zinc-200 bg-white/95 backdrop-blur">
         <div className="flex h-16 w-full items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="text-xl font-extrabold tracking-tight text-[#0f0f0f]">
+          <Link href="/" className="text-2xl font-extrabold tracking-tight [font-family:var(--font-heading)]">
             <span className="text-black">CORE</span>
             <span className="text-yellow-500">sume</span>
           </Link>
 
-          <nav className="flex items-center gap-2 lg:gap-8">
-            <ul className="hidden items-center gap-6 lg:flex">
-              {NAV_LINKS.map((item) => (
-                <li key={item.label}>
-                  <a href={item.href} className="text-sm font-medium text-zinc-600 transition hover:text-zinc-900">
-                    {item.label}
-                  </a>
-                </li>
+          <nav className="flex items-center gap-2 sm:gap-3">
+            {authChecked &&
+              (isAuthenticated ? (
+                <Link
+                  href="/dashboard"
+                  className="rounded-md bg-yellow-400 px-4 py-2 text-xs font-bold text-black transition hover:bg-yellow-300 sm:text-sm"
+                >
+                  Dashboard
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    className="rounded-md border border-zinc-300 px-4 py-2 text-xs font-semibold text-zinc-900 transition hover:bg-zinc-50 sm:text-sm"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    href="/signup"
+                    className="rounded-md bg-yellow-400 px-4 py-2 text-xs font-bold text-black transition hover:bg-yellow-300 sm:text-sm"
+                  >
+                    Sign Up
+                  </Link>
+                </>
               ))}
-            </ul>
-            {authChecked && isAuthenticated && (
-              <Link
-                href="/dashboard"
-                className="rounded-lg bg-yellow-400 px-4 py-2 text-xs font-bold text-black transition hover:bg-[#e6bc00] sm:text-sm"
-              >
-                Dashboard
-              </Link>
-            )}
           </nav>
         </div>
       </header>
 
       <main>
-        <section
-          className={`grid w-full gap-8 px-4 pb-10 pt-10 sm:px-6 lg:gap-10 lg:px-8 lg:pt-12 ${
-            showHeroResume ? "grid-cols-2" : "grid-cols-1"
-          }`}
-        >
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45 }}
-            className="max-w-2xl"
-          >
-            <p className="mb-7 inline-flex items-center gap-2 rounded-full border border-yellow-400/30 bg-yellow-50 px-3 py-1 text-[11px] font-bold tracking-[0.16em] text-[#856a00] uppercase">
-              <span className="inline-block h-1.5 w-1.5 rounded-full bg-yellow-400" />
-              ATS-Optimized Resume Builder
-            </p>
-
-            <h1 className="font-display mb-4 text-3xl leading-[1.08] tracking-tight text-[#0f0f0f] sm:text-4xl md:text-5xl lg:text-6xl">
-              Build a resume
-              <br />
-              that gets you
-              <br />
-              <span className="relative inline-block">
-                interviews.
-                <span className="absolute bottom-1 left-0 right-0 -z-10 h-2.5 rounded-sm bg-yellow-400/60" />
-              </span>
-            </h1>
-
-            <p className="mb-6 max-w-xl text-base leading-7 text-zinc-600 sm:text-lg">
-              COREsume builds clean, ATS-friendly resumes in minutes. Pick a template, fill your details, and download a polished PDF.
-            </p>
-
-            <div className="mb-4 flex flex-wrap items-center gap-3">
-              {authChecked && isAuthenticated && (
-                <Link
-                  href="/dashboard"
-                  className="inline-flex items-center gap-2 rounded-xl bg-yellow-400 px-8 py-3.5 text-sm font-bold text-black transition hover:-translate-y-0.5 hover:bg-[#e6bc00]"
-                >
-                  Dashboard
-                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
-                    <path d="M5 12h14" />
-                    <path d="M12 5l7 7-7 7" />
-                  </svg>
-                </Link>
-              )}
-              <a
-                href="#how"
-                className="rounded-xl border border-zinc-200 px-8 py-3.5 text-sm font-semibold text-zinc-900 transition hover:border-zinc-900 hover:bg-zinc-50"
-              >
-                See how it works
-              </a>
-            </div>
-
-            <p className="text-xs text-zinc-400">
-              <span className="font-semibold text-emerald-600">✓</span> No credit card required · Free to start · Takes 2 minutes
-            </p>
-          </motion.div>
-
-          {showHeroResume && (
+        <section className="px-4 pb-12 pt-8 sm:px-6 lg:px-8 lg:pt-12">
+          <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-8 lg:grid-cols-2 lg:items-start">
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.45, delay: 0.08 }}
-              className="relative"
+              transition={{ duration: 0.45 }}
+              className="order-2 flex flex-col items-start text-left lg:order-1"
             >
-              <div
-                className="relative mx-auto w-full overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.05),0_24px_64px_rgba(0,0,0,0.08)]"
-                style={{ aspectRatio: "210 / 297", maxWidth: "clamp(230px, 33vw, 360px)" }}
+
+              <motion.h1
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.45, delay: 0.05 }}
+                className="max-w-xl text-4xl font-extrabold leading-tight text-[#111827] sm:text-5xl [font-family:var(--font-heading)]"
               >
-                <div className="flex items-center justify-between border-b border-zinc-200 bg-zinc-50 px-5 py-3.5">
-                  <div className="flex gap-1.5">
-                    <span className="h-2.5 w-2.5 rounded-full bg-[#FF6058]" />
-                    <span className="h-2.5 w-2.5 rounded-full bg-[#FFBE2E]" />
-                    <span className="h-2.5 w-2.5 rounded-full bg-[#2AC84B]" />
-                  </div>
-                  <span className="text-[11px] font-medium text-zinc-400">my_resume.pdf</span>
-                  <span className="text-[11px] text-zinc-400">Saved</span>
-                </div>
+                Build a <span className="inline-block text-[1.4em] leading-none text-yellow-500 align-[-0.08em]">ATS</span> Friendly Job-Winning Resume in Minutes
+              </motion.h1>
 
-                <div className="space-y-2.5 p-6 sm:p-7">
-                  <div className="h-3.5 w-[45%] rounded bg-zinc-900" />
-                  <div className="mb-1 h-2 w-[30%] rounded bg-zinc-400" />
-                  <div className="my-2 h-px bg-zinc-200" />
-                  <div className="mb-2 h-2 w-[25%] rounded bg-yellow-400" />
-                  {["92%", "86%", "78%", "95%", "90%", "88%", "73%", "89%", "84%", "97%", "91%", "88%"].map((width, i) => (
-                    <div
-                      key={`${width}-${i}`}
-                      className="h-1.5 rounded bg-zinc-200"
-                      style={{ width, animation: `shimmer 2s ${0.1 + i * 0.08}s ease-in-out infinite` }}
-                    />
+              <p className="mt-5 max-w-xl text-base leading-7 text-zinc-600 sm:text-lg">
+                Your resume is your first impression. COREsume helps you create clear, modern resumes with strong ATS readability.
+              </p>
+
+              <p className="mt-2 max-w-xl text-sm leading-7 text-zinc-500 sm:text-base">
+                Built for students, freshers, and experienced professionals aiming for better responses.
+              </p>
+              <p className="max-w-xl text-sm leading-7 text-zinc-500 sm:text-base">
+                Make every section recruiter-ready with clean structure, strong impact, and clear relevance.
+              </p>
+
+              <div className="mt-7 flex flex-wrap items-center gap-3">
+                <button
+                  onClick={scrollToFeatures}
+                  className="rounded-md bg-yellow-400 px-7 py-3 text-sm font-bold text-black transition hover:bg-yellow-300"
+                >
+                  Learn More
+                </button>
+                {authChecked &&
+                  (isAuthenticated ? (
+                    <Link
+                      href="/dashboard"
+                      className="rounded-md border border-zinc-300 px-7 py-3 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50"
+                    >
+                      Dashboard
+                    </Link>
+                  ) : (
+                    <Link
+                      href="/signup"
+                      className="rounded-md border border-zinc-300 px-7 py-3 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50"
+                    >
+                      Start Building
+                    </Link>
                   ))}
-                </div>
               </div>
+            </motion.div>
 
-              <div className="absolute -right-4 -top-4 flex h-20 w-20 flex-col items-center justify-center rounded-full border-[3px] border-white bg-yellow-400 shadow-[0_4px_24px_rgba(245,200,0,0.4)]">
-                <span className="text-[22px] font-extrabold leading-none text-black">98</span>
-                <span className="text-[8px] font-bold tracking-[0.12em] text-[#6b5800] uppercase">ATS</span>
-              </div>
+            <motion.div
+              initial={{ opacity: 0, x: 22 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.48, delay: 0.1 }}
+              className="order-1 flex justify-center lg:order-2 lg:justify-end"
+            >
+              <div className="relative w-full max-w-md">
+                <div
+                  ref={resumeCardRef}
+                  onMouseMove={handleResumeCardMove}
+                  onMouseLeave={resetResumeCard}
+                  style={{
+                    transform: resumeCardStyle.transform,
+                    boxShadow: resumeCardStyle.boxShadow,
+                    transition: "transform 120ms ease-out, box-shadow 120ms ease-out",
+                    transformStyle: "preserve-3d",
+                  }}
+                  className="relative h-133 overflow-hidden rounded-3xl border border-zinc-300 bg-white shadow-lg"
+                >
+                  <div className="flex h-14 items-center justify-between border-b border-zinc-300 bg-[#ececef] px-6">
+                    <div className="flex items-center gap-2">
+                      <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
+                      <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
+                      <span className="h-3 w-3 rounded-full bg-[#28c840]" />
+                    </div>
+                    <p className="text-[10px] font-medium text-zinc-500">my_resume.pdf</p>
+                    <p className="text-[10px] font-medium text-zinc-500">Saved</p>
+                  </div>
 
-              <div className="absolute -bottom-4 -left-4 flex items-center gap-2.5 rounded-xl border border-zinc-200 bg-white px-3.5 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.1)]">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
-                  <CircleCheck />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-zinc-900">ATS Ready</p>
-                  <p className="text-[10px] text-zinc-400">Passes major filters</p>
+                  <div className="px-9 pt-8">
+                    <div className="h-4 w-44 rounded-md bg-zinc-900" />
+                    <div className="mt-4 h-3 w-28 rounded-md bg-zinc-400" />
+
+                    <div className="mt-6 h-0.5 w-full bg-zinc-300" />
+                    <div className="mt-5 h-3 w-24 rounded-md bg-yellow-400" />
+
+                    <div className="mt-5 space-y-3">
+                      <div className="h-2.5 w-11/12 rounded-full bg-zinc-300" />
+                      <div className="h-2.5 w-10/12 rounded-full bg-zinc-300" />
+                      <div className="h-2.5 w-9/12 rounded-full bg-zinc-300" />
+                      <div className="h-2.5 w-full rounded-full bg-zinc-300" />
+                      <div className="h-2.5 w-11/12 rounded-full bg-zinc-300" />
+                      <div className="h-2.5 w-3/4 rounded-full bg-zinc-300" />
+                      <div className="h-2.5 w-11/12 rounded-full bg-zinc-300" />
+                      <div className="h-2.5 w-10/12 rounded-full bg-zinc-300" />
+                      <div className="h-2.5 w-full rounded-full bg-zinc-300" />
+                      <div className="h-2.5 w-11/12 rounded-full bg-zinc-300" />
+                      <div className="h-2.5 w-10/12 rounded-full bg-zinc-300" />
+                    </div>
+                  </div>
                 </div>
               </div>
             </motion.div>
-          )}
-        </section>
-
-        <section className="overflow-hidden border-y border-zinc-200 bg-zinc-50 px-4 py-7 sm:px-6 lg:px-8">
-          <div className="flex w-max gap-12" style={{ animation: "marquee 22s linear infinite" }}>
-            {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, index) => (
-              <div key={`${item}-${index}`} className="flex items-center gap-2.5 text-xs font-semibold tracking-[0.08em] text-zinc-400 uppercase">
-                <span className="h-1 w-1 rounded-full bg-yellow-400" />
-                <span>{item}</span>
-              </div>
-            ))}
           </div>
         </section>
 
-        <section id="how" className="border-y border-zinc-200 bg-zinc-50">
-          <div className="w-full px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
-            <motion.p
-              initial={{ opacity: 0, y: 14 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-              viewport={{ once: true }}
-              className="mb-4 text-[11px] font-bold tracking-[0.18em] text-zinc-400 uppercase"
-            >
-              How it works
-            </motion.p>
-            <motion.h2
-              initial={{ opacity: 0, y: 14 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.05 }}
-              viewport={{ once: true }}
-              className="font-display text-3xl leading-[1.1] tracking-tight text-zinc-900 sm:text-4xl"
-            >
-              Four steps to your <span className="text-zinc-600 italic">perfect resume.</span>
-            </motion.h2>
+        <section ref={featuresRef} id="features" className="px-4 pb-12 sm:px-6 lg:px-8">
+          <div className="w-full rounded-3xl border border-zinc-200 bg-zinc-50 px-4 py-10 sm:px-8">
+            <h2 className="text-center text-3xl font-extrabold text-[#111827] sm:text-4xl [font-family:var(--font-heading)]">
+              Why Choose CORE<span className="text-yellow-500">sume</span>?
+            </h2>
 
-            <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.45, delay: 0.08 }}
-                viewport={{ once: true }}
-                className="grid grid-cols-1 gap-3 sm:grid-cols-2"
-              >
-                {STEPS.map((step, index) => (
-                  <article key={step.title} className="rounded-xl border border-zinc-200 bg-white px-4 py-5">
-                    <p className="font-display mb-2 text-xs italic text-zinc-400">{String(index + 1).padStart(2, "0")}</p>
-                    <div className="mb-3 inline-flex h-8 w-8 items-center justify-center rounded-lg bg-yellow-50 text-zinc-700">
-                      <CircleCheck />
-                    </div>
-                    <h3 className="mb-1 text-sm font-bold text-zinc-900">{step.title}</h3>
-                    <p className="text-xs leading-5 text-zinc-600">{step.description}</p>
-                  </article>
-                ))}
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.45, delay: 0.1 }}
-                viewport={{ once: true }}
-                className="rounded-xl border border-zinc-200 bg-white p-3 shadow-sm"
-              >
-                <p className="mb-3 text-sm font-bold text-zinc-800">Product walkthrough</p>
-                <video src="/COREsume%20DEMO.mp4" controls className="w-full rounded-lg border border-zinc-200" />
-              </motion.div>
+            <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
+              {WHY_CHOOSE.map((item) => (
+                <article key={item.title} className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+                  <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-yellow-50 text-yellow-600">
+                    <WhyCardIcon type={item.icon} />
+                  </div>
+                  <h3 className="text-2xl font-semibold text-zinc-900 [font-family:var(--font-heading)]">{item.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-zinc-600">{item.desc}</p>
+                </article>
+              ))}
             </div>
           </div>
         </section>
 
-        <section id="features" className="w-full px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
-          <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35 }}
-            viewport={{ once: true }}
-            className="mb-4 text-[11px] font-bold tracking-[0.18em] text-zinc-400 uppercase"
-          >
-            Features
-          </motion.p>
-          <motion.h2
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, delay: 0.05 }}
-            viewport={{ once: true }}
-            className="font-display text-3xl leading-[1.1] tracking-tight text-zinc-900 sm:text-4xl"
-          >
-            Everything you need.
-            <br />
-            <span className="text-zinc-600 italic">Nothing you do not.</span>
-          </motion.h2>
+        <section id="how" className="px-4 pb-12 pt-4 sm:px-6 lg:px-8">
+          <h2 className="mb-6 text-center text-3xl font-extrabold text-[#111827] sm:text-4xl [font-family:var(--font-heading)]">
+            How CORE<span className="text-yellow-500">sume</span> Works
+          </h2>
 
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.08 }}
-            viewport={{ once: true }}
-            className="mt-8 grid grid-cols-1 gap-3 md:grid-cols-2"
-          >
-            {FEATURES.map((feature) => (
-              <article key={feature.title} className="rounded-xl border border-zinc-200 bg-white px-5 py-5 transition hover:bg-zinc-50">
-                <div className="mb-3 inline-flex h-8 w-8 items-center justify-center rounded-lg bg-yellow-50 text-zinc-700">
-                  <CircleCheck />
-                </div>
-                <h3 className="mb-1 text-base font-bold text-zinc-900">{feature.title}</h3>
-                <p className="text-sm leading-6 text-zinc-600">{feature.description}</p>
-                <span className="mt-3 inline-block rounded-full bg-yellow-50 px-2 py-0.5 text-[10px] font-bold tracking-[0.12em] text-[#856a00] uppercase">
-                  {feature.tag}
-                </span>
-              </article>
-            ))}
-          </motion.div>
-        </section>
-
-        <section id="pricing" className="border-y border-zinc-200 bg-zinc-50">
-          <div className="w-full px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
-            <motion.h2
-              initial={{ opacity: 0, y: 12 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35 }}
-              viewport={{ once: true }}
-              className="text-center text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl"
-            >
-              Choose Your AI Credit Plan
-            </motion.h2>
-            <p className="mt-2 text-center text-base text-zinc-500">1 Credit = 1 AI action to improve your resume</p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 18 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.08 }}
-              viewport={{ once: true }}
-              className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-3"
-            >
-              {PLANS.map((plan) => (
-                <article
-                  key={plan.name}
-                  className={`relative flex flex-col rounded-xl border bg-white px-5 py-6 transition hover:shadow-[0_8px_32px_rgba(0,0,0,0.08)] ${
-                    plan.featured ? "border-yellow-400" : "border-zinc-200"
-                  }`}
-                >
-                  {plan.featured && (
-                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-yellow-400 px-3 py-1 text-xs font-bold text-black">
-                      Most Popular
-                    </span>
-                  )}
-
-                  <p className="mb-3 text-2xl font-bold text-zinc-900">{plan.name}</p>
-                  <p className="text-4xl font-bold text-zinc-900">
-                    {plan.price} <span className="text-lg font-medium text-zinc-400">{plan.period}</span>
-                  </p>
-                  <p className="mt-3 text-2xl font-bold text-yellow-600">{plan.credits}</p>
-
-                  <ul className="mb-6 mt-5 space-y-2 text-base text-zinc-600">
-                    {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-2.5">
-                        <span className="mt-1 text-yellow-500">
-                          <CircleCheck />
-                        </span>
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <Link
-                    href="/pricing"
-                    className={`mt-auto rounded-xl px-6 py-3 text-center text-2xl font-bold transition ${
-                      plan.featured
-                        ? "bg-yellow-400 text-black hover:bg-[#e6bc00]"
-                        : "border border-yellow-400 text-black hover:bg-yellow-50"
-                    }`}
-                  >
-                    Buy Now
-                  </Link>
-                </article>
-              ))}
-            </motion.div>
+          <div className="mx-auto max-w-5xl overflow-hidden rounded-xl border border-zinc-200 bg-white p-3 shadow-sm">
+            <video src="/COREsume%20DEMO.mp4" controls className="w-full rounded-lg" />
           </div>
         </section>
 
-        <section className="w-full px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
-          <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35 }}
-            viewport={{ once: true }}
-            className="mb-4 text-[11px] font-bold tracking-[0.18em] text-zinc-400 uppercase"
-          >
-            Real user ratings
-          </motion.p>
-          <motion.h2
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, delay: 0.05 }}
-            viewport={{ once: true }}
-            className="font-display text-4xl leading-[1.05] tracking-tight text-zinc-900 sm:text-5xl"
-          >
-            Trusted by users.
-          </motion.h2>
-
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.08 }}
-            viewport={{ once: true }}
-            className="mt-10 grid grid-cols-1 gap-5 lg:grid-cols-3"
-          >
-            {TESTIMONIALS.map((item) => (
-              <article key={item.username} className="rounded-xl border border-zinc-200 bg-zinc-50 px-7 py-7 transition hover:border-yellow-400">
+        <section className="px-4 pb-12 sm:px-6 lg:px-8">
+          <h2 className="mb-6 text-center text-3xl font-extrabold text-[#111827] sm:text-4xl [font-family:var(--font-heading)]">
+            Real User Reviews
+          </h2>
+          <div className="mx-auto grid max-w-6xl grid-cols-1 gap-4 md:grid-cols-3">
+            {REVIEWS.map((item) => (
+              <article key={item.username} className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
                 <StarRow count={item.rating} />
-                <p className="mt-4 text-base leading-7 text-zinc-700">{item.comment}</p>
-                <p className="mt-4 text-sm font-bold text-zinc-900">@{item.username}</p>
+                <p className="mt-3 text-sm leading-6 text-zinc-700">{item.comment}</p>
+                <p className="mt-3 text-sm font-bold text-zinc-900">@{item.username}</p>
               </article>
             ))}
-          </motion.div>
+          </div>
         </section>
 
-        <section className="border-y border-zinc-200 bg-zinc-50">
-          <div className="w-full px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
-            <motion.p
-              initial={{ opacity: 0, y: 12 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35 }}
-              viewport={{ once: true }}
-              className="mb-4 text-center text-[11px] font-bold tracking-[0.18em] text-zinc-400 uppercase"
-            >
-              FAQ
-            </motion.p>
-            <motion.h2
-              initial={{ opacity: 0, y: 12 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, delay: 0.05 }}
-              viewport={{ once: true }}
-              className="font-display text-center text-4xl leading-[1.05] tracking-tight text-zinc-900 sm:text-5xl"
-            >
-              Common <span className="text-zinc-600 italic">questions.</span>
-            </motion.h2>
+        <section className="px-4 pb-12 pt-2 sm:px-6 lg:px-8">
+          <h2 className="mb-6 text-center text-3xl font-extrabold text-[#111827] sm:text-4xl [font-family:var(--font-heading)]">
+            Frequently Asked Questions
+          </h2>
 
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.08 }}
-              viewport={{ once: true }}
-              className="mx-auto mt-10 w-full max-w-4xl"
-            >
-              {FAQS.map((faq, index) => {
-                const isOpen = openFaq === index;
-                return (
-                  <article key={faq.question} className="border-t border-zinc-200 py-5 last:border-b">
-                    <button
-                      type="button"
-                      onClick={() => setOpenFaq(isOpen ? -1 : index)}
-                      className="flex w-full items-center justify-between gap-4 text-left"
-                    >
-                      <h4 className="text-[15px] font-semibold text-zinc-900">{faq.question}</h4>
-                      <span
-                        className={`inline-flex h-7 w-7 items-center justify-center rounded-full border text-base font-light transition ${
-                          isOpen
-                            ? "border-yellow-400 bg-yellow-400 text-black rotate-45"
-                            : "border-zinc-200 text-zinc-400"
-                        }`}
-                      >
-                        +
+          <div className="mx-auto max-w-5xl space-y-3">
+            {FAQS.map((faq, index) => {
+              const isOpen = openFaq === index;
+              return (
+                <article key={faq.question} className="rounded-xl border border-zinc-200 bg-white px-5 py-4 shadow-sm">
+                  <button
+                    type="button"
+                    onClick={() => setOpenFaq(isOpen ? -1 : index)}
+                    className="flex w-full items-center justify-between gap-3 text-left"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-yellow-50 text-yellow-600">
+                        <IconCheckCircle />
                       </span>
-                    </button>
-                    <motion.div
-                      initial={false}
-                      animate={{ height: isOpen ? "auto" : 0, opacity: isOpen ? 1 : 0 }}
-                      transition={{ duration: 0.24, ease: "easeInOut" }}
-                      className="overflow-hidden"
+                      <h3 className="text-base font-semibold text-zinc-900">{faq.question}</h3>
+                    </div>
+                    <span
+                      className={`inline-flex h-7 w-7 items-center justify-center rounded-full border text-sm transition ${
+                        isOpen ? "border-yellow-400 bg-yellow-400 text-black" : "border-zinc-200 text-zinc-500"
+                      }`}
                     >
-                      <p className="pt-3 text-sm leading-7 text-zinc-600">{faq.answer}</p>
-                    </motion.div>
-                  </article>
-                );
-              })}
-            </motion.div>
+                      {isOpen ? "-" : "+"}
+                    </span>
+                  </button>
+                  {isOpen && <p className="pt-3 text-sm leading-6 text-zinc-600">{faq.answer}</p>}
+                </article>
+              );
+            })}
           </div>
         </section>
       </main>
 
       <Footer />
-
-      <style jsx global>{`
-        html {
-          scroll-behavior: smooth;
-        }
-
-        @keyframes marquee {
-          from {
-            transform: translateX(0);
-          }
-          to {
-            transform: translateX(-50%);
-          }
-        }
-
-        @keyframes shimmer {
-          0%,
-          100% {
-            opacity: 0.45;
-          }
-          50% {
-            opacity: 1;
-          }
-        }
-      `}</style>
     </div>
   );
 }

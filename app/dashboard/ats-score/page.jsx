@@ -108,7 +108,7 @@ export default function AtsScorePage() {
           {/* Split layout */}
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             {/* ── LEFT: Upload panel ── */}
-            <div className="w-full lg:w-[420px] lg:shrink-0">
+            <div className="w-full lg:w-105 lg:shrink-0">
               <h1 className="text-2xl sm:text-3xl font-extrabold text-black mb-1">ATS Score Checker</h1>
               <p className="text-gray-500 text-sm mb-6">
                 Upload your resume PDF — AI will score it and suggest improvements.
@@ -161,7 +161,7 @@ export default function AtsScorePage() {
               <button
                 onClick={analyze}
                 disabled={!file || analyzing}
-                className="w-full py-3.5 rounded-xl font-bold text-black bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full py-3.5 rounded-xl font-bold text-black bg-linear-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {analyzing ? (
                   <>
@@ -190,9 +190,8 @@ export default function AtsScorePage() {
                     "ATS score based on essential sections",
                     "Missing contact details (email, phone, LinkedIn, GitHub)",
                     "Missing sections (summary, skills, projects, etc.)",
-                    "Bullet points with no measurable impact",
                     "Spelling & grammar errors",
-                    "Formatting quality when impact is weak",
+                    "Formatting clarity and consistency",
                   ].map((item, i) => (
                     <div key={i} className="flex items-start gap-2 text-sm text-gray-600 mb-2">
                       <svg className="w-4 h-4 text-yellow-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -231,7 +230,7 @@ export default function AtsScorePage() {
               {result && (
                 <div className="space-y-5">
                   {/* Score hero */}
-                  <div className={`rounded-2xl border p-6 bg-gradient-to-br ${scoreBg(result.atsScore)}`}>
+                  <div className={`rounded-2xl border p-6 bg-linear-to-br ${scoreBg(result.atsScore)}`}>
                     <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
                       <div className="relative shrink-0">
                         <svg className="w-28 h-28 -rotate-90" viewBox="0 0 120 120">
@@ -254,6 +253,14 @@ export default function AtsScorePage() {
                         <p className="text-gray-600 text-sm leading-relaxed">{result.summary}</p>
                       </div>
                     </div>
+                  </div>
+
+                  <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">Note</p>
+                    <p className="mt-1 text-sm leading-6 text-blue-900">
+                      No ATS scorer is perfect. Different ATS tools use different algorithms, so use this score as a reference.
+                      Our ATS analyzer can also make mistakes.
+                    </p>
                   </div>
 
                   {/* Cards grid */}
@@ -318,14 +325,14 @@ export default function AtsScorePage() {
                   </div>
 
                   {/* Refine CTA */}
-                  <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl p-6 text-white">
+                  <div className="bg-linear-to-r from-gray-900 to-gray-800 rounded-2xl p-6 text-white">
                     <h3 className="text-lg font-bold mb-1">Refine Your Resume</h3>
                     <p className="text-gray-300 text-sm mb-4">
                       We'll extract your resume data and open it in a template of your choice — ready to edit.
                     </p>
                     <button
                       onClick={() => setShowTemplates(true)}
-                      className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-bold px-5 py-2.5 rounded-xl hover:from-yellow-500 hover:to-yellow-600 transition-all shadow"
+                      className="bg-linear-to-r from-yellow-400 to-yellow-500 text-black font-bold px-5 py-2.5 rounded-xl hover:from-yellow-500 hover:to-yellow-600 transition-all shadow"
                     >
                       Select Template to Refine →
                     </button>

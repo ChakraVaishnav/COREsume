@@ -1,21 +1,20 @@
-import { Geist, Manrope, Instrument_Serif } from "next/font/google";
+import { Geist, Outfit, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import Head from "next/head";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/react";
 
-const manrope = Manrope({
+const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700", "800"],
   variable: "--font-manrope",
   display: "swap",
 });
 
-const instrumentSerif = Instrument_Serif({
+const outfit = Outfit({
   subsets: ["latin"],
-  weight: ["400"],
-  style: ["normal", "italic"],
-  variable: "--font-instrument-serif",
+  weight: ["500", "600", "700", "800"],
+  variable: "--font-heading",
   display: "swap",
 });
 
@@ -100,7 +99,7 @@ export default function RootLayout({ children }) {
         <meta name="twitter:image" content={metadata.twitter.images[0]} />
       </Head>
       <body
-        className={`${manrope.variable} ${instrumentSerif.variable} ${geistSans.variable} antialiased`}
+        className={`${plusJakartaSans.variable} ${outfit.variable} ${geistSans.variable} antialiased`}
         suppressHydrationWarning
       >
         {children}
