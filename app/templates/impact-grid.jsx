@@ -32,7 +32,7 @@ export default function ImpactGridTemplate() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-8 text-[12px] leading-[1.5] font-sans text-black">
+    <div className="resume-template max-w-4xl mx-auto p-8 text-[12px] leading-normal font-sans text-black">
       <header className="mb-5">
         <h1 className="text-[24px] font-bold">{personalInfo.name}</h1>
         {form.appliedJob && <p className="text-[13px] font-semibold mt-0.5">{form.appliedJob}</p>}

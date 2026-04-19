@@ -44,7 +44,7 @@ export default function TimelineTemplate() {
 
   return (
     <div
-      className="max-w-[210mm] mx-auto p-6 print:p-6"
+      className="resume-template max-w-[210mm] mx-auto p-6 print:p-6"
       style={{
         fontFamily: `'Merriweather', serif`,
         fontSize: '12px', // reduced from 13px
@@ -102,7 +102,7 @@ export default function TimelineTemplate() {
           <div className="ml-2 pl-4 border-l-2 border-black relative">
             {experience.map((exp, index) => (
               <div key={index} className="mb-3 relative">
-                <div className="absolute -left-[10px] top-[5px] text-[11px]">●</div>
+                <div className="absolute -left-2.5 top-1.25 text-[11px]">●</div>
                 <h3 className="text-[12px] font-bold">
                   {exp.role} — {exp.company}
                 </h3>
@@ -121,7 +121,7 @@ export default function TimelineTemplate() {
           <div className="ml-2 pl-4 border-l-2 border-black relative">
             {projects.map((proj, index) => (
               <div key={index} className="mb-3 relative">
-                <div className="absolute -left-[10px] top-[5px] text-[11px]">●</div>
+                <div className="absolute -left-2.5 top-1.25 text-[11px]">●</div>
                 <h3 className="font-semibold text-[12px]">
                   {proj.link ? (
                     <a href={proj.link} target="_blank" rel="noopener noreferrer" className="text-black no-underline">

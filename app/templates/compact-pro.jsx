@@ -32,7 +32,7 @@ export default function CompactProTemplate() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 text-[11px] leading-[1.45] font-sans text-black border border-gray-300">
+    <div className="resume-template max-w-4xl mx-auto p-6 text-[11px] leading-[1.45] font-sans text-black border border-gray-300">
       <header className="grid grid-cols-3 gap-4 items-start border-b-2 border-black pb-3 mb-3">
         <div className="col-span-2">
           <h1 className="text-[24px] font-bold tracking-wide uppercase">{personalInfo.name}</h1>

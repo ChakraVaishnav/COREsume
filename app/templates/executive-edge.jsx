@@ -32,7 +32,7 @@ export default function ExecutiveEdgeTemplate() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-8 text-[12px] leading-[1.5] font-sans text-black">
+    <div className="resume-template max-w-4xl mx-auto p-8 text-[12px] leading-normal font-sans text-black">
       <header className="mb-5 bg-gray-900 text-white p-4 rounded-sm print:rounded-none">
         <h1 className="text-[23px] font-bold tracking-[0.05em] text-white">{personalInfo.name}</h1>
         {form.appliedJob && <p className="text-[13px] font-semibold mt-1 text-gray-100">{form.appliedJob}</p>}

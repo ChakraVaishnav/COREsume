@@ -63,8 +63,8 @@ export default function Navbar({ fixed = false }) {
         {/* Logo */}
         <Link href="/dashboard" className="text-xl font-bold tracking-tight">
           <h1 className="text-2xl sm:text-4xl font-black tracking-tight flex items-center">
-            <span className="text-black">CORE </span>
-            <span className="text-yellow-400">sume</span>
+            <span className="text-black">CORE</span>
+            <span className="text-yellow-500">sume</span>
           </h1>
         </Link>
 
@@ -135,7 +135,7 @@ export default function Navbar({ fixed = false }) {
       </div>
 
       {mobileMenuOpen && (
-        <div className="md:hidden fixed top-16 right-4 bg-white border border-gray-200 rounded-xl shadow-lg p-2 z-[60] min-w-40">
+        <div className="md:hidden fixed top-16 right-4 bg-white border border-gray-200 rounded-xl shadow-lg p-2 z-60 min-w-40">
           <Link
             href="/pricing"
             onClick={() => setMobileMenuOpen(false)}

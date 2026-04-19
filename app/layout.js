@@ -1,18 +1,26 @@
-import { Geist, Geist_Mono, Merriweather } from "next/font/google";
+import { Geist, Manrope, Instrument_Serif } from "next/font/google";
 import "./globals.css";
-import { Inter } from 'next/font/google';
 import Head from "next/head";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/react";
-const inter = Inter({ subsets: ['latin'] });
-const merri = Merriweather({ subsets: ['latin'], weight: ['400','700'], display: 'swap', variable: '--font-merri' });
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+
+const manrope = Manrope({
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-manrope",
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const instrumentSerif = Instrument_Serif({
+  subsets: ["latin"],
+  weight: ["400"],
+  style: ["normal", "italic"],
+  variable: "--font-instrument-serif",
+  display: "swap",
+});
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
   subsets: ["latin"],
 });
 
@@ -92,7 +100,7 @@ export default function RootLayout({ children }) {
         <meta name="twitter:image" content={metadata.twitter.images[0]} />
       </Head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${manrope.variable} ${instrumentSerif.variable} ${geistSans.variable} antialiased`}
         suppressHydrationWarning
       >
         {children}

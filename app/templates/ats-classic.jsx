@@ -39,7 +39,7 @@ export default function AtsClassicTemplate() {
     : [];
 
   return (
-    <div className="max-w-4xl mx-auto border border-gray-300 bg-white text-[11px] leading-[1.55] font-sans text-black">
+    <div className="resume-template max-w-4xl mx-auto border border-gray-300 bg-white text-[11px] leading-[1.55] font-sans text-black">
       <header className="border-b-2 border-black">
         <div className="px-8 pt-7 pb-5 flex items-start justify-between gap-6">
           <div>

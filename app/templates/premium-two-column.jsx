@@ -40,12 +40,12 @@ export default function PremiumTwoColumnTemplate({ data }) {
   };
 
   return (
-    <div className="p-8 text-black text-[13px] font-sans leading-relaxed">
+    <div className="resume-template p-8 text-black text-[13px] font-serif leading-relaxed">
       {/* Name at the top center */}
       <header className="text-center mb-4">
-        <h1 className="text-[19px] font-bold uppercase font-serif">{personalInfo.name}</h1>
+        <h1 className="text-[19px] font-bold uppercase">{personalInfo.name}</h1>
         {form.appliedJob && (
-          <p className="text-[13px] font-semibold text-gray-800 mt-0.5 font-sans">
+          <p className="text-[13px] font-semibold text-gray-800 mt-0.5">
             {form.appliedJob}
           </p>
         )}
@@ -54,7 +54,7 @@ export default function PremiumTwoColumnTemplate({ data }) {
       {/* Two-column layout */}
       <div className="grid grid-cols-3 gap-4">
         {/* Left Sidebar */}
-        <aside className="col-span-1 space-y-5 pr-4 border-r border-gray-300 font-sans">
+        <aside className="col-span-1 space-y-5 pr-4 border-r border-gray-300">
           {/* Contact Info */}
           <div className="space-y-1 text-[12px] font-normal">
             <p>{personalInfo.phone}</p>
@@ -125,7 +125,7 @@ export default function PremiumTwoColumnTemplate({ data }) {
         </aside>
 
         {/* Right Content */}
-        <main className="col-span-2 space-y-6 pl-4 text-[13px] font-sans font-normal">
+        <main className="col-span-2 space-y-6 pl-4 text-[13px] font-normal">
           {hasContent(summary) && (
             <Section title="Professional Summary">
               <p className="text-justify">{summary}</p>
@@ -136,10 +136,10 @@ export default function PremiumTwoColumnTemplate({ data }) {
             <Section title="Work Experience">
               {experience.map((exp, index) => (
                 <div key={index} className="mb-2">
-                  <h3 className="font-semibold font-serif">
+                  <h3 className="font-semibold">
                     {exp.role} — {exp.company}
                   </h3>
-                  <p className="text-gray-600 text-[12px] font-sans">{exp.duration}</p>
+                  <p className="text-gray-600 text-[12px]">{exp.duration}</p>
                   <p className="whitespace-pre-line">{exp.description}</p>
                 </div>
               ))}
@@ -150,7 +150,7 @@ export default function PremiumTwoColumnTemplate({ data }) {
             <Section title="Projects">
               {projects.map((project, index) => (
                 <div key={index} className="mb-2">
-                  <h3 className="font-semibold text-black font-serif">
+                  <h3 className="font-semibold text-black">
                     {project.link ? (
                       <a
                         href={project.link}
@@ -208,7 +208,7 @@ export default function PremiumTwoColumnTemplate({ data }) {
 function Section({ title, children }) {
   return (
     <section className="mb-6">
-      <h2 className="text-[12px] font-bold uppercase font-serif border-b border-gray-300 pb-1 mb-1">
+      <h2 className="text-[12px] font-bold uppercase border-b border-gray-300 pb-1 mb-1">
         {title}
       </h2>
       {children}

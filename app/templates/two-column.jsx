@@ -38,7 +38,7 @@ export default function TwoColumnTemplate({ data }) {
   };
 
   return (
-    <div className="p-8 text-black text-[13px] font-sans leading-relaxed"> {/* ↓ 1px */}
+    <div className="resume-template p-8 text-black text-[13px] font-sans leading-relaxed"> {/* ↓ 1px */}
 
       {/* Name at the top center */}
       <header className="text-center mb-4">
@@ -168,7 +168,7 @@ export default function TwoColumnTemplate({ data }) {
 function Section({ title, children }) {
   return (
     <section className="mb-6">
-      <h2 className="text-[12px] font-bold uppercase border-b-1 border-gray-300 pb-1 mb-1"> {/* ↓ 1px */}
+      <h2 className="text-[12px] font-bold uppercase border-b border-gray-300 pb-1 mb-1"> {/* ↓ 1px */}
         {title}
       </h2>
       {children}

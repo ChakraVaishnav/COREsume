@@ -38,7 +38,7 @@ export default function SingleColumnTemplate() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-6 font-sans text-[11px] leading-[1.4rem] print:text-[11px] print:leading-[1.4rem]">
+    <div className="resume-template max-w-3xl mx-auto p-6 font-sans text-[11px] leading-[1.4rem] print:text-[11px] print:leading-[1.4rem]">
       {/* Header */}
       <header className="mb-2">
         <h1 className="text-[18px] font-bold">{personalInfo.name}</h1>

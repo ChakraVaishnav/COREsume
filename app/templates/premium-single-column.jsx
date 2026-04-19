@@ -35,9 +35,8 @@ export default function PremiumSingleColumnResume() {
     );
     return section.trim() !== '';
   };
-
   return (
-    <div className="max-w-3xl mx-auto p-8 font-serif text-[12px] leading-relaxed print:text-[12px] print:leading-relaxed">
+    <div className="resume-template max-w-3xl mx-auto p-8 font-serif text-[12px] leading-relaxed print:text-[12px] print:leading-relaxed">
       {/* Header */}
       <header className="mb-6 text-center">
         <h1 className="text-[22px] font-bold tracking-wide">{personalInfo.name}</h1>
