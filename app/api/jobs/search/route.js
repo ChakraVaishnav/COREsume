@@ -45,7 +45,7 @@ export async function POST(req) {
       );
     }
 
-    const jobLimit = normalizedSearchMode === "premium" ? 30 : 10;
+    const jobLimit = normalizedSearchMode === "premium" ? 30 : 5;
 
     let limitCheck = { allowed: true };
     try {

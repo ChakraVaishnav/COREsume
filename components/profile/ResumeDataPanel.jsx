@@ -19,6 +19,32 @@ function stringifyValue(value) {
   return String(value);
 }
 
+const RESUME_SECTION_ORDER = [
+  "personalInfo",
+  "summary",
+  "education",
+  "skills",
+  "experience",
+  "projects",
+  "achievements",
+  "interests",
+  "codingProfiles",
+  "customSections",
+];
+
+const RESUME_SECTION_LABELS = {
+  personalInfo: "Personal Information",
+  summary: "Professional Summary",
+  education: "Education",
+  skills: "Skills",
+  experience: "Work Experience",
+  projects: "Projects",
+  achievements: "Achievements",
+  interests: "Interests",
+  codingProfiles: "Coding Profiles",
+  customSections: "Custom Sections",
+};
+
 function ReadOnlyField({ label, value }) {
   const text = stringifyValue(value);
   const useTextArea = text.length > 120 || text.includes("\n");
@@ -43,8 +69,34 @@ function ReadOnlyField({ label, value }) {
   );
 }
 
-function JsonFormRenderer({ value, heading }) {
+function ValueOnlyField({ value }) {
+  const text = stringifyValue(value);
+  const useTextArea = text.length > 120 || text.includes("\n");
+
+  if (useTextArea) {
+    return (
+      <textarea
+        readOnly
+        value={text}
+        className="h-24 w-full resize-none rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-black"
+      />
+    );
+  }
+
+  return (
+    <input
+      readOnly
+      value={text}
+      className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-black"
+    />
+  );
+}
+
+function JsonFormRenderer({ value, heading, suppressPrimitiveLabel = false }) {
   if (isPrimitive(value)) {
+    if (suppressPrimitiveLabel) {
+      return <ValueOnlyField value={value} />;
+    }
     return <ReadOnlyField label={heading || "Value"} value={value} />;
   }
 
@@ -59,6 +111,9 @@ function JsonFormRenderer({ value, heading }) {
 
     const areAllPrimitive = value.every((item) => isPrimitive(item));
     if (areAllPrimitive) {
+      if (suppressPrimitiveLabel) {
+        return <ValueOnlyField value={value.map((item) => stringifyValue(item)).join("\n")} />;
+      }
       return (
         <ReadOnlyField
           label={heading || "Items"}
@@ -111,19 +166,38 @@ function JsonFormRenderer({ value, heading }) {
 }
 
 export default function ResumeDataPanel({ resumeLoading, resumeData }) {
+  const orderedSections = resumeData
+    ? [
+        ...RESUME_SECTION_ORDER.map((key) => [key, resumeData?.[key]]),
+        ...Object.entries(resumeData).filter(
+          ([key]) => key !== "jobrole" && !RESUME_SECTION_ORDER.includes(key)
+        ),
+      ].filter(([, sectionValue]) => sectionValue !== undefined)
+    : [];
+
   return (
     <div className="h-full min-h-0 flex flex-col text-black">
       <div className="shrink-0">
         <h2 className="text-2xl font-extrabold text-black">Your Resume</h2>
-        <p className="mt-1 text-sm text-gray-600">Rendered from the resume JSON stored in your account.</p>
       </div>
 
       <div className="mt-4 min-h-0 grow overflow-y-auto pr-1">
         {resumeLoading ? (
           <p className="text-sm text-gray-600">Loading resume...</p>
         ) : resumeData ? (
-          <div className="rounded-xl border border-gray-200 bg-white p-4">
-            <JsonFormRenderer value={resumeData} />
+          <div className="space-y-4">
+            {orderedSections.map(([key, sectionValue]) => (
+              <div key={key} className="rounded-xl border border-gray-200 bg-white p-4">
+                <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  {RESUME_SECTION_LABELS[key] || formatLabel(key)}
+                </p>
+                <JsonFormRenderer
+                  value={sectionValue}
+                  heading={RESUME_SECTION_LABELS[key] || formatLabel(key)}
+                  suppressPrimitiveLabel
+                />
+              </div>
+            ))}
           </div>
         ) : (
           <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-4 text-sm text-gray-600">

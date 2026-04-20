@@ -38,7 +38,7 @@ export default function ProfileSidebar({ userData, activeTab, onTabChange, onLog
               onClick={() => onTabChange(tab.key)}
               className={`flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-semibold transition ${
                 isActive
-                  ? "bg-black text-white"
+                  ? "bg-yellow-400 text-black  hover:bg-yellow-500"
                   : "bg-gray-100 text-black hover:bg-gray-200"
               }`}
             >

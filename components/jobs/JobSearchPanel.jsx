@@ -176,8 +176,11 @@ export default function JobSearchPanel({
   const usageText = useMemo(() => {
     if (!usage) return "";
 
-    if (Number(usage.freeSearchesRemainingToday || 0) > 0) {
-      return `1 free search remaining today (resets 12:00 AM IST)`;
+    const remaining = Number(usage.freeSearchesRemainingToday || 0);
+    const dailyLimit = Number(usage.freeSearchesDailyLimit || 1);
+
+    if (remaining > 0) {
+      return `${remaining} free ${remaining === 1 ? "search" : "searches"} remaining today (limit: ${dailyLimit}/day, resets 12:00 AM IST)`;
     }
 
     return `Free search resets in ${formatResetText(usage.freeResetsAt)} (12:00 AM IST)`;
@@ -352,7 +355,7 @@ export default function JobSearchPanel({
 
       if (!res.ok) {
         if (data?.error === "LIMIT_REACHED") {
-          setError(data?.message || `Daily free search used. Resets at ${data.resetsAt || "12:00 AM IST"}`);
+          setError(data?.message || `Daily free search limit reached. Resets at ${data.resetsAt || "12:00 AM IST"}`);
         } else if (data?.error === "JOB_FETCH_FAILED") {
           setError("Could not find jobs. Try different keywords.");
         } else if (data?.error === "LLM_FAILED") {
@@ -394,6 +397,8 @@ export default function JobSearchPanel({
   const canUseFreeSearch = usage ? Boolean(usage.canUseFreeSearch) : true;
   const canUsePremiumSearch = usage ? Boolean(usage.canUsePremiumSearch) : true;
   const showResumeDataMissing = resumeSource === "db" && !loadingResumeData && !dbResumeText;
+  const isSearching = progressStep === 0 || progressStep === 1;
+  const isAnalyzing = progressStep === 1;
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
@@ -520,8 +525,43 @@ export default function JobSearchPanel({
         </div>
 
         {progressStep >= 0 && (
-          <div className="rounded-xl border border-yellow-200 bg-yellow-50 px-3 py-2 text-sm text-yellow-800">
-            {STEPS[progressStep]}
+          <div className="rounded-xl border border-yellow-200 bg-yellow-50 px-3 py-3 text-sm text-yellow-900">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                {progressStep === 2 ? (
+                  <span className="inline-block h-2.5 w-2.5 rounded-full bg-green-500" />
+                ) : (
+                  <span className="inline-block h-2.5 w-2.5 rounded-full bg-yellow-500 animate-pulse" />
+                )}
+                <span className="font-semibold">{STEPS[progressStep]}</span>
+              </div>
+
+              {isSearching && (
+                <div className="flex items-center gap-1.5" aria-label="Loading animation">
+                  <span className="h-1.5 w-1.5 rounded-full bg-yellow-600 animate-bounce" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-yellow-600 animate-bounce [animation-delay:120ms]" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-yellow-600 animate-bounce [animation-delay:240ms]" />
+                </div>
+              )}
+            </div>
+
+            {isAnalyzing && (
+              <div className="mt-3 rounded-lg border border-yellow-200 bg-white/80 p-3">
+                <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-yellow-800">
+                  <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" className="opacity-25" />
+                    <path d="M21 12a9 9 0 00-9-9" stroke="currentColor" strokeWidth="2" className="opacity-90" />
+                  </svg>
+                  AI Match Analysis In Progress
+                </div>
+
+                <div className="space-y-2">
+                  <div className="h-2.5 w-11/12 animate-pulse rounded-full bg-yellow-200" />
+                  <div className="h-2.5 w-10/12 animate-pulse rounded-full bg-yellow-200" />
+                  <div className="h-2.5 w-9/12 animate-pulse rounded-full bg-yellow-200" />
+                </div>
+              </div>
+            )}
           </div>
         )}
 

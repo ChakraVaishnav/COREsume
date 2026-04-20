@@ -8,7 +8,7 @@ function ReadOnlyField({ label, value }) {
       <label className="block text-xs font-semibold uppercase tracking-wide text-black/65">{label}</label>
       <input
         readOnly
-        value={value || ""}
+        value={value ?? ""}
         className="w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-sm text-black"
       />
     </div>
@@ -28,13 +28,15 @@ export default function ProfileDetailsPanel({ userData }) {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <ReadOnlyField label="Name" value={userData?.username || ""} />
             <ReadOnlyField label="Email" value={userData?.email || ""} />
+            <ReadOnlyField label="Credits" value={userData?.creds ?? 0} />
+            <ReadOnlyField label="Total Job Searches" value={userData?.totalJobsSearched ?? 0} />
           </div>
         </div>
 
         <div className="pt-1">
           <Link
             href="/change-password"
-            className="inline-flex items-center justify-center rounded-xl bg-black px-4 py-2 text-sm font-bold text-white transition hover:bg-black/90"
+            className="inline-flex items-center justify-center rounded-xl bg-yellow-400 px-4 py-2 text-sm font-bold text-black transition hover:bg-yellow-500"
           >
             Change Password
           </Link>

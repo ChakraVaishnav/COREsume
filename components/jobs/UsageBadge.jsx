@@ -23,8 +23,9 @@ export default function UsageBadge({ usage, loading }) {
       return "Usage unavailable";
     }
 
-    if (Number(usage.freeSearchesRemainingToday || 0) > 0) {
-      return `1 free search left today • ${Number(usage.creditsRemaining || 0)} credits`;
+    const remaining = Number(usage.freeSearchesRemainingToday || 0);
+    if (remaining > 0) {
+      return `${remaining} free ${remaining === 1 ? "search" : "searches"} left today • ${Number(usage.creditsRemaining || 0)} credits`;
     }
 
     return `Free resets in ${formatCountdown(usage.freeResetsAt)} • ${Number(usage.creditsRemaining || 0)} credits`;

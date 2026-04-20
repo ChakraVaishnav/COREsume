@@ -2,7 +2,11 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticateRequest } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
-import { getISTDateKey, getNextISTMidnightUTCDate } from "@/lib/jobs/rateLimit";
+import {
+  FREE_DAILY_SEARCH_LIMIT,
+  getISTDateKey,
+  getNextISTMidnightUTCDate,
+} from "@/lib/jobs/rateLimit";
 
 export const runtime = "nodejs";
 
@@ -34,11 +38,12 @@ export async function GET(req) {
 
     const todayIST = getISTDateKey();
     const usedToday = usage?.date === todayIST ? Number(usage.searchCount || 0) : 0;
-    const freeSearchesRemainingToday = Math.max(0, 1 - usedToday);
+    const freeSearchesRemainingToday = Math.max(0, FREE_DAILY_SEARCH_LIMIT - usedToday);
     const creditsRemaining = Number(user.creds || 0);
 
     const response = NextResponse.json({
       freeSearchesUsedToday: usedToday,
+      freeSearchesDailyLimit: FREE_DAILY_SEARCH_LIMIT,
       freeSearchesRemainingToday,
       freeResetsAt: getNextISTMidnightUTCDate().toISOString(),
       creditsRemaining,
