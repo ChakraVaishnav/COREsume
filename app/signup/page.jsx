@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FiArrowLeft } from "react-icons/fi";
@@ -14,7 +14,7 @@ const OAUTH_ERROR_MESSAGES = {
   google_signup_failed: "Google signup failed. Please try again.",
 };
 
-export default function SignUp() {
+function SignUpContent() {
   const [form, setForm] = useState({
     username: "",
     email: "",
@@ -175,6 +175,20 @@ export default function SignUp() {
         </p>
       </div>
     </main>
+  );
+}
+
+export default function SignUp() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-white flex items-center justify-center text-gray-700">
+          Loading...
+        </main>
+      }
+    >
+      <SignUpContent />
+    </Suspense>
   );
 }
 

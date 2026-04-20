@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { FiArrowLeft } from "react-icons/fi";
@@ -14,7 +14,7 @@ const OAUTH_ERROR_MESSAGES = {
   google_signup_failed: "Google sign in failed. Please try again.",
 };
 
-export default function LoginPage() {
+function LoginPageContent() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -150,6 +150,20 @@ export default function LoginPage() {
         </p>
       </div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-white flex items-center justify-center text-gray-700">
+          Loading...
+        </main>
+      }
+    >
+      <LoginPageContent />
+    </Suspense>
   );
 }
 
