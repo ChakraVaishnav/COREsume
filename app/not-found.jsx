@@ -5,7 +5,7 @@ export default function NotFound() {
     <main className="min-h-screen bg-white px-4 py-12 text-[#111827] sm:px-6 lg:px-8">
       <section className="mx-auto flex w-full max-w-4xl flex-col items-center text-center">
         <h1 className="text-2xl font-extrabold leading-tight sm:text-3xl lg:text-4xl [font-family:var(--font-heading)]">
-          Oh you searched for a page, Zoro went to found it, hope he found it soon.
+          Oh you searched for a page, Zoro went to find it, hope he finds it soon.
         </h1>
 
         <div className="relative mt-8 w-full max-w-md overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50 shadow-sm">
