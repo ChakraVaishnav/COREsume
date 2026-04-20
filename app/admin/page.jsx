@@ -13,6 +13,7 @@ const RESOURCE_OPTIONS = [
 ];
 
 const PAGE_SIZE = 50;
+const SEARCH_DEBOUNCE_MS = 280;
 const NON_EDITABLE_FIELDS = new Set(["id", "createdAt", "updatedAt"]);
 const CREATE_FIELD_HINTS = {
   users: [
@@ -73,6 +74,15 @@ const CREATE_FIELD_HINTS = {
     { key: "creditsUsed", type: "number" },
     { key: "lastSearchAt", type: "string" },
   ],
+};
+
+const SEARCH_PLACEHOLDERS = {
+  users: "Search by username, email, id...",
+  resumes: "Search by resume id or user id...",
+  otp: "Search by email, code, id...",
+  ratings: "Search by template, comment, user id...",
+  jobs: "Search by title, company, source, search id...",
+  jobUsage: "Search by user id, tier, date...",
 };
 
 function prettyJson(value) {
@@ -193,6 +203,8 @@ export default function AdminPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [nextOffset, setNextOffset] = useState(0);
   const [hasMore, setHasMore] = useState(false);
+  const [searchDraftByResource, setSearchDraftByResource] = useState({});
+  const [searchQueryByResource, setSearchQueryByResource] = useState({});
 
   const [createDraft, setCreateDraft] = useState({});
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -225,6 +237,9 @@ export default function AdminPage() {
   }, [rows]);
 
   const createFields = useMemo(() => getCreateFields(resource, rows), [resource, rows]);
+  const searchDraft = searchDraftByResource[resource] ?? "";
+  const searchQuery = searchQueryByResource[resource] ?? "";
+  const searchPlaceholder = SEARCH_PLACEHOLDERS[resource] || "Search records...";
 
   const closeEditModal = useCallback(() => {
     setIsEditModalOpen(false);
@@ -243,6 +258,20 @@ export default function AdminPage() {
     setCreateDraft(buildInitialDraft(fields));
     setIsCreateModalOpen(true);
   }, [resource, rows]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const normalized = searchDraft.trim();
+      setSearchQueryByResource((prev) => {
+        if ((prev[resource] ?? "") === normalized) {
+          return prev;
+        }
+        return { ...prev, [resource]: normalized };
+      });
+    }, SEARCH_DEBOUNCE_MS);
+
+    return () => clearTimeout(timer);
+  }, [resource, searchDraft]);
 
   useEffect(() => {
     let active = true;
@@ -283,7 +312,15 @@ export default function AdminPage() {
     }
 
     try {
-      const res = await fetch(`/api/admin/${resource}?take=${PAGE_SIZE}&offset=${offset}`, {
+      const params = new URLSearchParams({
+        take: String(PAGE_SIZE),
+        offset: String(offset),
+      });
+      if (searchQuery) {
+        params.set("q", searchQuery);
+      }
+
+      const res = await fetch(`/api/admin/${resource}?${params.toString()}`, {
         credentials: "include",
       });
       const data = await res.json().catch(() => ({}));
@@ -335,7 +372,7 @@ export default function AdminPage() {
         setLoadingRows(false);
       }
     }
-  }, [resource]);
+  }, [resource, searchQuery]);
 
   useEffect(() => {
     if (!authorized) return;
@@ -345,10 +382,8 @@ export default function AdminPage() {
     setNextOffset(0);
     setHasMore(false);
     setLoadingMore(false);
-    closeCreateModal();
-    closeEditModal();
     fetchRowsPage({ offset: 0, reset: true });
-  }, [authorized, resource, closeCreateModal, closeEditModal, fetchRowsPage]);
+  }, [authorized, fetchRowsPage]);
 
   const refreshRows = async () => {
     setLoadingMore(false);
@@ -595,6 +630,7 @@ export default function AdminPage() {
                   type="button"
                   onClick={() => {
                     setResource(item.key);
+                    closeCreateModal();
                     closeEditModal();
                   }}
                   className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
@@ -607,25 +643,59 @@ export default function AdminPage() {
                 </button>
               ))}
             </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={refreshRows}
+                disabled={loadingRows}
+                className="rounded-lg bg-yellow-400 px-4 py-2 text-sm font-bold text-black hover:bg-yellow-300 disabled:opacity-60"
+              >
+                {loadingRows ? "Refreshing..." : "Refresh"}
+              </button>
+              <button
+                type="button"
+                onClick={openCreateModal}
+                className="rounded-lg bg-black px-4 py-2 text-sm font-bold text-white hover:bg-gray-800"
+              >
+                Add Record
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+            <input
+              type="text"
+              value={searchDraft}
+              onChange={(e) => {
+                const nextValue = e.target.value;
+                setSearchDraftByResource((prev) => ({
+                  ...prev,
+                  [resource]: nextValue,
+                }));
+              }}
+              placeholder={searchPlaceholder}
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none focus:border-black"
+            />
             <button
               type="button"
-              onClick={refreshRows}
-              disabled={loadingRows}
-              className="rounded-lg bg-yellow-400 px-4 py-2 text-sm font-bold text-black hover:bg-yellow-300 disabled:opacity-60"
+              onClick={() => {
+                setSearchDraftByResource((prev) => ({ ...prev, [resource]: "" }));
+                setSearchQueryByResource((prev) => ({ ...prev, [resource]: "" }));
+              }}
+              disabled={!searchDraft && !searchQuery}
+              className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {loadingRows ? "Refreshing..." : "Refresh"}
-            </button>
-            <button
-              type="button"
-              onClick={openCreateModal}
-              className="rounded-lg bg-black px-4 py-2 text-sm font-bold text-white hover:bg-gray-800"
-            >
-              Add Record
+              Clear Search
             </button>
           </div>
 
           <p className="mt-3 text-sm text-gray-500">
             Resource: <span className="font-semibold text-gray-700">{resource}</span> · Total records: {total}
+            {searchQuery ? (
+              <>
+                {" "}· Search: <span className="font-semibold text-gray-700">{searchQuery}</span>
+              </>
+            ) : null}
           </p>
 
           {loadingRows && (
@@ -678,7 +748,7 @@ export default function AdminPage() {
                 {rows.length === 0 && (
                   <tr>
                     <td colSpan={columns.length + 1} className="px-3 py-8 text-center text-sm text-gray-400">
-                      No records
+                      {searchQuery ? "No matching records" : "No records"}
                     </td>
                   </tr>
                 )}

@@ -13,12 +13,97 @@ const RESOURCE_CONFIG = {
   jobUsage: { model: "jobUsage", idType: "string", orderBy: { updatedAt: "desc" } },
 };
 
+const RESOURCE_SEARCH_CONFIG = {
+  users: {
+    strings: ["username", "email"],
+    numbers: ["id", "creds", "jobsInDb", "totalJobsSearched"],
+    booleans: ["unlimited"],
+  },
+  resumes: {
+    numbers: ["id", "userId"],
+  },
+  otp: {
+    strings: ["id", "email", "code"],
+  },
+  ratings: {
+    strings: ["comment", "template"],
+    numbers: ["id", "userId", "score"],
+  },
+  jobs: {
+    strings: [
+      "id",
+      "searchId",
+      "jobTitle",
+      "companyName",
+      "jobDescription",
+      "experienceRequired",
+      "location",
+      "salary",
+      "jobLink",
+      "postedDate",
+      "source",
+      "fitLabel",
+      "reasoning",
+      "aiSummary",
+      "whyItMatches",
+      "tier",
+    ],
+    numbers: ["userId", "matchScore"],
+    stringArrays: ["skillsRequired", "missingSkills", "strengths", "resumeImprovements"],
+  },
+  jobUsage: {
+    strings: ["id", "date", "tier"],
+    numbers: ["userId", "searchCount", "jobsFetched", "credits", "creditsUsed"],
+  },
+};
+
 function getResourceConfig(resource) {
   return RESOURCE_CONFIG[resource] || null;
 }
 
 async function getRouteParams(context) {
   return (await context?.params) || {};
+}
+
+function buildSearchWhere(resource, rawQuery) {
+  const query = String(rawQuery || "").trim();
+  if (!query) return undefined;
+
+  const cfg = RESOURCE_SEARCH_CONFIG[resource];
+  if (!cfg) return undefined;
+
+  const filters = [];
+  const numericQuery = Number(query);
+  const hasNumericQuery = Number.isFinite(numericQuery);
+  const lowerQuery = query.toLowerCase();
+  const hasBooleanQuery = lowerQuery === "true" || lowerQuery === "false";
+
+  for (const field of cfg.strings || []) {
+    filters.push({
+      [field]: {
+        contains: query,
+        mode: "insensitive",
+      },
+    });
+  }
+
+  if (hasNumericQuery) {
+    for (const field of cfg.numbers || []) {
+      filters.push({ [field]: numericQuery });
+    }
+  }
+
+  if (hasBooleanQuery) {
+    for (const field of cfg.booleans || []) {
+      filters.push({ [field]: lowerQuery === "true" });
+    }
+  }
+
+  for (const field of cfg.stringArrays || []) {
+    filters.push({ [field]: { has: query } });
+  }
+
+  return filters.length ? { OR: filters } : undefined;
 }
 
 function normalizePayload(payload) {
@@ -54,17 +139,20 @@ export async function GET(req, context) {
     const { searchParams } = new URL(req.url);
     const takeRaw = Number.parseInt(searchParams.get("take") || "50", 10);
     const offsetRaw = Number.parseInt(searchParams.get("offset") || "0", 10);
+    const query = searchParams.get("q") || "";
     const take = Number.isFinite(takeRaw) ? Math.min(200, Math.max(1, takeRaw)) : 50;
     const offset = Number.isFinite(offsetRaw) ? Math.max(0, offsetRaw) : 0;
+    const where = buildSearchWhere(resource, query);
 
     const model = prisma[cfg.model];
     const [items, total] = await Promise.all([
       model.findMany({
+        where,
         take,
         skip: offset,
         orderBy: cfg.orderBy,
       }),
-      model.count(),
+      model.count({ where }),
     ]);
 
     const nextOffset = offset + items.length;
@@ -77,6 +165,7 @@ export async function GET(req, context) {
         count: items.length,
         offset,
         take,
+        query: String(query).trim(),
         nextOffset,
         hasMore,
         items,
