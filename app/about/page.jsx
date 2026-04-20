@@ -1,7 +1,27 @@
-"use client";
-
 import PageLayout from "@/components/PageLayout";
 import AdUnit from "@/components/AdUnit";
+
+export const metadata = {
+  title: "About COREsume",
+  description:
+    "Learn about COREsume, our mission to help students and freshers build ATS-friendly resumes, and how our AI resume platform supports faster job applications.",
+  alternates: {
+    canonical: "/about",
+  },
+  openGraph: {
+    title: "About COREsume",
+    description:
+      "Discover COREsume's mission, story, and commitment to helping job seekers create recruiter-ready ATS-friendly resumes.",
+    url: "/about",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "About COREsume",
+    description:
+      "Discover COREsume's mission and platform for ATS-friendly resumes.",
+  },
+};
 
 export default function AboutPage() {
   return (

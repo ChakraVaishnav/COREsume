@@ -1,6 +1,25 @@
-"use client";
-
 import PageLayout from "@/components/PageLayout";
+
+export const metadata = {
+  title: "Contact COREsume",
+  description:
+    "Contact the COREsume team for support, account help, billing questions, or feedback about our AI resume builder and ATS tools.",
+  alternates: {
+    canonical: "/contact",
+  },
+  openGraph: {
+    title: "Contact COREsume",
+    description:
+      "Get in touch with COREsume for support and product-related help.",
+    url: "/contact",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Contact COREsume",
+    description: "Reach out to COREsume support and team.",
+  },
+};
 
 export default function ContactPage() {
   return (

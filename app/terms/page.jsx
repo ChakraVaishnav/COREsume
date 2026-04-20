@@ -1,6 +1,17 @@
-"use client";
-
 import PageLayout from "@/components/PageLayout";
+
+export const metadata = {
+  title: "Terms and Conditions",
+  description:
+    "Read COREsume terms and conditions, including account usage, payments, service limitations, and policy updates.",
+  alternates: {
+    canonical: "/terms",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
 
 export default function TermsPage() {
   return (

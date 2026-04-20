@@ -5,10 +5,9 @@ Disallow: /login
 Disallow: /signup
 Disallow: /forgot-password
 Disallow: /change-password
+Disallow: /admin
 Disallow: /dashboard
-Disallow: /pricing
 Disallow: /profile
-Disallow: /resume-form
 Disallow: /resume-preview
 Disallow: /templates
 Disallow: /api

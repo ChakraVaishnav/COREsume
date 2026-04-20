@@ -1,6 +1,17 @@
-"use client";
-
 import PageLayout from "@/components/PageLayout";
+
+export const metadata = {
+  title: "Privacy Policy",
+  description:
+    "Review COREsume's privacy policy to understand what data we collect, how we use it, and your rights regarding your personal information.",
+  alternates: {
+    canonical: "/privacy",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
 
 export default function PrivacyPage() {
   return (

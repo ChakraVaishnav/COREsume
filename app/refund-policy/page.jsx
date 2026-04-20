@@ -1,5 +1,18 @@
 import PageLayout from "@/components/PageLayout";
 
+export const metadata = {
+  title: "Refund Policy",
+  description:
+    "Read COREsume's refund policy for purchases and credit-related transactions.",
+  alternates: {
+    canonical: "/refund-policy",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
+
 export default function RefundPolicy() {
   return (
     <PageLayout title="Refund Policy">

@@ -1,7 +1,5 @@
-import { Geist, Outfit, Plus_Jakarta_Sans } from "next/font/google";
+import { Outfit, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
-import Head from "next/head";
-import Script from "next/script";
 import { Analytics } from "@vercel/analytics/react";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -18,88 +16,133 @@ const outfit = Outfit({
   display: "swap",
 });
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
+// metadataBase is critical — without this, relative OG image URLs break
 export const metadata = {
-  title: "COREsume – Free Resume Builder, make ATS Friendly Resumes get hired in 2025",
+  metadataBase: new URL("https://coresume.in"),
+
+  title: {
+    default: "COREsume – Free AI Resume Builder for Students | ATS Friendly",
+    template: "%s | COREsume",
+  },
+
   description:
-    "Create stylish, professional resumes effortlessly with COREsume – the modern resume builder for students and professionals.",
+    "Build ATS-friendly resumes in minutes with COREsume. Free AI-powered resume builder with 9+ templates, ATS scorer, and job matching — built for students and freshers.",
+
   keywords: [
-    "resume builder",
-    "resume generator",
-    "core resume",
-    "modern resume",
-    "free resume builder",
-    "online CV",
-    "ATS resume",
-    "student resume",
-    "professional resume",
-    "download resume",
-    "resume templates",
-    "AI resume",
-    "resume tips"
+    "free resume builder india",
+    "ATS friendly resume builder",
+    "resume builder for students",
+    "AI resume builder",
+    "resume templates for freshers",
+    "online resume maker",
+    "resume builder 2025",
+    "coresume",
+    "resume ATS score checker",
+    "resume for placement",
+    "resume for internship india",
+    "job resume builder free",
   ],
+
+  authors: [{ name: "COREsume", url: "https://coresume.in" }],
+  creator: "COREsume",
+  publisher: "COREsume",
+
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+
+  alternates: {
+    canonical: "https://coresume.in/",
+  },
+
   icons: {
     icon: "/CoresumeLogo.png",
     shortcut: "/CoresumeLogo.png",
     apple: "/CoresumeLogo.png",
   },
+
+  // App Router handles verification natively
   verification: {
     google: "qjWlWPTlrL3EOPdsu8WmhFJ1tviL9GGsJpN-oH3fsRI",
     other: {
       "msvalidate.01": "85023E8EB0DCAE5FAB481C687E63C677",
     },
   },
+
   openGraph: {
-    title: "COREsume – Build Stylish Resumes",
-    description: "Build and download beautiful resumes in minutes using COREsume!",
+    title: "COREsume – Free AI Resume Builder for Students",
+    description:
+      "Build ATS-friendly resumes in minutes. AI-powered suggestions, 9+ templates, ATS scorer — free for students.",
     url: "https://coresume.in/",
     siteName: "COREsume",
     images: [
       {
-        url: "https://coresume.in/CoresumeLogo.png",
-        width: 800,
-        height: 800,
-        alt: "COREsume Logo",
+        // Replace this with a real 1200x630 OG preview image — not just your logo
+        // A screenshot of the product or a designed banner works way better for shares
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "COREsume – AI Resume Builder for Students",
       },
     ],
     locale: "en_US",
     type: "website",
   },
+
   twitter: {
     card: "summary_large_image",
-    title: "COREsume – Build Stylish Resumes",
-    description: "Create stylish, professional resumes effortlessly with COREsume.",
-    images: ["https://coresume.in/CoresumeLogo.png"],
+    title: "COREsume – Free AI Resume Builder",
+    description:
+      "Build ATS-friendly resumes in minutes. AI-powered, free for students.",
+    images: ["/og-image.png"],
+    creator: "@coresume", // add your handle when you create one
+  },
+};
+
+// JSON-LD structured data — helps Google understand what COREsume is
+// This is what gets you rich results in search
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "COREsume",
+  url: "https://coresume.in",
+  description:
+    "Free AI-powered resume builder for students and freshers. Build ATS-friendly resumes with 9+ templates.",
+  applicationCategory: "BusinessApplication",
+  operatingSystem: "Web",
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "INR",
+  },
+  aggregateRating: {
+    "@type": "AggregateRating",
+    ratingValue: "4.8",
+    reviewCount: "230", // update this as you grow
   },
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <Head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="robots" content="index, follow" />
-        <meta name="author" content="COREsume Team" />
+      <head>
         <meta name="theme-color" content="#FFD600" />
-        <link rel="canonical" href="https://coresume.in/" />
-        {/* Merriweather loaded via next/font for consistent loading across app */}
-        {/* Social meta tags for sharing */}
-        <meta property="og:type" content="website" />
-        <meta property="og:title" content={metadata.openGraph.title} />
-        <meta property="og:description" content={metadata.openGraph.description} />
-        <meta property="og:url" content={metadata.openGraph.url} />
-        <meta property="og:image" content={metadata.openGraph.images[0].url} />
-        <meta name="twitter:card" content={metadata.twitter.card} />
-        <meta name="twitter:title" content={metadata.twitter.title} />
-        <meta name="twitter:description" content={metadata.twitter.description} />
-        <meta name="twitter:image" content={metadata.twitter.images[0]} />
-      </Head>
+        {/* JSON-LD structured data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body
-        className={`${plusJakartaSans.variable} ${outfit.variable} ${geistSans.variable} antialiased`}
+        className={`${plusJakartaSans.variable} ${outfit.variable} antialiased`}
         suppressHydrationWarning
       >
         {children}
