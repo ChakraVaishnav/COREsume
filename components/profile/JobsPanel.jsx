@@ -51,65 +51,116 @@ export default function JobsPanel({
         ) : null}
       </div>
 
-      <div className="mt-3 min-h-0 grow overflow-auto rounded-xl border border-gray-200 bg-white">
-        <table className="min-w-full divide-y divide-gray-200 text-left text-sm">
-          <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
-            <tr>
-              <th className="px-3 py-2">Role</th>
-              <th className="px-3 py-2">Company</th>
-              <th className="px-3 py-2">Location</th>
-              <th className="px-3 py-2">Fit</th>
-              <th className="px-3 py-2">Score</th>
-              <th className="px-3 py-2">Posted</th>
-              <th className="px-3 py-2">Link</th>
-              <th className="px-3 py-2">Delete</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100 bg-white text-black">
-            {jobs.map((job) => (
-              <tr key={job.id}>
-                <td className="max-w-56 truncate px-3 py-2">{job.jobTitle || "-"}</td>
-                <td className="max-w-44 truncate px-3 py-2">{job.companyName || "-"}</td>
-                <td className="max-w-40 truncate px-3 py-2">{job.location || "-"}</td>
-                <td className="px-3 py-2">{job.fitLabel || "-"}</td>
-                <td className="px-3 py-2">{job.matchScore ?? "-"}</td>
-                <td className="px-3 py-2">{job.postedDate || "-"}</td>
-                <td className="px-3 py-2">
-                  {job.jobLink ? (
-                    <a
-                      href={job.jobLink}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="font-semibold text-blue-600 hover:text-blue-700"
-                    >
-                      Open
-                    </a>
-                  ) : (
-                    "-"
-                  )}
-                </td>
-                <td className="px-3 py-2">
-                  <button
-                    type="button"
-                    onClick={() => onDeleteJob(job.id)}
-                    disabled={deletingJobId === job.id || deletingAllJobs}
-                    className="rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+      <div className="mt-3 min-h-0 grow rounded-xl border border-gray-200 bg-white">
+        <div className="space-y-3 p-3 md:hidden">
+          {jobs.map((job) => (
+            <div key={job.id} className="rounded-xl border border-gray-200 bg-gray-50 p-3">
+              <p className="text-sm font-bold text-black">{job.jobTitle || "-"}</p>
+              <p className="mt-1 text-xs text-gray-700">{job.companyName || "-"}</p>
+              <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-gray-600">
+                <p>
+                  <span className="font-semibold text-gray-800">Location:</span> {job.location || "-"}
+                </p>
+                <p>
+                  <span className="font-semibold text-gray-800">Fit:</span> {job.fitLabel || "-"}
+                </p>
+                <p>
+                  <span className="font-semibold text-gray-800">Score:</span> {job.matchScore ?? "-"}
+                </p>
+                <p>
+                  <span className="font-semibold text-gray-800">Posted:</span> {job.postedDate || "-"}
+                </p>
+              </div>
+              <div className="mt-3 flex items-center gap-2">
+                {job.jobLink ? (
+                  <a
+                    href={job.jobLink}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700"
                   >
-                    {deletingJobId === job.id ? "Deleting..." : "Delete"}
-                  </button>
-                </td>
-              </tr>
-            ))}
+                    Open Job
+                  </a>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={() => onDeleteJob(job.id)}
+                  disabled={deletingJobId === job.id || deletingAllJobs}
+                  className="rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {deletingJobId === job.id ? "Deleting..." : "Delete"}
+                </button>
+              </div>
+            </div>
+          ))}
 
-            {!jobsLoading && jobs.length === 0 ? (
+          {!jobsLoading && jobs.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 px-3 py-8 text-center text-sm text-gray-400">
+              No jobs found.
+            </div>
+          ) : null}
+        </div>
+
+        <div className="hidden h-full overflow-auto md:block">
+          <table className="min-w-full divide-y divide-gray-200 text-left text-sm">
+            <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
               <tr>
-                <td colSpan={8} className="px-3 py-8 text-center text-sm text-gray-400">
-                  No jobs found.
-                </td>
+                <th className="px-3 py-2">Role</th>
+                <th className="px-3 py-2">Company</th>
+                <th className="px-3 py-2">Location</th>
+                <th className="px-3 py-2">Fit</th>
+                <th className="px-3 py-2">Score</th>
+                <th className="px-3 py-2">Posted</th>
+                <th className="px-3 py-2">Link</th>
+                <th className="px-3 py-2">Delete</th>
               </tr>
-            ) : null}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-gray-100 bg-white text-black">
+              {jobs.map((job) => (
+                <tr key={job.id}>
+                  <td className="max-w-56 truncate px-3 py-2">{job.jobTitle || "-"}</td>
+                  <td className="max-w-44 truncate px-3 py-2">{job.companyName || "-"}</td>
+                  <td className="max-w-40 truncate px-3 py-2">{job.location || "-"}</td>
+                  <td className="px-3 py-2">{job.fitLabel || "-"}</td>
+                  <td className="px-3 py-2">{job.matchScore ?? "-"}</td>
+                  <td className="px-3 py-2">{job.postedDate || "-"}</td>
+                  <td className="px-3 py-2">
+                    {job.jobLink ? (
+                      <a
+                        href={job.jobLink}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="font-semibold text-blue-600 hover:text-blue-700"
+                      >
+                        Open
+                      </a>
+                    ) : (
+                      "-"
+                    )}
+                  </td>
+                  <td className="px-3 py-2">
+                    <button
+                      type="button"
+                      onClick={() => onDeleteJob(job.id)}
+                      disabled={deletingJobId === job.id || deletingAllJobs}
+                      className="rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {deletingJobId === job.id ? "Deleting..." : "Delete"}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+
+              {!jobsLoading && jobs.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="px-3 py-8 text-center text-sm text-gray-400">
+                    No jobs found.
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div className="mt-3 shrink-0">

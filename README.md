@@ -133,6 +133,11 @@ JOBS_JOBSPY_HOURS_OLD="168"
 EMAIL_USER="<your_email_user>"
 EMAIL_PASS="<your_email_password_or_app_password>"
 
+# Google OAuth
+GOOGLE_CLIENT_ID="<your_google_oauth_client_id>"
+GOOGLE_CLIENT_SECRET="<your_google_oauth_client_secret>"
+GOOGLE_REDIRECT_URI="http://localhost:3000/api/auth/google/callback"
+
 # Payments
 RAZOR_PAY_ID="<your_razorpay_key_id>"
 RAZOR_PAY_SECRET="<your_razorpay_secret>"

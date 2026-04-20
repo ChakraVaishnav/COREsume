@@ -30,6 +30,15 @@ export default function ProfilePage() {
   const [loggingOut, setLoggingOut] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  const handleUsernameUpdated = useCallback((nextUser) => {
+    if (!nextUser?.username) return;
+    setUserData((prev) => ({
+      ...(prev || {}),
+      ...nextUser,
+      username: nextUser.username,
+    }));
+  }, []);
+
   const loadJobs = useCallback(
     async (page = 1) => {
       setJobsLoading(true);
@@ -236,11 +245,11 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="h-screen bg-white flex flex-col overflow-hidden">
+    <div className="min-h-screen bg-white flex flex-col">
       <Navbar />
 
-      <main className="grow min-h-0 overflow-hidden">
-        <div className="h-full min-h-0 flex">
+      <main className="grow min-h-0 pt-16 md:pt-0">
+        <div className="mx-auto flex w-full max-w-7xl min-h-0 flex-col md:h-[calc(100vh-4rem)] md:flex-row">
           <ProfileSidebar
             userData={userData}
             activeTab={activeTab}
@@ -249,9 +258,14 @@ export default function ProfilePage() {
             loggingOut={loggingOut}
           />
 
-          <section className="flex-1 min-w-0 min-h-0 bg-white text-black flex flex-col overflow-hidden border-l border-gray-200">
-            <div className="h-full min-h-0 px-5 py-4 sm:px-6 sm:py-5">
-              {activeTab === "profile" ? <ProfileDetailsPanel userData={userData} /> : null}
+          <section className="flex-1 min-w-0 min-h-0 border-t border-gray-200 bg-white text-black md:border-l md:border-t-0">
+            <div className="h-full min-h-0 px-4 py-4 sm:px-6 sm:py-5">
+              {activeTab === "profile" ? (
+                <ProfileDetailsPanel
+                  userData={userData}
+                  onUsernameUpdated={handleUsernameUpdated}
+                />
+              ) : null}
 
               {activeTab === "resume" ? (
                 <ResumeDataPanel
