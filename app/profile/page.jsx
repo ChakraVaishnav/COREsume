@@ -1,103 +1,293 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { FaUserCircle } from "react-icons/fa"; // Profile icon
 import Navbar from "@/components/Navbar";
-import { FiArrowLeft } from "react-icons/fi";
+import ProfileSidebar from "@/components/profile/ProfileSidebar";
+import ProfileDetailsPanel from "@/components/profile/ProfileDetailsPanel";
+import ResumeDataPanel from "@/components/profile/ResumeDataPanel";
+import JobsPanel from "@/components/profile/JobsPanel";
+
+const PAGE_SIZE = 10;
 
 export default function ProfilePage() {
-  const [userData, setUserData] = useState(null);
-  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-  const fetchUserInfo = async () => {
+  const [activeTab, setActiveTab] = useState("profile");
+  const [userData, setUserData] = useState(null);
+  const [resumeData, setResumeData] = useState(null);
+  const [resumeLoading, setResumeLoading] = useState(false);
+  const [resumeLoaded, setResumeLoaded] = useState(false);
+  const [jobs, setJobs] = useState([]);
+  const [jobsLoading, setJobsLoading] = useState(false);
+  const [jobsLoaded, setJobsLoaded] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalJobs, setTotalJobs] = useState(0);
+  const [jobsActionMessage, setJobsActionMessage] = useState("");
+  const [deletingJobId, setDeletingJobId] = useState("");
+  const [deletingAllJobs, setDeletingAllJobs] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const loadJobs = useCallback(
+    async (page = 1) => {
+      setJobsLoading(true);
+
+      try {
+        const params = new URLSearchParams({
+          page: String(page),
+          limit: String(PAGE_SIZE),
+        });
+
+        const res = await fetch(`/api/jobs/results?${params.toString()}`, {
+          method: "GET",
+          credentials: "include",
+          cache: "no-store",
+        });
+
+        if (res.status === 401) {
+          router.replace("/login");
+          return;
+        }
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          setJobs([]);
+          setCurrentPage(1);
+          setTotalPages(1);
+          setTotalJobs(0);
+          setJobsActionMessage(data?.message || "Failed to load jobs.");
+          return;
+        }
+
+        const pagination = data?.pagination || {};
+        setJobs(Array.isArray(data?.jobs) ? data.jobs : []);
+        setCurrentPage(Math.max(1, Number(pagination.page) || 1));
+        setTotalPages(Math.max(1, Number(pagination.totalPages) || 1));
+        setTotalJobs(Math.max(0, Number(pagination.totalJobs) || 0));
+        setJobsLoaded(true);
+      } finally {
+        setJobsLoading(false);
+      }
+    },
+    [router]
+  );
+
+  const loadResume = useCallback(async () => {
+    setResumeLoading(true);
+
     try {
-      const res = await fetch("/api/user/info", {
-        credentials: "include", // sends cookies
+      const res = await fetch("/api/resume/get", {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error("Failed to fetch user info");
-      setUserData(data);
-    } catch (err) {
-      router.push("/login");
+      if (res.status === 401) {
+        router.replace("/login");
+        return;
+      }
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setResumeData(null);
+      } else {
+        setResumeData(data?.data ?? null);
+      }
+
+      setResumeLoaded(true);
     } finally {
-      setLoading(false);
+      setResumeLoading(false);
+    }
+  }, [router]);
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const res = await fetch("/api/user/info", {
+          credentials: "include",
+          cache: "no-store",
+        });
+
+        if (res.status === 401) {
+          router.replace("/login");
+          return;
+        }
+
+        const data = await res.json();
+        if (!res.ok) throw new Error("Failed to fetch user info");
+        setUserData(data);
+      } catch {
+        router.replace("/login");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserInfo();
+  }, [router]);
+
+  useEffect(() => {
+    if (!userData) return;
+
+    if (activeTab === "resume" && !resumeLoaded && !resumeLoading) {
+      loadResume();
+    }
+
+    if (activeTab === "jobs" && !jobsLoaded && !jobsLoading) {
+      loadJobs(1);
+    }
+  }, [activeTab, jobsLoaded, jobsLoading, loadJobs, loadResume, resumeLoaded, resumeLoading, userData]);
+
+  useEffect(() => {
+    if (!jobsActionMessage) return;
+    const timer = setTimeout(() => setJobsActionMessage(""), 2600);
+    return () => clearTimeout(timer);
+  }, [jobsActionMessage]);
+
+  const handleDeleteJob = useCallback(
+    async (jobId) => {
+      const confirmed = window.confirm("Delete this job entry?");
+      if (!confirmed) return;
+
+      setDeletingJobId(jobId);
+      try {
+        const res = await fetch(`/api/jobs/${encodeURIComponent(jobId)}`, {
+          method: "DELETE",
+          credentials: "include",
+        });
+
+        if (res.status === 401) {
+          router.replace("/login");
+          return;
+        }
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          setJobsActionMessage(data?.message || "Failed to delete job.");
+          return;
+        }
+
+        setJobsActionMessage("Job deleted successfully.");
+        await loadJobs(currentPage);
+      } catch {
+        setJobsActionMessage("Failed to delete job.");
+      } finally {
+        setDeletingJobId("");
+      }
+    },
+    [currentPage, loadJobs, router]
+  );
+
+  const handleDeleteAllJobs = useCallback(async () => {
+    const confirmed = window.confirm("Delete all your stored jobs? This cannot be undone.");
+    if (!confirmed) return;
+
+    setDeletingAllJobs(true);
+    try {
+      const res = await fetch("/api/jobs", {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (res.status === 401) {
+        router.replace("/login");
+        return;
+      }
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setJobsActionMessage(data?.message || "Failed to delete all jobs.");
+        return;
+      }
+
+      setJobsActionMessage("All jobs deleted successfully.");
+      await loadJobs(1);
+    } catch {
+      setJobsActionMessage("Failed to delete all jobs.");
+    } finally {
+      setDeletingAllJobs(false);
+    }
+  }, [loadJobs, router]);
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    try {
+      await fetch("/api/logout", { method: "POST", credentials: "include" });
+      window.location.href = "/";
+    } finally {
+      setLoggingOut(false);
     }
   };
 
-  fetchUserInfo();
-}, []);
-
-
-  const handleLogout = async () => {
-  try {
-    await fetch("/api/logout", { method: "POST", credentials: "include" });
-    window.location.href = "/";
-  } catch (err) {
-    throw err;
-  }
-};
-
+  const pageNumbers = useMemo(
+    () => Array.from({ length: totalPages }, (_, index) => index + 1),
+    [totalPages]
+  );
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-500">
+      <div className="h-screen flex items-center justify-center bg-white text-gray-700">
         Loading profile...
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="h-screen bg-white flex flex-col overflow-hidden">
       <Navbar />
-      <Link
-        href="/dashboard"
-        className="absolute top-20 left-4 flex items-center gap-2 px-3 py-2 bg-white border border-yellow-400 rounded-full shadow-sm hover:bg-yellow-50 hover:text-yellow-600 transition font-semibold text-black z-10"
-      >
-        <FiArrowLeft className="inline-block" />
-        <span className="text-sm">Back</span>
-      </Link>
 
-      <main className="flex-grow flex items-center justify-center px-4 py-12">
-        
-  <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl text-center space-y-6 border border-black/5">
-          {/* Profile Icon */}
-          <FaUserCircle className="text-6xl text-yellow-400 mx-auto" />
+      <main className="grow min-h-0 overflow-hidden">
+        <div className="h-full min-h-0 flex">
+          <ProfileSidebar
+            userData={userData}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            onLogout={handleLogout}
+            loggingOut={loggingOut}
+          />
 
-          <h2 className="text-3xl font-extrabold text-black">Your Profile</h2>
+          <section className="flex-1 min-w-0 min-h-0 bg-white text-black flex flex-col overflow-hidden border-l border-gray-200">
+            <div className="h-full min-h-0 px-5 py-4 sm:px-6 sm:py-5">
+              {activeTab === "profile" ? <ProfileDetailsPanel userData={userData} /> : null}
 
-          {/* Info Grid */}
-          <div className="text-left space-y-4 text-gray-700 text-sm">
-            <div className="flex justify-between">
-              <span className="font-semibold">Name:</span>
-              <span>{userData?.username}</span>
+              {activeTab === "resume" ? (
+                <ResumeDataPanel
+                  resumeLoading={resumeLoading}
+                  resumeData={resumeData}
+                />
+              ) : null}
+
+              {activeTab === "jobs" ? (
+                <JobsPanel
+                  jobs={jobs}
+                  jobsLoading={jobsLoading}
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalJobs={totalJobs}
+                  pageNumbers={pageNumbers}
+                  onPrevPage={() => {
+                    if (currentPage <= 1) return;
+                    loadJobs(currentPage - 1);
+                  }}
+                  onNextPage={() => {
+                    if (currentPage >= totalPages) return;
+                    loadJobs(currentPage + 1);
+                  }}
+                  onSelectPage={(pageNo) => {
+                    loadJobs(pageNo);
+                  }}
+                  onDeleteJob={handleDeleteJob}
+                  onDeleteAllJobs={handleDeleteAllJobs}
+                  deletingJobId={deletingJobId}
+                  deletingAllJobs={deletingAllJobs}
+                  jobsActionMessage={jobsActionMessage}
+                />
+              ) : null}
             </div>
-            <div className="flex justify-between">
-              <span className="font-semibold">Email:</span>
-              <span>{userData?.email}</span>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="space-y-3 pt-4">
-            <Link
-              href="/change-password"
-              className="w-full block text-center bg-yellow-500 text-black py-3 px-4 rounded-xl font-semibold hover:bg-yellow-600 transition shadow-md"
-            >
-              Change Password
-            </Link>
-
-            <button
-              onClick={handleLogout}
-              className="w-full bg-red-100 text-red-700 py-2 px-4 rounded-md font-semibold hover:bg-red-200 transition"
-            >
-              Logout
-            </button>
-          </div>
+          </section>
         </div>
       </main>
     </div>

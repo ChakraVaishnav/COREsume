@@ -4,8 +4,36 @@ import { authenticateRequest } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
 
 export const runtime = "nodejs";
+const MAX_STORED_JOBS = 50;
 
 const ALLOWED_FIT_LABELS = new Set(["High Fit", "Moderate Fit", "Low Fit"]);
+
+async function enforceLatestJobsLimit(userId) {
+  const totalJobs = await prisma.job.count({ where: { userId } });
+  if (totalJobs <= MAX_STORED_JOBS) {
+    return;
+  }
+
+  const overflow = totalJobs - MAX_STORED_JOBS;
+  const oldestJobs = await prisma.job.findMany({
+    where: { userId },
+    orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+    take: overflow,
+    select: { id: true },
+  });
+
+  if (!oldestJobs.length) {
+    return;
+  }
+
+  await prisma.job.deleteMany({
+    where: {
+      id: {
+        in: oldestJobs.map((job) => job.id),
+      },
+    },
+  });
+}
 
 export async function GET(req) {
   try {
@@ -28,6 +56,8 @@ export async function GET(req) {
       ? Math.min(10, Math.max(1, limitParam))
       : 10;
     const fitLabel = ALLOWED_FIT_LABELS.has(fitLabelParam) ? fitLabelParam : null;
+
+    await enforceLatestJobsLimit(auth.userId);
 
     const where = {
       userId: auth.userId,
