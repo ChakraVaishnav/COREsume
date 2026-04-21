@@ -56,7 +56,7 @@ export default function SingleColumnTemplate() {
       {/* Summary */}
       {hasContent(summary) && (
         <section className="mb-2">
-          <h2 className="font-semibold border-b border-gray-300 mb-0.5 uppercase text-[11px]">Professional Summary</h2>
+          <h2 className="font-bold border-b border-gray-300 mb-0.5 uppercase text-[11px]">Professional Summary</h2>
           <p className="whitespace-pre-line">{summary}</p>
         </section>
       )}
@@ -64,7 +64,7 @@ export default function SingleColumnTemplate() {
       {/* Skills */}
       {hasContent(skills) && (
         <section className="mb-2">
-          <h2 className="font-semibold border-b border-gray-300 mb-0.5 uppercase text-[11px]">Skills</h2>
+          <h2 className="font-bold border-b border-gray-300 mb-0.5 uppercase text-[11px]">Skills</h2>
           <p className="whitespace-pre-line">{skills}</p>
         </section>
       )}
@@ -72,7 +72,7 @@ export default function SingleColumnTemplate() {
       {/* Education */}
       {hasContent(education) && (
         <section className="mb-2">
-          <h2 className="font-semibold border-b border-gray-300 mb-0.5 uppercase text-[11px]">Education</h2>
+          <h2 className="font-bold border-b border-gray-300 mb-0.5 uppercase text-[11px]">Education</h2>
           <p className="whitespace-pre-line">{education}</p>
         </section>
       )}
@@ -80,7 +80,7 @@ export default function SingleColumnTemplate() {
       {/* Experience */}
       {hasContent(experience) && (
         <section className="mb-2">
-          <h2 className="font-semibold border-b border-gray-300 mb-0.5 uppercase text-[11px]">Experience</h2>
+          <h2 className="font-bold border-b border-gray-300 mb-0.5 uppercase text-[11px]">Experience</h2>
           {experience.map((exp, index) => (
             <div key={index} className="mb-1">
               <h3 className="text-[11px] font-bold">{exp.role} — {exp.company}</h3>
@@ -94,12 +94,12 @@ export default function SingleColumnTemplate() {
       {/* Projects */}
       {hasContent(projects) && (
         <section className="mb-2">
-          <h2 className="font-semibold border-b border-gray-300 mb-0.5 uppercase text-[11px]">Projects</h2>
+          <h2 className="font-bold border-b border-gray-300 mb-0.5 uppercase text-[11px]">Projects</h2>
           {projects.map((proj, index) => (
             <div key={index} className="mb-1">
-              <h3 className="font-semibold">
+              <h3 className="font-bold">
                 {proj.link ? (
-                  <a href={proj.link} target="_blank" rel="noopener noreferrer" className="text-black no-underline">
+                  <a href={proj.link} target="_blank" rel="noopener noreferrer" className="font-bold text-black no-underline">
                     {proj.name}
                   </a>
                 ) : (
@@ -115,7 +115,7 @@ export default function SingleColumnTemplate() {
       {/* Achievements */}
       {hasContent(achievements) && (
         <section className="mb-2">
-          <h2 className="font-semibold border-b border-gray-300 mb-0.5 uppercase text-[11px]">Achievements</h2>
+          <h2 className="font-bold border-b border-gray-300 mb-0.5 uppercase text-[11px]">Achievements</h2>
           <p className="whitespace-pre-line">{achievements}</p>
         </section>
       )}
@@ -123,7 +123,7 @@ export default function SingleColumnTemplate() {
       {/* Interests */}
       {hasContent(interests) && (
         <section className="mb-2">
-          <h2 className="font-semibold border-b border-gray-300 mb-0.5 uppercase text-[11px]">Interests</h2>
+          <h2 className="font-bold border-b border-gray-300 mb-0.5 uppercase text-[11px]">Interests</h2>
           <p className="whitespace-pre-line">{interests}</p>
         </section>
       )}
@@ -131,7 +131,7 @@ export default function SingleColumnTemplate() {
       {/* Coding Profiles */}
       {Array.isArray(codingProfiles) && codingProfiles.some(p => p.platform || p.username) && (
         <section className="mb-2">
-          <h2 className="font-semibold border-b border-gray-300 mb-0.5 uppercase text-[11px]">Coding Profiles</h2>
+          <h2 className="font-bold border-b border-gray-300 mb-0.5 uppercase text-[11px]">Coding Profiles</h2>
           <p>
             {codingProfiles.filter(p => p.platform || p.username).map((profile, index) => (
               <span key={index}>
@@ -154,7 +154,7 @@ export default function SingleColumnTemplate() {
       {Array.isArray(customSections) && customSections.map((section, index) => (
         section.title || section.content ? (
           <section key={index} className="mb-2">
-            <h2 className="font-semibold border-b border-gray-300 mb-0.5 uppercase text-[11px]">{section.title || 'Custom Section'}</h2>
+            <h2 className="font-bold border-b border-gray-300 mb-0.5 uppercase text-[11px]">{section.title || 'Custom Section'}</h2>
             <p className="whitespace-pre-line">{section.content}</p>
           </section>
         ) : null

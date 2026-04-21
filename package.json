@@ -31,6 +31,7 @@
     "pdf-parse": "^1.1.1",
     "pdfjs-dist": "^3.11.174",
     "pg": "^8.16.0",
+    "puppeteer": "^24.42.0",
     "razorpay": "^2.9.6",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

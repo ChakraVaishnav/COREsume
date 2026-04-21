@@ -100,7 +100,7 @@ export default function TwoColumnTemplate({ data }) {
             <Section title="Work Experience">
               {experience.map((exp, index) => (
                 <div key={index} className="mb-2">
-                  <h3 className="font semi-bold">{exp.role} — {exp.company}</h3>
+                  <h3 className="font-bold">{exp.role} — {exp.company}</h3>
                   <p className="text-gray-600 text-[12px]">{exp.duration}</p> {/* ↓ 1px */}
                   <p className="whitespace-pre-line">{exp.description}</p>
                 </div>
@@ -112,10 +112,10 @@ export default function TwoColumnTemplate({ data }) {
             <Section title="Projects">
               {projects.map((project, index) => (
                 <div key={index} className="mb-2">
-                  <h3 className="font semibold text-black">
+                  <h3 className="font-bold text-black">
                    {project.link ? (
 
-                    <a href={project.link} target="_blank" className="font semibold text-black no-underline">
+                    <a href={project.link} target="_blank" className="font-bold text-black no-underline">
                       {project.name}
                     </a>
                   ) : (

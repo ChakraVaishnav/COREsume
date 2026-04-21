@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import SingleColumnTemplate from '../templates/single-column';
 import TwoColumnTemplate from '../templates/two-column';
@@ -20,12 +20,19 @@ export default function ResumePreview() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [pageCount, setPageCount] = useState(1);
-  const [isReviewed, setIsReviewed] = useState(false);
-  const [isDownloaded, setIsDownloaded] = useState(false);
   const [showRating, setShowRating] = useState(false);
   const [ratingScore, setRatingScore] = useState(5);
   const [ratingComment, setRatingComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [isExportMode, setIsExportMode] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    setIsExportMode(params.get('export') === '1');
+  }, []);
+
   useEffect(() => {
     try {
       const savedForm = localStorage.getItem('resumeFormData');
@@ -76,7 +83,6 @@ export default function ResumePreview() {
 
       // If the endpoint says the user already rated, don't show the modal
       if (json.rated) {
-        setIsReviewed(true);
         setShowRating(false);
         return true;
       }
@@ -87,12 +93,47 @@ export default function ResumePreview() {
       return false;
     }
   }
+
   const handleDownload = async () => {
-    // Print dialog may block; verify after print returns
-    window.print();
+    if (!resumeData?.data || !resumeData?.template) return;
+
+    setIsDownloading(true);
     try {
+      const res = await fetch('/api/export/resume', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          data: resumeData.data,
+          template: resumeData.template,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to generate PDF');
+      }
+
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const fileName = String(resumeData?.data?.personalInfo?.name || 'resume')
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '') || 'resume';
+
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = `${fileName}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(objectUrl);
+
       await checkIsRated();
     } catch (err) {
+      alert('Failed to download PDF. Please try again.');
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -122,13 +163,16 @@ export default function ResumePreview() {
   if (error) return <div className="flex justify-center items-center min-h-screen text-red-500">{error}</div>;
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 flex flex-col print:pt-0">
+    <div className={isExportMode ? 'bg-white' : 'min-h-screen bg-linear-to-br from-gray-50 to-gray-100 flex flex-col print:pt-0'}>
+      {!isExportMode && (
       <div className="print:hidden">
         <Navbar fixed />
       </div>
+      )}
 
-      <main className="flex-1 pt-16 px-3 sm:px-6 lg:px-8 pb-6 sm:pb-10 print:p-0">
+      <main className={isExportMode ? 'p-0' : 'flex-1 pt-16 px-3 sm:px-6 lg:px-8 pb-6 sm:pb-10 print:p-0'}>
         {/* Controls */}
+        {!isExportMode && (
         <div className="max-w-4xl mx-auto mt-3 sm:mt-6 mb-4 sm:mb-8 print:hidden">
           <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-100">
             <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center md:justify-between">
@@ -142,32 +186,34 @@ export default function ResumePreview() {
                 Back to Form
               </button>
 
-              <div className="text-center order-first md:order-none">
+              <div className="text-center order-first md:order-0">
                 <p className="text-sm text-gray-600">{activeTemplate?.name || "Resume Preview"} • Pages: <span className="font-bold text-black">{pageCount}</span></p>
               </div>
 
               <button
                 onClick={handleDownload}
+                disabled={isDownloading}
                 className="w-full md:w-auto justify-center flex items-center gap-2 px-5 py-3 bg-linear-to-r from-yellow-500 to-yellow-600 text-black border-2 border-yellow-400 rounded-xl hover:from-yellow-600 hover:to-yellow-700 font-semibold transition-all duration-200 shadow-lg"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                Download PDF
+                {isDownloading ? 'Generating PDF...' : 'Download PDF'}
               </button>
             </div>
           </div>
         </div>
+        )}
 
         {/* Resume Preview */}
-        <div className="max-w-4xl mx-auto">
-          <div id="resume-container" className="bg-white rounded-2xl shadow-xl border border-gray-200 p-3 sm:p-8 print:shadow-none print:p-0 print:border-0 print:rounded-none">
+        <div className={isExportMode ? 'w-full mx-0' : 'max-w-4xl mx-auto'}>
+          <div id="resume-container" className={isExportMode ? 'pdf-export bg-white' : 'bg-white rounded-2xl shadow-xl border border-gray-200 p-3 sm:p-8 print:shadow-none print:p-0 print:border-0 print:rounded-none'}>
             <TemplateComponent />
           </div>
         </div>
       </main>
       {/* Rating Modal */}
-      {showRating && (
+      {!isExportMode && showRating && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-40">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
             <h3 className="text-lg font-bold text-center mb-3">Rate your download</h3>

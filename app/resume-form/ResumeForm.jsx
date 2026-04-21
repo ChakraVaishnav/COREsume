@@ -654,10 +654,10 @@ function ResumeForm() {
             </div>
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
               <button
-                onClick={() => router.push("/dashboard")}
+                onClick={() => router.back()}
                 className="w-full sm:w-auto bg-linear-to-r from-yellow-500 to-yellow-600 text-black px-6 py-3 rounded-xl hover:from-yellow-600 hover:to-yellow-700 font-bold transition-all duration-200 shadow-md hover:shadow-lg"
               >
-                Dashboard
+                Back
               </button>
               <button
                 onClick={clearForm}
