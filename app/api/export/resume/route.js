@@ -4,6 +4,41 @@ import puppeteer from "puppeteer";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+const BASE_PUPPETEER_ARGS = [
+  "--no-sandbox",
+  "--disable-setuid-sandbox",
+  "--disable-dev-shm-usage",
+];
+
+async function launchBrowser() {
+  const envExecutable = process.env.PUPPETEER_EXECUTABLE_PATH;
+  if (envExecutable) {
+    return puppeteer.launch({
+      headless: true,
+      executablePath: envExecutable,
+      args: BASE_PUPPETEER_ARGS,
+    });
+  }
+
+  if (process.env.VERCEL) {
+    const [{ default: chromium }, { default: puppeteerCore }] = await Promise.all([
+      import("@sparticuz/chromium"),
+      import("puppeteer-core"),
+    ]);
+
+    return puppeteerCore.launch({
+      headless: chromium.headless,
+      executablePath: await chromium.executablePath(),
+      args: [...chromium.args, ...BASE_PUPPETEER_ARGS],
+    });
+  }
+
+  return puppeteer.launch({
+    headless: true,
+    args: BASE_PUPPETEER_ARGS,
+  });
+}
+
 function buildFileName(data) {
   const rawName = String(data?.personalInfo?.name || "resume").trim().toLowerCase();
   const safeName = rawName.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "resume";
@@ -27,13 +62,7 @@ export async function POST(req) {
       return NextResponse.json({ error: "Resume data too large" }, { status: 413 });
     }
 
-    browser = await puppeteer.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-      ...(process.env.PUPPETEER_EXECUTABLE_PATH
-        ? { executablePath: process.env.PUPPETEER_EXECUTABLE_PATH }
-        : {}),
-    });
+    browser = await launchBrowser();
 
     const page = await browser.newPage();
     await page.setViewport({ width: 1240, height: 1754, deviceScaleFactor: 2 });
@@ -51,7 +80,7 @@ export async function POST(req) {
     );
 
     const previewUrl = `${req.nextUrl.origin}/resume-preview?export=1`;
-    await page.goto(previewUrl, { waitUntil: "networkidle0", timeout: 60_000 });
+    await page.goto(previewUrl, { waitUntil: "domcontentloaded", timeout: 60_000 });
     await page.waitForSelector("#resume-container", { timeout: 30_000 });
     await page.waitForFunction(
       () => {
@@ -79,7 +108,11 @@ export async function POST(req) {
       },
     });
   } catch (err) {
-    console.error("[export/resume] Failed to generate PDF:", err);
+    console.error("[export/resume] Failed to generate PDF:", {
+      message: err?.message,
+      stack: err?.stack,
+      name: err?.name,
+    });
     return NextResponse.json({ error: "Failed to generate PDF" }, { status: 500 });
   } finally {
     if (browser) {

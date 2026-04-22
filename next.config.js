@@ -1,6 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  serverExternalPackages: ['pdfjs-dist', 'apify-client', 'pdf-parse', 'jobspy-js'],
+  serverExternalPackages: [
+    'pdfjs-dist',
+    'apify-client',
+    'pdf-parse',
+    'jobspy-js',
+    '@sparticuz/chromium',
+    'puppeteer-core',
+  ],
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.alias = {
