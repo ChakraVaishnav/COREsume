@@ -1,12 +1,5 @@
 import { NextResponse } from "next/server";
-import {
-  AlignmentType,
-  Document,
-  HeadingLevel,
-  Packer,
-  Paragraph,
-  TextRun,
-} from "docx";
+import HTMLtoDOCX from "html-to-docx";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,191 +16,194 @@ function splitLines(value) {
     .filter(Boolean);
 }
 
+function escapeHtml(value) {
+  return toText(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function buildFileName(data) {
   const rawName = toText(data?.personalInfo?.name || "resume").toLowerCase();
   const safeName = rawName.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "resume";
   return `${safeName}.docx`;
 }
 
-function createHeading(text) {
-  return new Paragraph({
-    heading: HeadingLevel.HEADING_2,
-    spacing: { before: 220, after: 80 },
-    children: [new TextRun({ text, bold: true })],
-  });
+function textBlock(value) {
+  return splitLines(value)
+    .map((line) => `<p class="block">${escapeHtml(line)}</p>`)
+    .join("");
 }
 
-function createTextParagraph(text, opts = {}) {
-  return new Paragraph({
-    spacing: { after: 80 },
-    ...opts,
-    children: [new TextRun({ text })],
-  });
+function listBlock(items) {
+  const rows = items.filter(Boolean).map((item) => `<li>${escapeHtml(item)}</li>`);
+  return rows.length ? `<ul class="list">${rows.join("")}</ul>` : "";
 }
 
-function pushMultiline(paragraphs, value) {
-  const lines = splitLines(value);
-  if (!lines.length) return;
-
-  lines.forEach((line) => {
-    paragraphs.push(createTextParagraph(line));
-  });
+function sectionHtml(title, content) {
+  return `<section><h2>${escapeHtml(title)}</h2>${content}</section>`;
 }
 
-function buildDocParagraphs(resumeData) {
-  const paragraphs = [];
+function buildHtml(resumeData) {
   const info = resumeData?.personalInfo || {};
   const fullName = toText(info.name) || "Resume";
   const appliedJob = toText(resumeData?.appliedJob);
-
-  paragraphs.push(
-    new Paragraph({
-      alignment: AlignmentType.CENTER,
-      spacing: { after: 120 },
-      children: [new TextRun({ text: fullName, bold: true, size: 34 })],
-    })
-  );
-
-  if (appliedJob) {
-    paragraphs.push(
-      new Paragraph({
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 80 },
-        children: [new TextRun({ text: appliedJob, italics: true, size: 24 })],
-      })
-    );
-  }
-
   const contactParts = [info.email, info.phone, info.linkedin, info.github, info.portfolio]
     .map(toText)
     .filter(Boolean);
 
-  if (contactParts.length) {
-    paragraphs.push(
-      new Paragraph({
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 160 },
-        children: [new TextRun({ text: contactParts.join(" | ") })],
-      })
-    );
-  }
+  const sections = [];
+
+  sections.push(`
+    <div class="header">
+      <h1>${escapeHtml(fullName)}</h1>
+      ${appliedJob ? `<p class="role">${escapeHtml(appliedJob)}</p>` : ""}
+      ${contactParts.length ? `<p class="contact">${escapeHtml(contactParts.join(" | "))}</p>` : ""}
+    </div>
+  `);
 
   const summary = toText(resumeData?.summary);
-  if (summary) {
-    paragraphs.push(createHeading("Professional Summary"));
-    pushMultiline(paragraphs, summary);
-  }
+  if (summary) sections.push(sectionHtml("Professional Summary", textBlock(summary)));
 
   const skills = toText(resumeData?.skills);
-  if (skills) {
-    paragraphs.push(createHeading("Skills"));
-    pushMultiline(paragraphs, skills);
-  }
+  if (skills) sections.push(sectionHtml("Skills", textBlock(skills)));
 
   const education = toText(resumeData?.education);
-  if (education) {
-    paragraphs.push(createHeading("Education"));
-    pushMultiline(paragraphs, education);
-  }
+  if (education) sections.push(sectionHtml("Education", textBlock(education)));
 
   const experience = Array.isArray(resumeData?.experience) ? resumeData.experience : [];
-  if (experience.length) {
-    const rows = experience.filter((item) =>
-      [item?.role, item?.company, item?.duration, item?.description].some((part) => toText(part))
-    );
+  const experienceHtml = experience
+    .filter((item) => [item?.role, item?.company, item?.duration, item?.description].some((part) => toText(part)))
+    .map((item) => {
+      const titleParts = [toText(item.role), toText(item.company)].filter(Boolean);
+      const duration = toText(item.duration);
 
-    if (rows.length) {
-      paragraphs.push(createHeading("Experience"));
-      rows.forEach((item) => {
-        const titleParts = [toText(item.role), toText(item.company)].filter(Boolean);
-        if (titleParts.length) {
-          paragraphs.push(
-            createTextParagraph(titleParts.join(" - "), {
-              children: [new TextRun({ text: titleParts.join(" - "), bold: true })],
-            })
-          );
-        }
-
-        const duration = toText(item.duration);
-        if (duration) {
-          paragraphs.push(createTextParagraph(duration, { children: [new TextRun({ text: duration, italics: true })] }));
-        }
-
-        pushMultiline(paragraphs, item.description);
-      });
-    }
-  }
+      return `
+        <div class="entry">
+          ${titleParts.length ? `<h3>${escapeHtml(titleParts.join(" - "))}</h3>` : ""}
+          ${duration ? `<p class="meta">${escapeHtml(duration)}</p>` : ""}
+          ${textBlock(item.description)}
+        </div>
+      `;
+    })
+    .join("");
+  if (experienceHtml) sections.push(sectionHtml("Experience", experienceHtml));
 
   const projects = Array.isArray(resumeData?.projects) ? resumeData.projects : [];
-  if (projects.length) {
-    const rows = projects.filter((item) => [item?.name, item?.description, item?.link].some((part) => toText(part)));
+  const projectsHtml = projects
+    .filter((item) => [item?.name, item?.description, item?.link].some((part) => toText(part)))
+    .map((item) => {
+      const projectName = toText(item.name);
+      const link = toText(item.link);
 
-    if (rows.length) {
-      paragraphs.push(createHeading("Projects"));
-      rows.forEach((item) => {
-        const projectName = toText(item.name);
-        if (projectName) {
-          paragraphs.push(
-            createTextParagraph(projectName, {
-              children: [new TextRun({ text: projectName, bold: true })],
-            })
-          );
-        }
-
-        pushMultiline(paragraphs, item.description);
-
-        const link = toText(item.link);
-        if (link) {
-          paragraphs.push(createTextParagraph(link));
-        }
-      });
-    }
-  }
+      return `
+        <div class="entry">
+          ${projectName ? `<h3>${escapeHtml(projectName)}</h3>` : ""}
+          ${textBlock(item.description)}
+          ${link ? `<p class="meta">${escapeHtml(link)}</p>` : ""}
+        </div>
+      `;
+    })
+    .join("");
+  if (projectsHtml) sections.push(sectionHtml("Projects", projectsHtml));
 
   const achievements = toText(resumeData?.achievements);
-  if (achievements) {
-    paragraphs.push(createHeading("Achievements"));
-    pushMultiline(paragraphs, achievements);
-  }
+  if (achievements) sections.push(sectionHtml("Achievements", textBlock(achievements)));
 
   const interests = toText(resumeData?.interests);
-  if (interests) {
-    paragraphs.push(createHeading("Interests"));
-    pushMultiline(paragraphs, interests);
-  }
+  if (interests) sections.push(sectionHtml("Interests", textBlock(interests)));
 
   const codingProfiles = Array.isArray(resumeData?.codingProfiles) ? resumeData.codingProfiles : [];
-  if (codingProfiles.length) {
-    const rows = codingProfiles
-      .map((item) => {
-        const parts = [toText(item.platform), toText(item.username), toText(item.link)].filter(Boolean);
-        return parts.join(" - ");
-      })
-      .filter(Boolean);
-
-    if (rows.length) {
-      paragraphs.push(createHeading("Coding Profiles"));
-      rows.forEach((row) => paragraphs.push(createTextParagraph(row)));
-    }
-  }
+  const codingRows = codingProfiles
+    .map((item) => {
+      const parts = [toText(item.platform), toText(item.username), toText(item.link)].filter(Boolean);
+      return parts.join(" - ");
+    })
+    .filter(Boolean);
+  if (codingRows.length) sections.push(sectionHtml("Coding Profiles", listBlock(codingRows)));
 
   const customSections = Array.isArray(resumeData?.customSections) ? resumeData.customSections : [];
-  if (customSections.length) {
-    customSections.forEach((section) => {
-      const title = toText(section?.title) || "Custom Section";
-      const content = toText(section?.content);
-      if (!content) return;
+  customSections.forEach((section) => {
+    const title = toText(section?.title) || "Custom Section";
+    const content = toText(section?.content);
+    if (content) {
+      sections.push(sectionHtml(title, textBlock(content)));
+    }
+  });
 
-      paragraphs.push(createHeading(title));
-      pushMultiline(paragraphs, content);
-    });
+  if (!sections.length) {
+    sections.push(`<p class="block">Resume data is empty.</p>`);
   }
 
-  if (!paragraphs.length) {
-    paragraphs.push(createTextParagraph("Resume data is empty."));
-  }
-
-  return paragraphs;
+  return `
+    <html>
+      <head>
+        <meta charset="utf-8" />
+        <style>
+          body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 11pt;
+            line-height: 1.45;
+            color: #111827;
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 18px;
+          }
+          h1 {
+            font-size: 22pt;
+            margin: 0 0 4px;
+          }
+          .role {
+            font-size: 12pt;
+            font-weight: 700;
+            margin: 0 0 4px;
+          }
+          .contact {
+            margin: 0;
+            font-size: 10pt;
+          }
+          section {
+            margin-bottom: 14px;
+          }
+          h2 {
+            font-size: 12pt;
+            margin: 0 0 6px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #d1d5db;
+          }
+          h3 {
+            font-size: 11pt;
+            margin: 0 0 4px;
+          }
+          .entry {
+            margin-bottom: 10px;
+          }
+          .meta {
+            font-style: italic;
+            margin: 0 0 4px;
+            color: #4b5563;
+          }
+          .block {
+            margin: 0 0 6px;
+            white-space: pre-wrap;
+          }
+          .list {
+            margin: 0;
+            padding-left: 18px;
+          }
+          .list li {
+            margin: 0 0 4px;
+          }
+        </style>
+      </head>
+      <body>
+        ${sections.join("")}
+      </body>
+    </html>
+  `;
 }
 
 export async function POST(req) {
@@ -224,16 +220,18 @@ export async function POST(req) {
       return NextResponse.json({ error: "Resume data too large" }, { status: 413 });
     }
 
-    const doc = new Document({
-      sections: [
-        {
-          properties: {},
-          children: buildDocParagraphs(resumeData),
-        },
-      ],
+    const docxBuffer = await HTMLtoDOCX(buildHtml(resumeData), null, {
+      orientation: "portrait",
+      margins: {
+        top: 720,
+        right: 720,
+        bottom: 720,
+        left: 720,
+      },
+      title: `${toText(resumeData?.personalInfo?.name || "Resume")}`,
+      creator: "COREsume",
+      lastModifiedBy: "COREsume",
     });
-
-    const docxBuffer = await Packer.toBuffer(doc);
 
     return new NextResponse(docxBuffer, {
       status: 200,
