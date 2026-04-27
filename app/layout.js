@@ -1,4 +1,4 @@
-import { Outfit, Plus_Jakarta_Sans } from "next/font/google";
+import { Merriweather, Outfit, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
 
@@ -13,6 +13,13 @@ const outfit = Outfit({
   subsets: ["latin"],
   weight: ["500", "600", "700", "800"],
   variable: "--font-heading",
+  display: "swap",
+});
+
+const merriweather = Merriweather({
+  subsets: ["latin"],
+  weight: ["300", "400", "700", "900"],
+  variable: "--font-resume-serif",
   display: "swap",
 });
 
@@ -142,7 +149,7 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body
-        className={`${plusJakartaSans.variable} ${outfit.variable} antialiased`}
+        className={`${plusJakartaSans.variable} ${outfit.variable} ${merriweather.variable} antialiased`}
         suppressHydrationWarning
       >
         {children}

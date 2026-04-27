@@ -25,7 +25,10 @@ export default function ResumePreview() {
   const [ratingComment, setRatingComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isDownloadingDocx, setIsDownloadingDocx] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(false);
   const [isExportMode, setIsExportMode] = useState(false);
+  const [showDownloadOptions, setShowDownloadOptions] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -94,9 +97,15 @@ export default function ResumePreview() {
     }
   }
 
-  const handleDownload = async () => {
+  const handleOpenDownloadOptions = () => {
+    if (!resumeData?.data || !resumeData?.template) return;
+    setShowDownloadOptions(true);
+  };
+
+  const handleDirectDownload = async () => {
     if (!resumeData?.data || !resumeData?.template) return;
 
+    setShowDownloadOptions(false);
     setIsDownloading(true);
     try {
       const res = await fetch('/api/export/resume', {
@@ -134,6 +143,71 @@ export default function ResumePreview() {
       alert('Failed to download PDF. Please try again.');
     } finally {
       setIsDownloading(false);
+    }
+  };
+
+  const handlePrintDownload = async () => {
+    if (typeof window === 'undefined') return;
+
+    setShowDownloadOptions(false);
+    setIsPrinting(true);
+
+    try {
+      await new Promise((resolve) => {
+        requestAnimationFrame(() => {
+          setTimeout(resolve, 120);
+        });
+      });
+
+      window.print();
+      await checkIsRated();
+    } catch (err) {
+      alert('Unable to open print dialog. Please try again.');
+    } finally {
+      setIsPrinting(false);
+    }
+  };
+
+  const handleDocxDownload = async () => {
+    if (!resumeData?.data) return;
+
+    setShowDownloadOptions(false);
+    setIsDownloadingDocx(true);
+    try {
+      const res = await fetch('/api/export/resume-docx', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          data: resumeData.data,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to generate DOCX');
+      }
+
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const fileName = String(resumeData?.data?.personalInfo?.name || 'resume')
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '') || 'resume';
+
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = `${fileName}.docx`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(objectUrl);
+
+      await checkIsRated();
+    } catch (err) {
+      alert('Failed to download DOCX. Please try again.');
+    } finally {
+      setIsDownloadingDocx(false);
     }
   };
 
@@ -191,14 +265,20 @@ export default function ResumePreview() {
               </div>
 
               <button
-                onClick={handleDownload}
-                disabled={isDownloading}
+                onClick={handleOpenDownloadOptions}
+                disabled={isDownloading || isDownloadingDocx || isPrinting}
                 className="w-full md:w-auto justify-center flex items-center gap-2 px-5 py-3 bg-linear-to-r from-yellow-500 to-yellow-600 text-black border-2 border-yellow-400 rounded-xl hover:from-yellow-600 hover:to-yellow-700 font-semibold transition-all duration-200 shadow-lg"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                {isDownloading ? 'Generating PDF...' : 'Download PDF'}
+                {isDownloading
+                  ? 'Generating PDF...'
+                  : isDownloadingDocx
+                    ? 'Generating DOCX...'
+                    : isPrinting
+                      ? 'Opening Print Dialog...'
+                      : 'Download'}
               </button>
             </div>
           </div>
@@ -212,6 +292,56 @@ export default function ResumePreview() {
           </div>
         </div>
       </main>
+
+      {!isExportMode && showDownloadOptions && (
+        <div className="fixed inset-0 bg-black/45 z-50 flex items-end sm:items-center justify-center p-3 sm:p-4 print:hidden">
+          <div className="w-full sm:max-w-xl bg-white rounded-2xl shadow-2xl border border-gray-200 p-4 sm:p-6">
+            <h3 className="text-lg font-bold text-black">Choose Download Method</h3>
+            <p className="text-sm text-gray-600 mt-1 mb-4">
+              Quick PDF generates instantly. Custom mode opens the browser print dialog so you can adjust scale, margins, and destination before saving.
+            </p>
+
+            <div className="space-y-3">
+              <button
+                onClick={handleDirectDownload}
+                disabled={isDownloading || isDownloadingDocx || isPrinting}
+                className="w-full text-left rounded-xl border-2 border-yellow-400 bg-linear-to-r from-yellow-500 to-yellow-600 px-4 py-3 text-black shadow-md hover:from-yellow-600 hover:to-yellow-700 transition-all"
+              >
+                <p className="font-semibold">Quick Download (Auto PDF)</p>
+                <p className="text-xs text-black/80 mt-0.5">Best for one-tap download on desktop and mobile.</p>
+              </button>
+
+              <button
+                onClick={handleDocxDownload}
+                disabled={isDownloading || isDownloadingDocx || isPrinting}
+                className="w-full text-left rounded-xl border-2 border-blue-200 bg-linear-to-r from-blue-50 to-blue-100 px-4 py-3 text-black shadow-sm hover:from-blue-100 hover:to-blue-200 transition-all"
+              >
+                <p className="font-semibold">Download as DOCX (Word)</p>
+                <p className="text-xs text-gray-700 mt-0.5">Works well when you want to edit the file in Microsoft Word.</p>
+              </button>
+
+              <button
+                onClick={handlePrintDownload}
+                disabled={isDownloading || isDownloadingDocx || isPrinting}
+                className="w-full text-left rounded-xl border-2 border-gray-300 bg-white px-4 py-3 text-black shadow-sm hover:bg-gray-50 transition-all"
+              >
+                <p className="font-semibold">Customize &amp; Save PDF</p>
+                <p className="text-xs text-gray-600 mt-0.5">Opens print dialog to tune layout, scale, and page settings.</p>
+              </button>
+            </div>
+
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={() => setShowDownloadOptions(false)}
+                className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 font-medium hover:bg-gray-200"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Rating Modal */}
       {!isExportMode && showRating && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-40">

@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
+    "dev:turbo": "next dev --turbopack",
     "prisma:generate": "prisma generate",
     "build": "npm run prisma:generate && next build",
     "start": "next start",
@@ -20,6 +21,7 @@
     "dictionary-en": "^4.0.0",
     "framer-motion": "^12.23.6",
     "groq-sdk": "^1.1.2",
+    "html-to-docx": "^1.8.0",
     "jobspy-js": "^1.7.0",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.539.0",

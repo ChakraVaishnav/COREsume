@@ -90,6 +90,34 @@ export async function POST(req) {
       { timeout: 30_000 }
     );
 
+    await page.evaluate(async () => {
+      if (document.fonts?.ready) {
+        try {
+          await Promise.race([
+            document.fonts.ready,
+            new Promise((resolve) => setTimeout(resolve, 10_000)),
+          ]);
+        } catch {
+          // Ignore and let the final PDF render proceed.
+        }
+      }
+    });
+
+    await page.waitForFunction(
+      () => {
+        if (!document.fonts) return true;
+
+        // Some fonts can end in `error` state depending on environment.
+        // Treat both loaded and error as settled to avoid hanging exports.
+        return Array.from(document.fonts).every(
+          (font) => font.status === "loaded" || font.status === "error"
+        );
+      },
+      { timeout: 15_000 }
+    ).catch(() => {
+      // If fonts are still unresolved after timeout, continue with fallback fonts.
+    });
+
     await page.emulateMediaType("screen");
 
     const pdfBuffer = await page.pdf({

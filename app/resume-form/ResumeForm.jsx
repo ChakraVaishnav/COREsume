@@ -31,7 +31,10 @@ const DEFAULT_FORM = {
 function normalizeResumeFormData(raw) {
   const safe = raw && typeof raw === "object" ? raw : {};
   const personalInfo = safe.personalInfo && typeof safe.personalInfo === "object" ? safe.personalInfo : {};
-  const appliedJob = safe.appliedJob || safe.jobrole || "";
+  const hasAppliedJob = Object.prototype.hasOwnProperty.call(safe, "appliedJob");
+  const appliedJob = hasAppliedJob
+    ? String(safe.appliedJob ?? "")
+    : String(safe.jobrole ?? "");
 
   return {
     personalInfo: {
@@ -374,7 +377,18 @@ function ResumeForm() {
     for (let i = 0; i < keys.length - 1; i++) {
       obj = obj[keys[i]];
     }
-    obj[keys[keys.length - 1]] = e.target.value;
+
+    const finalKey = keys[keys.length - 1];
+    obj[finalKey] = e.target.value;
+
+    // Keep legacy `jobrole` in sync with `appliedJob` so old values
+    // never reappear after users clear the target role field.
+    if (path === "appliedJob") {
+      updatedForm.jobrole = e.target.value;
+    } else if (path === "jobrole") {
+      updatedForm.appliedJob = e.target.value;
+    }
+
     setForm(updatedForm);
   };
 
@@ -654,7 +668,7 @@ function ResumeForm() {
             </div>
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
               <button
-                onClick={() => router.back()}
+                onClick={() => router.push("/dashboard")}
                 className="w-full sm:w-auto bg-linear-to-r from-yellow-500 to-yellow-600 text-black px-6 py-3 rounded-xl hover:from-yellow-600 hover:to-yellow-700 font-bold transition-all duration-200 shadow-md hover:shadow-lg"
               >
                 Back
@@ -756,9 +770,7 @@ function ResumeForm() {
                 type="text"
                 placeholder="e.g. Backend Developer, UI/UX Designer"
                 value={form.appliedJob || ""}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, appliedJob: e.target.value }))
-                }
+                onChange={(e) => handleChange(e, "appliedJob")}
                 className="w-full border-2 border-yellow-200 bg-white p-4 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all duration-200 hover:border-yellow-300"
               />
             </div>
@@ -811,7 +823,7 @@ function ResumeForm() {
                   }, 1800);
                   return;
                 }
-                const jobRole = form.appliedJob || form.jobrole || "Software Engineer";
+                const jobRole = String(form.appliedJob || "").trim();
                 const experienceLevel = form.experienceLevel || "";
                 handleAISuggestion("summary", { jobRole, experienceLevel });
               }}
@@ -891,7 +903,7 @@ function ResumeForm() {
             </div>
             <button
               onClick={() => {
-                const jobRole = form.appliedJob || form.jobrole || "Software Engineer";
+                const jobRole = String(form.appliedJob || "").trim();
                 const experienceLevel = form.experienceLevel || "";
                 handleAISuggestion("skills", { jobRole, experienceLevel });
               }}
@@ -1043,7 +1055,7 @@ function ResumeForm() {
                         alert("Please enter a description first before enhancing with AI");
                         return;
                       }
-                      const jobRole = form.appliedJob || form.jobrole || "Software Engineer";
+                      const jobRole = String(form.appliedJob || "").trim();
                       const experienceLevel = form.experienceLevel || "";
                       handleAISuggestion("experience", {
                         description: exp.description,
@@ -1190,7 +1202,7 @@ function ResumeForm() {
                           alert("Please enter a project name first before generating description with AI");
                           return;
                         }
-                        const jobRole = form.appliedJob || form.jobrole || "Software Engineer";
+                        const jobRole = String(form.appliedJob || "").trim();
                         const experienceLevel = form.experienceLevel || "";
                         handleAISuggestion("project-generate", {
                           projectTitle: proj.name,
@@ -1229,7 +1241,7 @@ function ResumeForm() {
                           alert("Please enter a description first before enhancing with AI");
                           return;
                         }
-                        const jobRole = form.appliedJob || form.jobrole || "Software Engineer";
+                        const jobRole = String(form.appliedJob || "").trim();
                         const experienceLevel = form.experienceLevel || "";
                         handleAISuggestion("project-enhance", {
                           projectTitle: proj.name,

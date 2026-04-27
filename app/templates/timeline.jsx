@@ -46,7 +46,7 @@ export default function TimelineTemplate() {
     <div
       className="resume-template max-w-[210mm] mx-auto p-6 print:p-6"
       style={{
-        fontFamily: `'Merriweather', serif`,
+        fontFamily: "var(--font-resume-serif), Georgia, 'Times New Roman', serif",
         fontSize: '12px', // reduced from 13px
         lineHeight: '1.5',
       }}

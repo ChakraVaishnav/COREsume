@@ -165,7 +165,7 @@ function JsonFormRenderer({ value, heading, suppressPrimitiveLabel = false }) {
   );
 }
 
-export default function ResumeDataPanel({ resumeLoading, resumeData }) {
+export default function ResumeDataPanel({ resumeLoading, resumeData, onEditResume }) {
   const orderedSections = resumeData
     ? [
         ...RESUME_SECTION_ORDER.map((key) => [key, resumeData?.[key]]),
@@ -178,7 +178,16 @@ export default function ResumeDataPanel({ resumeLoading, resumeData }) {
   return (
     <div className="h-full min-h-0 flex flex-col text-black">
       <div className="shrink-0">
-        <h2 className="text-2xl font-extrabold text-black">Your Resume</h2>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-2xl font-extrabold text-black">Your Resume</h2>
+          <button
+            type="button"
+            onClick={onEditResume}
+            className="inline-flex items-center justify-center rounded-lg border border-yellow-300 bg-yellow-400 px-4 py-2 text-sm font-semibold text-black transition hover:bg-yellow-500"
+          >
+            Edit Resume
+          </button>
+        </div>
       </div>
 
       <div className="mt-4 min-h-0 grow overflow-y-auto pr-1">

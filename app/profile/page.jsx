@@ -271,6 +271,7 @@ export default function ProfilePage() {
                 <ResumeDataPanel
                   resumeLoading={resumeLoading}
                   resumeData={resumeData}
+                  onEditResume={() => router.push("/resume-form")}
                 />
               ) : null}
 
