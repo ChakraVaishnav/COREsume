@@ -109,6 +109,15 @@ function IconDownload() {
   );
 }
 
+function LoadingSpinner() {
+  return (
+    <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <circle cx="12" cy="12" r="10" opacity="0.25" />
+      <path d="M12 2a10 10 0 0 1 10 10" />
+    </svg>
+  );
+}
+
 function WhyCardIcon({ type }) {
   if (type === "account") return <IconUserPlus />;
   if (type === "template") return <IconTemplate />;
@@ -147,6 +156,7 @@ function StarRow({ count }) {
 export default function Home() {
   const [authChecked, setAuthChecked] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
   const [openFaq, setOpenFaq] = useState(0);
   const [showHeroResume, setShowHeroResume] = useState(true);
   const featuresRef = useRef(null);
@@ -158,12 +168,19 @@ export default function Home() {
 
   useEffect(() => {
     const checkAuth = async () => {
+      // Show loading spinner while we check auth (cookies are HttpOnly, can't detect them in JS)
+      setIsValidating(true);
       try {
         const res = await fetch("/api/user/info", { credentials: "include" });
-        setIsAuthenticated(res.ok);
+        if (res.ok) {
+          setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+        }
       } catch {
         setIsAuthenticated(false);
       } finally {
+        setIsValidating(false);
         setAuthChecked(true);
       }
     };
@@ -225,7 +242,13 @@ export default function Home() {
           </Link>
 
           <nav className="flex items-center gap-2 sm:gap-3">
-            {authChecked &&
+            {isValidating && (
+              <div className="flex items-center gap-2 rounded-md border border-zinc-300 px-4 py-2">
+                <LoadingSpinner />
+                <span className="text-xs font-medium text-zinc-600 sm:text-sm">Verifying...</span>
+              </div>
+            )}
+            {authChecked && !isValidating &&
               (isAuthenticated ? (
                 <Link
                   href="/dashboard"
@@ -290,7 +313,13 @@ export default function Home() {
                 >
                   Learn More
                 </button>
-                {authChecked &&
+                {isValidating && (
+                  <div className="flex items-center gap-2 rounded-md border border-zinc-300 px-7 py-3">
+                    <LoadingSpinner />
+                    <span className="text-sm font-medium text-zinc-600">Verifying...</span>
+                  </div>
+                )}
+                {authChecked && !isValidating &&
                   (isAuthenticated ? (
                     <Link
                       href="/dashboard"

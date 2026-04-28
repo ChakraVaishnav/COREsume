@@ -51,23 +51,18 @@ export async function POST(req) {
       );
     }
 
-    // Step 2: Find authenticated user
-    const user = await prisma.user.findUnique({ where: { id: auth.userId } });
+    // Step 2: Atomically add credits to user
+    const updatedUser = await prisma.user.update({
+      where: { id: auth.userId },
+      data: { creds: { increment: creditsToAdd } },
+    });
 
-    if (!user) {
+    if (!updatedUser) {
       return NextResponse.json(
         { success: false, error: "User not found" },
         { status: 404 }
       );
     }
-
-    // Step 3: Add credits
-    const updatedCredits = (user.creds || 0) + creditsToAdd;
-
-    await prisma.user.update({
-      where: { id: auth.userId },
-      data: { creds: updatedCredits },
-    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

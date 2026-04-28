@@ -17,9 +17,6 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({ where: { id: auth.userId } });
-    if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
-
     // Validate Prisma client has the rating model available
     if (!prisma.rating || typeof prisma.rating.create !== 'function') {
       throw new Error('Prisma client missing `rating` model. Did you run prisma generate/migrate?');
@@ -31,7 +28,7 @@ export async function POST(req) {
 
     const rating = await prisma.rating.create({
       data: {
-        userId: user.id,
+        userId: auth.userId,
         score,
         comment: comment || null,
         template,

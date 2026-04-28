@@ -1,6 +1,40 @@
 "use client";
 
+import { FiCheck } from "react-icons/fi";
+
 const MAX_STORED_JOBS = 50;
+
+function SelectCheckbox({ checked, onChange, labelClassName = "" }) {
+  return (
+    <label className={`inline-flex items-center gap-2 cursor-pointer ${labelClassName}`}>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={onChange}
+        className="sr-only"
+      />
+      <span
+        className={`flex h-5 w-5 items-center justify-center rounded-md border transition-colors ${
+          checked
+            ? "border-yellow-500 bg-yellow-400 text-black"
+            : "border-gray-300 bg-white text-transparent"
+        }`}
+        aria-hidden="true"
+      >
+        <FiCheck className="h-3.5 w-3.5" />
+      </span>
+    </label>
+  );
+}
+
+function InlineSpinner() {
+  return (
+    <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <circle cx="12" cy="12" r="10" opacity="0.25" />
+      <path d="M12 2a10 10 0 0 1 10 10" />
+    </svg>
+  );
+}
 
 export default function JobsPanel({
   jobs,
@@ -13,11 +47,19 @@ export default function JobsPanel({
   onNextPage,
   onSelectPage,
   onDeleteJob,
+  onDeleteSelectedJobs,
   onDeleteAllJobs,
+  selectedJobIds,
+  onToggleJobSelection,
+  onToggleSelectAll,
   deletingJobId,
+  deletingSelectedJobs,
   deletingAllJobs,
   jobsActionMessage,
 }) {
+  const visibleJobIds = jobs.map((job) => job.id);
+  const allVisibleSelected = visibleJobIds.length > 0 && visibleJobIds.every((id) => selectedJobIds.includes(id));
+
   return (
     <div className="h-full min-h-0 flex flex-col text-black">
       <div className="shrink-0 space-y-2">
@@ -32,16 +74,34 @@ export default function JobsPanel({
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-xs text-gray-500">
             Showing page {currentPage} of {totalPages} - Total jobs: {totalJobs} / {MAX_STORED_JOBS}
+            {selectedJobIds.length ? ` - Selected: ${selectedJobIds.length}` : ""}
           </p>
 
-          <button
-            type="button"
-            onClick={onDeleteAllJobs}
-            disabled={deletingAllJobs || totalJobs === 0 || jobsLoading}
-            className="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {deletingAllJobs ? "Deleting all..." : "Delete All Jobs"}
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={onDeleteSelectedJobs}
+              disabled={deletingSelectedJobs || selectedJobIds.length === 0 || jobsLoading}
+              className="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <span className="inline-flex items-center gap-1.5">
+                {deletingSelectedJobs ? <InlineSpinner /> : null}
+                {deletingSelectedJobs ? "Deleting selected..." : "Delete Selected Jobs"}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={onDeleteAllJobs}
+              disabled={deletingAllJobs || totalJobs === 0 || jobsLoading}
+              className="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <span className="inline-flex items-center gap-1.5">
+                {deletingAllJobs ? <InlineSpinner /> : null}
+                {deletingAllJobs ? "Deleting all..." : "Delete All Jobs"}
+              </span>
+            </button>
+          </div>
         </div>
 
         {jobsActionMessage ? (
@@ -55,8 +115,19 @@ export default function JobsPanel({
         <div className="space-y-3 p-3 md:hidden">
           {jobs.map((job) => (
             <div key={job.id} className="rounded-xl border border-gray-200 bg-gray-50 p-3">
-              <p className="text-sm font-bold text-black">{job.jobTitle || "-"}</p>
-              <p className="mt-1 text-xs text-gray-700">{job.companyName || "-"}</p>
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-black">{job.jobTitle || "-"}</p>
+                  <p className="mt-1 text-xs text-gray-700">{job.companyName || "-"}</p>
+                </div>
+                <label className="flex shrink-0 items-center gap-2 text-xs font-semibold text-gray-600">
+                  <SelectCheckbox
+                    checked={selectedJobIds.includes(job.id)}
+                    onChange={() => onToggleJobSelection(job.id)}
+                  />
+                  Select
+                </label>
+              </div>
               <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-gray-600">
                 <p>
                   <span className="font-semibold text-gray-800">Location:</span> {job.location || "-"}
@@ -88,7 +159,10 @@ export default function JobsPanel({
                   disabled={deletingJobId === job.id || deletingAllJobs}
                   className="rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {deletingJobId === job.id ? "Deleting..." : "Delete"}
+                  <span className="inline-flex items-center gap-1.5">
+                    {deletingJobId === job.id ? <InlineSpinner /> : null}
+                    {deletingJobId === job.id ? "Deleting..." : "Delete"}
+                  </span>
                 </button>
               </div>
             </div>
@@ -105,6 +179,15 @@ export default function JobsPanel({
           <table className="min-w-full divide-y divide-gray-200 text-left text-sm">
             <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
               <tr>
+                <th className="px-3 py-2">
+                  <label className="flex items-center gap-2 font-semibold text-gray-600">
+                    <SelectCheckbox
+                      checked={allVisibleSelected}
+                      onChange={(e) => onToggleSelectAll(visibleJobIds, e.target.checked)}
+                    />
+                    Select
+                  </label>
+                </th>
                 <th className="px-3 py-2">Role</th>
                 <th className="px-3 py-2">Company</th>
                 <th className="px-3 py-2">Location</th>
@@ -118,6 +201,12 @@ export default function JobsPanel({
             <tbody className="divide-y divide-gray-100 bg-white text-black">
               {jobs.map((job) => (
                 <tr key={job.id}>
+                  <td className="px-3 py-2">
+                    <SelectCheckbox
+                      checked={selectedJobIds.includes(job.id)}
+                      onChange={() => onToggleJobSelection(job.id)}
+                    />
+                  </td>
                   <td className="max-w-56 truncate px-3 py-2">{job.jobTitle || "-"}</td>
                   <td className="max-w-44 truncate px-3 py-2">{job.companyName || "-"}</td>
                   <td className="max-w-40 truncate px-3 py-2">{job.location || "-"}</td>
@@ -145,7 +234,10 @@ export default function JobsPanel({
                       disabled={deletingJobId === job.id || deletingAllJobs}
                       className="rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      {deletingJobId === job.id ? "Deleting..." : "Delete"}
+                      <span className="inline-flex items-center gap-1.5">
+                        {deletingJobId === job.id ? <InlineSpinner /> : null}
+                        {deletingJobId === job.id ? "Deleting..." : "Delete"}
+                      </span>
                     </button>
                   </td>
                 </tr>
@@ -153,7 +245,7 @@ export default function JobsPanel({
 
               {!jobsLoading && jobs.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-3 py-8 text-center text-sm text-gray-400">
+                  <td colSpan={9} className="px-3 py-8 text-center text-sm text-gray-400">
                     No jobs found.
                   </td>
                 </tr>

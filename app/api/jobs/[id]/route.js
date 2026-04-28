@@ -15,9 +15,12 @@ export async function GET(req, { params }) {
       );
     }
 
+    const resolvedParams = (await params) || {};
+    const jobId = String(resolvedParams.id || "");
+
     const job = await prisma.job.findFirst({
       where: {
-        id: params.id,
+        id: jobId,
         userId: auth.userId,
       },
     });
@@ -51,7 +54,8 @@ export async function DELETE(req, { params }) {
       );
     }
 
-    const jobId = String(params?.id || "");
+    const resolvedParams = (await params) || {};
+    const jobId = String(resolvedParams.id || "");
     if (!jobId) {
       const badRequest = NextResponse.json(
         { error: "BAD_REQUEST", message: "Job id is required." },

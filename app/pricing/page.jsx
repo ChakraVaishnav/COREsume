@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Navbar from "@/components/Navbar";
 import Link from 'next/link';
 
@@ -34,10 +35,14 @@ const pricingPlans = [
     "Skills Auto Generation",
     "Experience Quantifying",
     "Project Description Quantifying",
+    "Check you resume ATS score",
+    "Can Access Resume from PDF feature",
+    "Can Access Job Search feature",
   ]
 }));
 
 export default function Pricing() {
+  const router = useRouter();
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [loading, setLoading] = useState(false);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
@@ -150,49 +155,49 @@ export default function Pricing() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen overflow-hidden bg-gray-50">
       <Navbar fixed />
 
-      <div className="max-w-6xl mx-auto px-4 pt-20 pb-12">
-        <Link
-          href="/dashboard"
-          className="inline-block mb-6 text-yellow-500 font-medium hover:underline"
+      <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-6xl flex-col px-4 pt-20 pb-4 sm:pt-24">
+        <button
+          onClick={() => router.back()}
+          className="mb-3 self-start text-yellow-500 font-medium hover:underline"
         >
-          ← Back to Dashboard
-        </Link>
+          ← Back
+        </button>
 
-        <div className="text-center mb-14">
-          <h1 className="text-4xl font-bold text-gray-900 mb-3">Choose Your AI Credit Plan</h1>
-          <p className="text-gray-600 text-lg">1 Credit = 1 AI action to improve your resume</p>
+        <div className="text-center mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Choose Your AI Credit Plan</h1>
+          <p className="text-base text-gray-600">1 Credit = 1 AI action to improve your resume</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid flex-1 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {pricingPlans.map(plan => (
             <div
               key={plan.id}
-              className={`relative rounded-2xl shadow-sm bg-white p-6 border ${
-                plan.popular ? "border-yellow-500 shadow-lg scale-105" : "border-gray-200"
+              className={`relative rounded-lg shadow-sm bg-white p-3 border ${
+                plan.popular ? "border-yellow-500 shadow-lg scale-100" : "border-gray-200"
               } transition-transform`}
             >
               {plan.popular && (
-                <span className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-yellow-500 text-white text-sm font-semibold px-4 py-1 rounded-full">
+                <span className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-yellow-500 text-white text-xs font-semibold px-3 py-0.5 rounded-full">
                   Most Popular
                 </span>
               )}
 
-              <h3 className="text-xl font-bold text-gray-900 mb-4">{plan.name}</h3>
+              <h3 className="text-base font-bold text-gray-900 mb-2">{plan.name}</h3>
 
-              <div className="mb-6">
-                <span className="text-3xl font-bold text-gray-900">₹{plan.price}</span>
-                <span className="text-gray-500 text-sm"> / one-time</span>
+              <div className="mb-3">
+                <span className="text-xl font-bold text-gray-900">₹{plan.price}</span>
+                <span className="text-gray-500 text-[11px]"> / one-time</span>
               </div>
 
-              <p className="text-lg font-semibold text-yellow-600 mb-6">{plan.credits} Credits</p>
+              <p className="text-sm font-semibold text-yellow-600 mb-3">{plan.credits} Credits</p>
 
-              <ul className="space-y-3 mb-8">
+              <ul className="space-y-1.5 mb-4 text-xs sm:text-sm">
                 {plan.features.map((feature, i) => (
-                  <li key={i} className="flex items-center text-gray-700">
-                    <svg className="w-5 h-5 text-yellow-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <li key={i} className="flex items-start text-gray-700">
+                    <svg className="w-4 h-4 text-yellow-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                     </svg>
                     {feature}
@@ -203,7 +208,7 @@ export default function Pricing() {
               <button
                 onClick={() => handleBuyNow(plan)}
                 disabled={loading || !razorpayLoaded || !razorpayKey}
-                className={`w-full py-3 rounded-lg font-semibold transition-colors ${
+                className={`w-full py-2 rounded-lg font-semibold text-sm transition-colors ${
                   plan.popular
                     ? "bg-yellow-500 text-white hover:bg-yellow-600"
                     : "bg-white text-yellow-500 border border-yellow-500 hover:bg-yellow-50"
@@ -215,7 +220,7 @@ export default function Pricing() {
           ))}
         </div>
 
-        <div className="mt-16 text-center text-gray-600">
+        <div className="mt-4 text-center text-sm text-gray-600">
           Need a custom plan?{" "}
           <Link href="/contact" className="text-yellow-500 font-semibold hover:underline">
             Contact us

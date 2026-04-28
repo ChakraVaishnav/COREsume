@@ -41,10 +41,47 @@ export default function ResumePreview() {
       const savedForm = localStorage.getItem('resumeFormData');
       const savedTemplate = localStorage.getItem('resumeTemplate');
 
-      if (!savedForm || !savedTemplate) throw new Error('Resume data not found');
-      setResumeData({ data: JSON.parse(savedForm), template: savedTemplate });
+      if (!savedForm) {
+        // Provide empty default structure so templates can still render
+        const defaultData = {
+          personalInfo: { name: '', email: '', phone: '', linkedin: '', github: '', portfolio: '' },
+          appliedJob: '',
+          jobrole: '',
+          experienceLevel: '',
+          summary: '',
+          experience: [],
+          education: '',
+          skills: '',
+          achievements: '',
+          projects: [],
+          interests: '',
+          codingProfiles: [],
+          customSections: [],
+        };
+        setResumeData({ data: defaultData, template: savedTemplate || 'single-column' });
+        setError('');
+      } else {
+        setResumeData({ data: JSON.parse(savedForm), template: savedTemplate || 'single-column' });
+        setError('');
+      }
     } catch (err) {
-      setError(err.message);
+      const defaultData = {
+        personalInfo: { name: '', email: '', phone: '', linkedin: '', github: '', portfolio: '' },
+        appliedJob: '',
+        jobrole: '',
+        experienceLevel: '',
+        summary: '',
+        experience: [],
+        education: '',
+        skills: '',
+        achievements: '',
+        projects: [],
+        interests: '',
+        codingProfiles: [],
+        customSections: [],
+      };
+      setResumeData({ data: defaultData, template: 'single-column' });
+      setError('No resume data found. Using empty template.');
     } finally {
       setLoading(false);
     }
