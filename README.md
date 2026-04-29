@@ -1,3 +1,20 @@
+COREsume — Project Overview
+
+Quick start
+- Install dependencies: `npm install`
+- Run dev server: `npm run dev`
+
+What this repo contains
+- `app/` — Next.js app routes and client components (pages, templates, resume builder, admin APIs)
+- `components/` — reusable UI pieces and form components
+- `lib/` — server and client helpers (`api.js`, `prisma.js`, `mail.js`, auth helpers)
+- `prisma/` — Prisma schema and migrations
+- `public/` — static assets
+
+High-level notes
+- UI uses Tailwind CSS for styling and utility classes.
+- Resume templates load preview data from `localStorage` and render client components.
+- AI-related endpoints live under `app/api/ai/*` and are consumed from client pages.
 # COREsume
 
 COREsume is a Next.js resume platform with AI-assisted writing, ATS analysis, credit-based premium workflows, and a jobs dashboard that matches jobs against resume content.

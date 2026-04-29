@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import { templates } from "../utils/template";
+import * as api from "@/lib/api";
 
 const DEFAULT_FORM = {
   personalInfo: {
@@ -77,6 +78,7 @@ function ResumeForm() {
   const [previewScale, setPreviewScale] = useState(0.5);
   const [previewKey, setPreviewKey] = useState(0);
   const previewContainerRef = useRef(null);
+  const [loading, setLoading] = useState(true);
 
   // Warning popup state
   const [showWarning, setShowWarning] = useState(false);
@@ -272,49 +274,39 @@ function ResumeForm() {
     if (savedTemplate) setTemplate(savedTemplate);
 
     async function fetchResumeFromDB() {
+      setLoading(true);
       try {
-        const res = await fetch("/api/resume/get", {
-          method: "GET",
-          credentials: "include",
-        });
-        if (res.ok) {
-          const { data } = await res.json();
-          if (data && typeof data === "object") {
-            // DB has data — use it as source of truth
-            const normalized = normalizeResumeFormData(data);
-            setForm(normalized);
-            // Sync localStorage so the live-preview pane is up-to-date
-            localStorage.setItem("resumeFormData", JSON.stringify(normalized));
-          } else {
-            // No resume in DB yet — check localStorage for legacy data (one-time migration).
-            const legacy = localStorage.getItem("resumeFormData");
-            if (legacy) {
-              try {
-                const parsed = JSON.parse(legacy);
-                const normalized = normalizeResumeFormData(parsed);
-                setForm(normalized);
-                localStorage.setItem("resumeFormData", JSON.stringify(normalized));
+        const json = await api.get("/api/resume/get");
+        const data = json?.data;
+        if (data && typeof data === "object") {
+          const normalized = normalizeResumeFormData(data);
+          setForm(normalized);
+          localStorage.setItem("resumeFormData", JSON.stringify(normalized));
+          return;
+        }
 
-                // Migrate to DB in the background — fire-and-forget
-                fetch("/api/resume/save", {
-                  method: "POST",
-                  credentials: "include",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ data: normalized }),
-                }).catch(() => {});
-              } catch {
-                setForm(DEFAULT_FORM);
-                localStorage.removeItem("resumeFormData");
-              }
-            } else {
-              // New user, or user arrived from templates page — show empty fields
-              setForm(DEFAULT_FORM);
-              localStorage.removeItem("resumeFormData");
-            }
+        // fallback to localStorage migration path
+        const legacy = localStorage.getItem("resumeFormData");
+        if (legacy) {
+          try {
+            const parsed = JSON.parse(legacy);
+            const normalized = normalizeResumeFormData(parsed);
+            setForm(normalized);
+            localStorage.setItem("resumeFormData", JSON.stringify(normalized));
+            // migrate to DB in background
+            api.post("/api/resume/save", { data: normalized }).catch(() => {});
+            return;
+          } catch {
+            setForm(DEFAULT_FORM);
+            localStorage.removeItem("resumeFormData");
+            return;
           }
         }
-      } catch {
-        // Network error — fall back to localStorage if available
+
+        setForm(DEFAULT_FORM);
+        localStorage.removeItem("resumeFormData");
+      } catch (e) {
+        // network or JSON error — fall back to localStorage
         const legacy = localStorage.getItem("resumeFormData");
         if (legacy) {
           try {
@@ -327,6 +319,7 @@ function ResumeForm() {
         }
       } finally {
         isInitialLoad.current = false;
+        setLoading(false);
       }
     }
 
@@ -356,13 +349,8 @@ function ResumeForm() {
   useEffect(() => {
     async function fetchCredits() {
       try {
-        const response = await fetch("/api/user/credits", {
-          method: "GET",
-          credentials: "include", // send HttpOnly cookie
-        });
-        const data = await response.json();
-        if (!response.ok) throw new Error("Failed to fetch credits");
-        setCredits(data.credits);
+        const json = await api.get("/api/user/credits");
+        setCredits(json?.credits ?? 0);
       } catch (e) {
         setCredits(0);
       }
@@ -479,13 +467,8 @@ function ResumeForm() {
   const handleSubmit = () => {
     // Fire-and-forget: save to DB in the background, don't wait
     const currentForm = normalizeResumeFormData(form);
-    fetch("/api/resume/save", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ data: currentForm }),
-    }).catch(() => {
-      // silently ignore — we don't block navigation on this
+    api.post("/api/resume/save", { data: currentForm }).catch(() => {
+      // ignore — navigation proceeds regardless
     });
 
     router.push("/resume-preview");
@@ -571,6 +554,14 @@ function ResumeForm() {
   return (
     <div className="h-screen overflow-hidden flex flex-col bg-gray-50">
       <Navbar fixed />
+      {loading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white bg-opacity-80">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-16 h-16 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin" />
+            <p className="text-gray-700 font-medium">Loading resume…</p>
+          </div>
+        </div>
+      )}
       {/* Error Toast */}
         {showErrorToast && (
           <div className="fixed top-4 right-4 bg-white text-red-600 px-6 py-4 rounded-xl shadow-2xl border border-red-100 z-50 flex flex-col gap-2 min-w-75 animate-in slide-in-from-right-10 fade-in duration-300">
