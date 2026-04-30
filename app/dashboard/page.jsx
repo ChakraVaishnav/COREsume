@@ -9,6 +9,7 @@ import Footer from "@/components/Footer";
 export default function Dashboard() {
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [authError, setAuthError] = useState(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -19,9 +20,17 @@ export default function Dashboard() {
   const checkAuth = async () => {
     try {
       const res = await fetch("/api/user/credits", { method: "GET", credentials: "include" });
-      if (!res.ok) { router.push("/login"); return; }
+      if (res.status === 401) {
+        router.push("/login");
+        return;
+      }
+      if (!res.ok) {
+        const details = await res.json().catch(() => null);
+        setAuthError(details?.error || "Unable to validate session. Please try again.");
+        return;
+      }
     } catch {
-      router.push("/login");
+      setAuthError("Unable to validate session. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -118,6 +127,13 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar fixed />
       <main className="grow pt-20 pb-16">
+        {authError && (
+          <div className="mx-auto max-w-3xl px-4 mb-6">
+            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {authError}
+            </div>
+          </div>
+        )}
         {/* Hero */}
         <section className="text-center px-4 pt-8 pb-10">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-black leading-tight mb-3">

@@ -22,6 +22,7 @@ export async function GET(req) {
     const response = NextResponse.json({ credits: user.creds }, { status: 200 });
     return appendSetCookieHeaders(response, auth.cookieHeaders);
   } catch (err) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    console.error("[user/credits] error:", err);
+    return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
   }
 }
