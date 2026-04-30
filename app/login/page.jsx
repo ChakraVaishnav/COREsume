@@ -51,8 +51,8 @@ function LoginPageContent() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Login failed");
       // Persist minimal user info so client-side checks know the user is logged in
-
-      router.push("/dashboard");
+      // Force a full navigation so the server middleware sees the newly-set HttpOnly cookies
+      window.location.href = "/dashboard";
     } catch (err) {
       setError(err.message);
     } finally {
@@ -92,6 +92,7 @@ function LoginPageContent() {
             placeholder="Email"
             value={form.email}
             onChange={handleChange}
+            autoComplete="username"
             required
             className="w-full p-3 rounded-lg border border-gray-300 focus:outline-yellow-400 focus:ring-2 focus:ring-yellow-400 placeholder-gray-600"
           />
@@ -100,6 +101,7 @@ function LoginPageContent() {
             name="password"
             placeholder="Password"
             value={form.password}
+            autoComplete="current-password"
             onChange={handleChange}
             required
             className="w-full p-3 rounded-lg border border-gray-300 focus:outline-yellow-400 focus:ring-2 focus:ring-yellow-400 placeholder-gray-600"

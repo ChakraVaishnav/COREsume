@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { authenticateRequest } from "./lib/auth/session";
+// NOTE: Middleware runs on the Edge runtime. Avoid Node-only deps (e.g., jsonwebtoken).
+// We only check for presence of auth cookies here; full verification happens in API routes.
 
 // Protect important routes — redirect to /login if unauthenticated
 export async function middleware(req) {
@@ -11,17 +12,15 @@ export async function middleware(req) {
   const needsAuth = protectedPrefixes.some((p) => pathname === p || pathname.startsWith(p + "/"));
   if (!needsAuth) return NextResponse.next();
 
-  try {
-    const session = await authenticateRequest(req);
-    if (!session || !session.userId) {
-      url.pathname = "/login";
-      return NextResponse.redirect(url);
-    }
-    return NextResponse.next();
-  } catch (e) {
+  const accessToken = req.cookies.get("token")?.value;
+  const refreshToken = req.cookies.get("refreshToken")?.value;
+
+  if (!accessToken && !refreshToken) {
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
+
+  return NextResponse.next();
 }
 
 export const config = {
