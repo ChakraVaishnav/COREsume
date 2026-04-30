@@ -36,6 +36,7 @@ This document describes the current authentication system, how requests flow thr
   - `secure: process.env.NODE_ENV === "production"`
   - `path: "/"`
   - `maxAge` for access and refresh
+  - Note: `secure: true` in production requires HTTPS or the browser will drop cookies.
 - JWTs are signed with:
   - `JWT_SECRET` for access token
   - `JWT_REFRESH_SECRET` (or `JWT_SECRET` fallback) for refresh token
@@ -167,7 +168,7 @@ sequenceDiagram
 ### Logout
 - [app/api/logout/route.js](app/api/logout/route.js) clears cookies via `buildClearSessionCookies()`.
 
-## Identified issue (root cause)
+## Resolved issue (root cause)
 
 ### Symptom
 - Users can log in successfully and receive valid cookies, but are redirected back to `/login` when attempting to access `/dashboard`.
@@ -177,7 +178,7 @@ sequenceDiagram
 - Next.js middleware runs on the **Edge runtime**, where `jsonwebtoken` is not supported.
 - This caused verification to fail silently, which triggered redirects to `/login` even with valid cookies.
 
-### Current fix applied
+### Current fix applied (now live)
 - Middleware now **only checks for cookie presence** and does not verify JWTs in Edge runtime.
 - Full JWT verification happens inside API routes (`/api/user/info`, `/api/user/credits`, etc.).
 
@@ -222,7 +223,7 @@ sequenceDiagram
 ## Recommendation summary
 
 - **Keep** the current cookie + JWT architecture if you want minimal changes.
-- **Change** middleware to cookie-only presence checks (already done).
+- **Keep** middleware as cookie-only presence checks (required for Edge runtime).
 - **Improve** signup navigation and implement refresh token rotation and revocation if you want stronger security.
 
 ## How to validate in local dev
