@@ -12,6 +12,8 @@ const OAUTH_ERROR_MESSAGES = {
   google_invalid_state: "Google sign in could not be verified. Please try again.",
   google_missing_code: "Google sign in was interrupted. Please try again.",
   google_signup_failed: "Google sign in failed. Please try again.",
+  google_email_password_exists:
+    "An account with this email already exists. Please login with your password.",
 };
 
 function LoginPageContent() {

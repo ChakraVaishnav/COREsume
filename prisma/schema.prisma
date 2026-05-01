@@ -14,6 +14,7 @@ model User {
   username  String
   email     String   @unique
   password  String
+  authProvider String @default("password")
   creds     Int      @default(0)
   jobsInDb  Int      @default(0)
   totalJobsSearched Int @default(0)

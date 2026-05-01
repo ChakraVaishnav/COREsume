@@ -16,6 +16,9 @@ import {
   normalizeGoogleOAuthMode,
 } from "@/lib/auth/google";
 
+const AUTH_PROVIDER_PASSWORD = "password";
+const AUTH_PROVIDER_GOOGLE = "google";
+
 const redirectWithError = (req, mode, errorCode) => {
   const response = NextResponse.redirect(
     new URL(buildGoogleAuthErrorPath(mode, errorCode), req.url)
@@ -126,6 +129,13 @@ export async function GET(req) {
       },
     });
 
+    if (user) {
+      const provider = user.authProvider || AUTH_PROVIDER_PASSWORD;
+      if (provider !== AUTH_PROVIDER_GOOGLE) {
+        return redirectWithError(req, mode, "google_email_password_exists");
+      }
+    }
+
     if (!user) {
       const hashedPassword = await bcrypt.hash(crypto.randomUUID(), 10);
       user = await prisma.user.create({
@@ -133,6 +143,7 @@ export async function GET(req) {
           username: buildUsernameFromGooglePayload(email),
           email,
           password: hashedPassword,
+          authProvider: AUTH_PROVIDER_GOOGLE,
         },
       });
     }
