@@ -144,6 +144,7 @@ export async function GET(req) {
           email,
           password: hashedPassword,
           authProvider: AUTH_PROVIDER_GOOGLE,
+          emailVerified: true,
         },
       });
     }

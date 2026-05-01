@@ -1,51 +1,44 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import bcrypt from "bcryptjs";
-import { createSession } from "@/lib/auth/session";
-import { appendSetCookieHeaders } from "@/lib/auth/token";
+import { sendOtpMail } from "@/lib/mail";
+
+const OTP_PURPOSE = "pre-signup";
 
 export async function POST(req) {
   try {
     const { username, email, password } = await req.json();
 
     if (!username || !email || !password) {
-      return NextResponse.json(
-        { error: "All fields are required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }
 
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    });
-
+    // Check if a verified account already exists for this email
+    const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
       return NextResponse.json(
-        { error: "User already exists. Please login instead." },
+        { error: "An account with this email already exists. Please login instead." },
         { status: 409 }
       );
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Clear any stale pre-signup OTPs for this email
+    await prisma.otp.deleteMany({ where: { email, purpose: OTP_PURPOSE } });
 
-    // Create new user
-    const user = await prisma.user.create({
-      data: {
-        username,
-        email,
-        password: hashedPassword,
-        authProvider: "password",
-      },
+    // Generate OTP (valid for 10 minutes)
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+    await prisma.otp.create({
+      data: { email, code: otp, expiresAt, purpose: OTP_PURPOSE },
     });
 
-    const session = await createSession({ id: user.id, email: user.email });
-    const response = NextResponse.json({ message: "Signup successful" }, { status: 200 });
-    return appendSetCookieHeaders(response, session.cookieHeaders);
+    await sendOtpMail(email, otp, "signup");
+
+    return NextResponse.json({ message: "OTP sent. Please check your email." }, { status: 200 });
   } catch (error) {
+    console.error("[signup/send-otp] error:", error.message);
     return NextResponse.json(
-      { error: "Something went wrong", details: error.message },
+      { error: "Something went wrong. Please try again.", details: error.message },
       { status: 500 }
     );
   }

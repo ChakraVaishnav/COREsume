@@ -10,7 +10,7 @@ export async function POST(req) {
 
     // Check if user exists
     const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) return NextResponse.json({ error: "User not found please SignIn" }, { status: 404 });
+    if (!user) return NextResponse.json({ error: "User not found. Please sign up." }, { status: 404 });
 
     // Verify password
     const isMatch = await bcrypt.compare(password, user.password);

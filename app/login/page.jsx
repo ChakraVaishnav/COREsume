@@ -52,7 +52,6 @@ function LoginPageContent() {
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Login failed");
-      // Persist minimal user info so client-side checks know the user is logged in
       // Force a full navigation so the server middleware sees the newly-set HttpOnly cookies
       window.location.href = "/dashboard";
     } catch (err) {
