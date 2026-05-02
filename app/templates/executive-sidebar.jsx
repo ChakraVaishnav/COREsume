@@ -7,8 +7,13 @@ export default function TwoColumnTemplate({ data }) {
   useEffect(() => {
     const data = localStorage.getItem('ResumePreviewData') || localStorage.getItem('resumeFormData');
     if (data) {
-      const parsed = JSON.parse(data);
-
+      let parsed;
+      try {
+        parsed = JSON.parse(data);
+      } catch (e) {
+        console.error('Failed to parse resume data:', e);
+        return;
+      }
       if (!Array.isArray(parsed.experience)) {
         parsed.experience = [
           {
@@ -31,7 +36,7 @@ export default function TwoColumnTemplate({ data }) {
   // Helper function to check if a section has content
   const hasContent = (section) => {
     if (!section) return false;
-    if (Array.isArray(section)) return section.some(item => 
+    if (Array.isArray(section)) return section.some(item =>
       Object.values(item).some(value => value && value.trim() !== '')
     );
     return section.trim() !== '';
@@ -58,10 +63,9 @@ export default function TwoColumnTemplate({ data }) {
           <div className="space-y-1 text-[12px] font-normal"> {/* ↓ 1px */}
             <p>{personalInfo.phone}</p>
             <a href={`mailto:${personalInfo.email}`} className="text-black no-underline hover:text-yellow-500 transition">{personalInfo.email}</a>
-            {personalInfo.linkedin && <p><a href={personalInfo.linkedin} target="_blank" className="text-black no-underline hover:text-yellow-500 transition">LinkedIn</a></p>}
-            {personalInfo.github && <p><a href={personalInfo.github} target="_blank" className="text-black no-underline hover:text-yellow-500 transition">GitHub</a></p>}
-            {personalInfo.portfolio && <p><a href={personalInfo.portfolio} target="_blank" className="text-black no-underline hover:text-yellow-500 transition">Portfolio</a></p>}
-          </div>
+            {personalInfo.linkedin && <p><a href={personalInfo.linkedin} target="_blank" rel="noopener noreferrer" className="text-black no-underline hover:text-yellow-500 transition">LinkedIn</a></p>}
+            {personalInfo.github && <p><a href={personalInfo.github} target="_blank" rel="noopener noreferrer" className="text-black no-underline hover:text-yellow-500 transition">GitHub</a></p>}
+            {personalInfo.portfolio && <p><a href={personalInfo.portfolio} target="_blank" rel="noopener noreferrer" className="text-black no-underline hover:text-yellow-500 transition">Portfolio</a></p>}          </div>
 
           {hasContent(skills) && (
             <Section title="Key Skills">
@@ -96,7 +100,7 @@ export default function TwoColumnTemplate({ data }) {
             </Section>
           )}
 
-{hasContent(experience) && (
+          {hasContent(experience) && (
             <Section title="Work Experience">
               {experience.map((exp, index) => (
                 <div key={index} className="mb-2">
@@ -113,14 +117,13 @@ export default function TwoColumnTemplate({ data }) {
               {projects.map((project, index) => (
                 <div key={index} className="mb-2">
                   <h3 className="font-bold text-black">
-                   {project.link ? (
+                    {project.link ? (
 
-                    <a href={project.link} target="_blank" className="font-bold text-black no-underline">
-                      {project.name}
-                    </a>
-                  ) : (
-                    project.name
-                  )}
+                      <a href={project.link} target="_blank" rel="noopener noreferrer" className="font-bold text-black no-underline">
+                        {project.name}
+                      </a>) : (
+                      project.name
+                    )}
                   </h3>
 
                   <p className="whitespace-pre-line">{project.description}</p>
