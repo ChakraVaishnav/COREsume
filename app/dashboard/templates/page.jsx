@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import MinimalistTemplate from "@/app/templates/single-column";
-import SidebarEleganceTemplate from "@/app/templates/two-column";
-import TimelineProTemplate from "@/app/templates/timeline";
-import PremiumSingleColumnResume from "@/app/templates/premium-single-column";
-import PremiumTwoColumnTemplate from "@/app/templates/premium-two-column";
+import MinimalistTemplate from "@/app/templates/classic-professional";
+import SidebarEleganceTemplate from "@/app/templates/executive-sidebar";
+import TimelineProTemplate from "@/app/templates/career-timeline";
+import PremiumSingleColumnResume from "@/app/templates/professional-elite";
+import PremiumTwoColumnTemplate from "@/app/templates/apex-one";
 import AtsClassicTemplate from "@/app/templates/ats-classic";
 import ExecutiveEdgeTemplate from "@/app/templates/executive-edge";
 import ImpactGridTemplate from "@/app/templates/impact-grid";
@@ -93,7 +93,7 @@ export default function TemplatesPage() {
 
   useEffect(() => {
     setMounted(true);
-    checkAuth();
+    setLoading(false);
   }, []);
 
   // Inject SAMPLE_DATA for previews (templates read ResumePreviewData)
@@ -106,31 +106,14 @@ export default function TemplatesPage() {
     };
   }, []);
 
-  const checkAuth = async () => {
-    try {
-      const res = await fetch("/api/user/credits", {
-        method: "GET",
-        credentials: "include",
-      });
-      if (!res.ok) {
-        router.push("/login");
-        return;
-      }
-    } catch (err) {
-      router.push("/login");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   if (!mounted || loading) return null;
 
   const allTemplates = [
-    { name: "Classic Professional", slug: "minimalist", Component: MinimalistTemplate, type: "free", description: "Clean, single-column layout with a timeless professional presentation." },
-    { name: "Executive Sidebar", slug: "sidebar-elegance", Component: SidebarEleganceTemplate, type: "premium", description: "Structured two-column design with a polished side panel for key details." },
-    { name: "Career Timeline", slug: "timeline", Component: TimelineProTemplate, type: "premium", description: "Chronological timeline layout designed to present career progression with clarity." },
-    { name: "Professional Elite", slug: "premium-single-column", Component: PremiumSingleColumnResume, type: "premium", description: "Refined single-column format with disciplined spacing and strong ATS performance." },
-    { name: "Apex One", slug: "premium-two-column", Component: PremiumTwoColumnTemplate, type: "premium", description: "Balanced two-column layout with an executive tone and clean readability." },
+    { name: "Classic Professional", slug: "classic-professional", Component: MinimalistTemplate, type: "free", description: "Clean, single-column layout with a timeless professional presentation." },
+    { name: "Executive Sidebar", slug: "executive-sidebar", Component: SidebarEleganceTemplate, type: "premium", description: "Structured two-column design with a polished side panel for key details." },
+    { name: "Career Timeline", slug: "career-timeline", Component: TimelineProTemplate, type: "premium", description: "Chronological timeline layout designed to present career progression with clarity." },
+    { name: "Professional Elite", slug: "professional-elite", Component: PremiumSingleColumnResume, type: "premium", description: "Refined single-column format with disciplined spacing and strong ATS performance." },
+    { name: "Apex One", slug: "apex-one", Component: PremiumTwoColumnTemplate, type: "premium", description: "Balanced two-column layout with an executive tone and clean readability." },
     { name: "ATS Classic", slug: "ats-classic", Component: AtsClassicTemplate, type: "premium", description: "Bold single-column structure with crisp section headers designed for excellent ATS parsing." },
     { name: "Executive Edge", slug: "executive-edge", Component: ExecutiveEdgeTemplate, type: "premium", description: "Executive style with a focused side panel for skills, education, and key achievements." },
     { name: "Impact Grid", slug: "impact-grid", Component: ImpactGridTemplate, type: "premium", description: "Balanced grid layout that surfaces summary, skills, and impact sections." },

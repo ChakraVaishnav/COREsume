@@ -1,40 +1,41 @@
-import MinimalistTemplate from '../templates/single-column';
-import SidebarEleganceTemplate from '../templates/two-column';
-import TimelineProTemplate from '../templates/timeline';
-import PremiumSingleColumnResume from '../templates/premium-single-column';
-import PremiumTwoColumnTemplate from '../templates/premium-two-column';
+import MinimalistTemplate from '../templates/classic-professional';
+import SidebarEleganceTemplate from '../templates/executive-sidebar';
+import TimelineProTemplate from '../templates/career-timeline';
+import PremiumSingleColumnResume from '../templates/professional-elite';
+import PremiumTwoColumnTemplate from '../templates/apex-one';
 import AtsClassicTemplate from '../templates/ats-classic';
 import ExecutiveEdgeTemplate from '../templates/executive-edge';
 import ImpactGridTemplate from '../templates/impact-grid';
 import CompactProTemplate from '../templates/compact-pro';
+
 export const templates = [
   {
     name: "Classic Professional",
-    slug: "minimalist", // slug used in dashboard/form
+    slug: "classic-professional", // slug used in dashboard/form
     component: MinimalistTemplate,
     type: "free",
   },
   {
     name: "Executive Sidebar",
-    slug: "sidebar-elegance",
+    slug: "executive-sidebar",
     component: SidebarEleganceTemplate,
     type: "premium",
   },
   {
     name: "Career Timeline",
-    slug: "timeline",
+    slug: "career-timeline",
     component: TimelineProTemplate,
     type: "premium",
   },
   {
     name: "Professional Elite",
-    slug: "premium-single-column",
+    slug: "professional-elite",
     component: PremiumSingleColumnResume,
     type: "premium",
   },
   {
     name: "Apex One",
-    slug: "premium-two-column",
+    slug: "apex-one",
     component: PremiumTwoColumnTemplate,
     type: "premium",
   },

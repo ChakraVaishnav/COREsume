@@ -1,33 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 export default function Dashboard() {
   const [mounted, setMounted] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
 
   useEffect(() => {
     setMounted(true);
-    checkAuth();
   }, []);
 
-  const checkAuth = async () => {
-    try {
-      const res = await fetch("/api/user/credits", { method: "GET", credentials: "include" });
-      if (!res.ok) { router.push("/login"); return; }
-    } catch {
-      router.push("/login");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (!mounted || loading) return null;
+  if (!mounted) return null;
 
   const features = [
     {

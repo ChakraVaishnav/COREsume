@@ -27,7 +27,14 @@ export default function JobsDashboardPage() {
 
   useEffect(() => {
     setMounted(true);
-    checkAuthAndLoadJobs();
+    const init = async () => {
+      await Promise.all([
+        loadJobs({ page: 1, filter: "All" }),
+        loadUsage(),
+      ]);
+      setLoading(false);
+    };
+    init();
   }, []);
 
   const loadJobs = async ({ page = 1, filter = "All" } = {}) => {
@@ -87,29 +94,6 @@ export default function JobsDashboardPage() {
       setUsage(null);
     } finally {
       setLoadingUsage(false);
-    }
-  };
-
-  const checkAuthAndLoadJobs = async () => {
-    try {
-      const authRes = await fetch("/api/user/credits", {
-        method: "GET",
-        credentials: "include",
-      });
-
-      if (!authRes.ok) {
-        router.push("/login");
-        return;
-      }
-
-      await Promise.all([
-        loadJobs({ page: 1, filter: "All" }),
-        loadUsage(),
-      ]);
-    } catch {
-      router.push("/login");
-    } finally {
-      setLoading(false);
     }
   };
 

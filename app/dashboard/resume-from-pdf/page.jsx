@@ -4,11 +4,11 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import MinimalistTemplate from "@/app/templates/single-column";
-import SidebarEleganceTemplate from "@/app/templates/two-column";
-import TimelineProTemplate from "@/app/templates/timeline";
-import PremiumSingleColumnResume from "@/app/templates/premium-single-column";
-import PremiumTwoColumnTemplate from "@/app/templates/premium-two-column";
+import MinimalistTemplate from "@/app/templates/classic-professional";
+import SidebarEleganceTemplate from "@/app/templates/executive-sidebar";
+import TimelineProTemplate from "@/app/templates/career-timeline";
+import PremiumSingleColumnResume from "@/app/templates/professional-elite";
+import PremiumTwoColumnTemplate from "@/app/templates/apex-one";
 import AtsClassicTemplate from "@/app/templates/ats-classic";
 import ExecutiveEdgeTemplate from "@/app/templates/executive-edge";
 import ImpactGridTemplate from "@/app/templates/impact-grid";
@@ -61,11 +61,11 @@ const SAMPLE_DATA = {
 };
 
 const ALL_TEMPLATES = [
-  { name: "Classic Professional", slug: "minimalist", Component: MinimalistTemplate, desc: "Clean single-column layout." },
-  { name: "Executive Sidebar", slug: "sidebar-elegance", Component: SidebarEleganceTemplate, desc: "Two-column with side panel." },
-  { name: "Career Timeline", slug: "timeline", Component: TimelineProTemplate, desc: "Chronological timeline design." },
-  { name: "Professional Elite", slug: "premium-single-column", Component: PremiumSingleColumnResume, desc: "Refined serif single column." },
-  { name: "Apex One", slug: "premium-two-column", Component: PremiumTwoColumnTemplate, desc: "Balanced two-column executive." },
+  { name: "Classic Professional", slug: "classic-professional", Component: MinimalistTemplate, desc: "Clean single-column layout." },
+  { name: "Executive Sidebar", slug: "executive-sidebar", Component: SidebarEleganceTemplate, desc: "Two-column with side panel." },
+  { name: "Career Timeline", slug: "career-timeline", Component: TimelineProTemplate, desc: "Chronological timeline design." },
+  { name: "Professional Elite", slug: "professional-elite", Component: PremiumSingleColumnResume, desc: "Refined serif single column." },
+  { name: "Apex One", slug: "apex-one", Component: PremiumTwoColumnTemplate, desc: "Balanced two-column executive." },
   { name: "ATS Classic", slug: "ats-classic", Component: AtsClassicTemplate, desc: "Maximum ATS compatibility." },
   { name: "Executive Edge", slug: "executive-edge", Component: ExecutiveEdgeTemplate, desc: "Dark header, structured grid." },
   { name: "Impact Grid", slug: "impact-grid", Component: ImpactGridTemplate, desc: "Modern card grid layout." },

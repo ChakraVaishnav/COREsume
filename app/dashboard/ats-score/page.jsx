@@ -6,11 +6,11 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 const TEMPLATES = [
-  { name: "Classic Professional", slug: "minimalist" },
-  { name: "Executive Sidebar", slug: "sidebar-elegance" },
-  { name: "Career Timeline", slug: "timeline" },
-  { name: "Professional Elite", slug: "premium-single-column" },
-  { name: "Apex One", slug: "premium-two-column" },
+  { name: "Classic Professional", slug: "classic-professional" },
+  { name: "Executive Sidebar", slug: "executive-sidebar" },
+  { name: "Career Timeline", slug: "career-timeline" },
+  { name: "Professional Elite", slug: "professional-elite" },
+  { name: "Apex One", slug: "apex-one" },
   { name: "ATS Classic", slug: "ats-classic" },
   { name: "Executive Edge", slug: "executive-edge" },
   { name: "Impact Grid", slug: "impact-grid" },

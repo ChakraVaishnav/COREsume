@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import SingleColumnTemplate from '../templates/single-column';
-import TwoColumnTemplate from '../templates/two-column';
-import TimelineTemplate from '../templates/timeline';
-import PremiumSingleColumnResume from '../templates/premium-single-column';
-import PremiumTwoColumnTemplate from '../templates/premium-two-column';
+import SingleColumnTemplate from '../templates/classic-professional';
+import TwoColumnTemplate from '../templates/executive-sidebar';
+import TimelineTemplate from '../templates/career-timeline';
+import PremiumSingleColumnResume from '../templates/professional-elite';
+import PremiumTwoColumnTemplate from '../templates/apex-one';
 import AtsClassicTemplate from '../templates/ats-classic';
 import ExecutiveEdgeTemplate from '../templates/executive-edge';
 import ImpactGridTemplate from '../templates/impact-grid';
@@ -58,10 +58,10 @@ export default function ResumePreview() {
           codingProfiles: [],
           customSections: [],
         };
-        setResumeData({ data: defaultData, template: savedTemplate || 'single-column' });
+        setResumeData({ data: defaultData, template: savedTemplate || 'classic-professional' });
         setError('');
       } else {
-        setResumeData({ data: JSON.parse(savedForm), template: savedTemplate || 'single-column' });
+        setResumeData({ data: JSON.parse(savedForm), template: savedTemplate || 'classic-professional' });
         setError('');
       }
     } catch (err) {
@@ -80,7 +80,7 @@ export default function ResumePreview() {
         codingProfiles: [],
         customSections: [],
       };
-      setResumeData({ data: defaultData, template: 'single-column' });
+      setResumeData({ data: defaultData, template: 'classic-professional' });
       setError('No resume data found. Using empty template.');
     } finally {
       setLoading(false);
@@ -249,15 +249,15 @@ export default function ResumePreview() {
   };
 
   const TemplateComponent =
-    resumeData?.template === 'minimalist'
+    resumeData?.template === 'classic-professional' || resumeData?.template === 'minimalist' || resumeData?.template === 'single-column'
       ? SingleColumnTemplate
-      : resumeData?.template === 'sidebar-elegance'
+      : resumeData?.template === 'executive-sidebar' || resumeData?.template === 'sidebar-elegance'
         ? TwoColumnTemplate
-        : resumeData?.template === 'timeline'
+        : resumeData?.template === 'career-timeline' || resumeData?.template === 'timeline'
           ? TimelineTemplate
-          : resumeData?.template === 'premium-single-column'
+          : resumeData?.template === 'professional-elite' || resumeData?.template === 'premium-single-column'
             ? PremiumSingleColumnResume
-            : resumeData?.template === 'premium-two-column'
+            : resumeData?.template === 'apex-one' || resumeData?.template === 'premium-two-column'
               ? PremiumTwoColumnTemplate
               : resumeData?.template === 'ats-classic'
                 ? AtsClassicTemplate
