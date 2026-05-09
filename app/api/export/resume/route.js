@@ -11,6 +11,7 @@ const BASE_PUPPETEER_ARGS = [
 ];
 
 async function launchBrowser() {
+  console.log("[export/resume] Launching browser. VERCEL:", !!process.env.VERCEL);
   const envExecutable = process.env.PUPPETEER_EXECUTABLE_PATH;
   if (envExecutable) {
     return puppeteer.launch({
@@ -65,7 +66,7 @@ export async function POST(req) {
     browser = await launchBrowser();
 
     const page = await browser.newPage();
-    await page.setViewport({ width: 1240, height: 1754, deviceScaleFactor: 2 });
+    await page.setViewport({ width: 1240, height: 1754, deviceScaleFactor: 1 });
 
     await page.evaluateOnNewDocument(
       ({ dataJson, templateSlug }) => {
@@ -79,7 +80,20 @@ export async function POST(req) {
       }
     );
 
+    await page.addStyleTag({
+      content: `
+        .pdf-export a {
+          transition: none !important;
+          text-decoration: none !important;
+          position: relative;
+          z-index: 10;
+          display: inline-block; /* Helps PDF engines define the clickable area more reliably */
+        }
+      `,
+    });
+
     const previewUrl = `${req.nextUrl.origin}/resume-preview?export=1`;
+    console.log("[export/resume] Navigating to:", previewUrl);
     await page.goto(previewUrl, { waitUntil: "domcontentloaded", timeout: 60_000 });
     await page.waitForSelector("#resume-container", { timeout: 30_000 });
     await page.waitForFunction(
@@ -120,10 +134,22 @@ export async function POST(req) {
 
     await page.emulateMediaType("screen");
 
+    // Ensure all links have proper protocols before PDF generation
+    await page.evaluate(() => {
+      const links = document.querySelectorAll("a");
+      links.forEach((link) => {
+        const href = link.getAttribute("href");
+        if (href && !href.startsWith("http") && !href.startsWith("mailto:") && !href.startsWith("tel:") && !href.startsWith("/") && !href.startsWith("#")) {
+          link.setAttribute("href", `https://${href}`);
+        }
+      });
+    });
+
     const pdfBuffer = await page.pdf({
       format: "A4",
       printBackground: true,
       preferCSSPageSize: true,
+      tagged: true,
       margin: { top: "0", right: "0", bottom: "0", left: "0" },
     });
 
@@ -136,12 +162,12 @@ export async function POST(req) {
       },
     });
   } catch (err) {
-    console.error("[export/resume] Failed to generate PDF:", {
-      message: err?.message,
-      stack: err?.stack,
-      name: err?.name,
-    });
-    return NextResponse.json({ error: "Failed to generate PDF" }, { status: 500 });
+    console.error("[export/resume] Failed to generate PDF:", err);
+    return NextResponse.json({ 
+      error: "Failed to generate PDF", 
+      details: err?.message,
+      stack: err?.stack 
+    }, { status: 500 });
   } finally {
     if (browser) {
       await browser.close();

@@ -10,6 +10,11 @@ export async function middleware(req) {
   // Only protect these prefixes
   const protectedPrefixes = ["/dashboard", "/resume-form", "/resume-preview", "/admin"];
   const needsAuth = protectedPrefixes.some((p) => pathname === p || pathname.startsWith(p + "/"));
+  // Allow export mode for Puppeteer to bypass auth
+  if (pathname === "/resume-preview" && url.searchParams.get("export") === "1") {
+    return NextResponse.next();
+  }
+
   if (!needsAuth) return NextResponse.next();
 
   const accessToken = req.cookies.get("token")?.value;
