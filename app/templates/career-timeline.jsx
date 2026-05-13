@@ -70,7 +70,7 @@ export default function TimelineTemplate() {
         <section className="mb-4">
           <h2 className="font-bold uppercase text-[13px] mb-1">Summary</h2>
           <div className="pl-2 border-l-2 border-black ml-2">
-            <p className="pl-2 whitespace-pre-line">{summary}</p>
+            <div className="pl-2 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: summary }} />
           </div>
         </section>
       )}
@@ -80,7 +80,7 @@ export default function TimelineTemplate() {
         <section className="mb-4">
           <h2 className="font-bold uppercase text-[13px] mb-1">Skills</h2>
           <div className="pl-2 border-l-2 border-black ml-2">
-            <p className="pl-2 whitespace-pre-line">{skills}</p>
+            <div className="pl-2 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: skills }} />
           </div>
         </section>
       )}
@@ -90,7 +90,7 @@ export default function TimelineTemplate() {
         <section className="mb-4">
           <h2 className="font-bold uppercase text-[13px] mb-1">Education</h2>
           <div className="pl-2 border-l-2 border-black ml-2">
-            <p className="pl-2 whitespace-pre-line">{education}</p>
+            <div className="pl-2 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: education }} />
           </div>
         </section>
       )}
@@ -107,7 +107,7 @@ export default function TimelineTemplate() {
                   {exp.role} — {exp.company}
                 </h3>
                 <p className="text-[11px] italic mb-0.5">{exp.duration}</p>
-                <p className="text-[12px] whitespace-pre-line">{exp.description}</p>
+                <div className="text-[12px] whitespace-pre-line" dangerouslySetInnerHTML={{ __html: exp.description }} />
               </div>
             ))}
           </div>
@@ -131,7 +131,7 @@ export default function TimelineTemplate() {
                     proj.name
                   )}
                 </h3>
-                <p className="text-[12px] whitespace-pre-line">{proj.description}</p>
+                <div className="text-[12px] whitespace-pre-line" dangerouslySetInnerHTML={{ __html: proj.description }} />
               </div>
             ))}
           </div>
@@ -143,7 +143,7 @@ export default function TimelineTemplate() {
         <section className="mb-4">
           <h2 className="font-bold uppercase text-[13px] mb-1">Achievements</h2>
           <div className="pl-2 border-l-2 border-black ml-2">
-            <p className="pl-2 whitespace-pre-line">{achievements}</p>
+            <div className="pl-2 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: achievements }} />
           </div>
         </section>
       )}
@@ -153,7 +153,7 @@ export default function TimelineTemplate() {
         <section className="mb-4">
           <h2 className="font-bold uppercase text-[13px] mb-1">Interests</h2>
           <div className="pl-2 border-l-2 border-black ml-2">
-            <p className="pl-2 whitespace-pre-line">{interests}</p>
+            <div className="pl-2 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: interests }} />
           </div>
         </section>
       )}
@@ -188,7 +188,7 @@ export default function TimelineTemplate() {
           <section key={index} className="mb-4">
             <h2 className="font-bold uppercase text-[13px] mb-1">{section.title || 'Custom Section'}</h2>
             <div className="pl-2 border-l-2 border-black ml-2">
-              <p className="pl-2 whitespace-pre-line">{section.content}</p>
+              <div className="pl-2 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: section.content }} />
             </div>
           </section>
         ) : null

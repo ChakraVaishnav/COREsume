@@ -53,22 +53,22 @@ export default function CompactProTemplate() {
         <aside className="col-span-1 bg-gray-100 border border-gray-300 p-3">
           {hasContent(skills) && (
             <Section title="Core Skills" compact>
-              <p className="whitespace-pre-line">{skills}</p>
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: skills }} />
             </Section>
           )}
           {hasContent(education) && (
             <Section title="Education" compact>
-              <p className="whitespace-pre-line">{education}</p>
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: education }} />
             </Section>
           )}
           {hasContent(achievements) && (
             <Section title="Achievements" compact>
-              <p className="whitespace-pre-line">{achievements}</p>
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: achievements }} />
             </Section>
           )}
           {hasContent(interests) && (
             <Section title="Interests" compact>
-              <p className="whitespace-pre-line">{interests}</p>
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: interests }} />
             </Section>
           )}
         </aside>
@@ -76,7 +76,7 @@ export default function CompactProTemplate() {
         <main className="col-span-3">
           {hasContent(summary) && (
             <Section title="Professional Summary">
-              <p className="whitespace-pre-line">{summary}</p>
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: summary }} />
             </Section>
           )}
 
@@ -88,7 +88,7 @@ export default function CompactProTemplate() {
                     <h3 className="font-bold">{exp.role} | {exp.company}</h3>
                     <p className="text-gray-600">{exp.duration}</p>
                   </div>
-                  <p className="whitespace-pre-line">{exp.description}</p>
+                  <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: exp.description }} />
                 </div>
               ))}
             </Section>
@@ -107,7 +107,7 @@ export default function CompactProTemplate() {
                       project.name
                     )}
                   </h3>
-                  <p className="whitespace-pre-line">{project.description}</p>
+                  <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: project.description }} />
                 </div>
               ))}
             </Section>
@@ -138,7 +138,7 @@ export default function CompactProTemplate() {
           {Array.isArray(customSections) && customSections.map((section, index) => (
             section.title || section.content ? (
               <Section key={index} title={section.title || 'Custom Section'}>
-                <p className="whitespace-pre-line">{section.content}</p>
+                <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: section.content }} />
               </Section>
             ) : null
           ))}

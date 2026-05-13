@@ -10,6 +10,7 @@ const RESOURCE_OPTIONS = [
   { key: "ratings", label: "Rating Table" },
   { key: "jobs", label: "Job Table" },
   { key: "jobUsage", label: "Job Usage Table" },
+  { key: "featureUsage", label: "Feature Usage Table" },
 ];
 
 const PAGE_SIZE = 50;
@@ -24,6 +25,8 @@ const CREATE_FIELD_HINTS = {
     { key: "jobsInDb", type: "number" },
     { key: "totalJobsSearched", type: "number" },
     { key: "unlimited", type: "boolean" },
+    { key: "atsChecksTotal", type: "number" },
+    { key: "pdfUploadsTotal", type: "number" },
   ],
   resumes: [
     { key: "userId", type: "number" },
@@ -74,6 +77,12 @@ const CREATE_FIELD_HINTS = {
     { key: "creditsUsed", type: "number" },
     { key: "lastSearchAt", type: "string" },
   ],
+  featureUsage: [
+    { key: "userId", type: "number" },
+    { key: "date", type: "string" },
+    { key: "atsUsed", type: "number" },
+    { key: "pdfUsed", type: "number" },
+  ],
 };
 
 const SEARCH_PLACEHOLDERS = {
@@ -83,6 +92,7 @@ const SEARCH_PLACEHOLDERS = {
   ratings: "Search by template, comment, user id...",
   jobs: "Search by title, company, source, search id...",
   jobUsage: "Search by user id, tier, date...",
+  featureUsage: "Search by user id, date...",
 };
 
 function prettyJson(value) {
@@ -233,7 +243,7 @@ export default function AdminPage() {
       return a.localeCompare(b);
     });
 
-    return keyList.slice(0, 8);
+    return keyList;
   }, [rows]);
 
   const createFields = useMemo(() => getCreateFields(resource, rows), [resource, rows]);

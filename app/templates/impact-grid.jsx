@@ -65,12 +65,12 @@ export default function ImpactGridTemplate() {
         <section className="grid grid-cols-2 gap-5 mb-4">
           {hasContent(summary) && (
             <CardSection title="Summary">
-              <p className="whitespace-pre-line">{summary}</p>
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: summary }} />
             </CardSection>
           )}
           {hasContent(skills) && (
             <CardSection title="Skills">
-              <p className="whitespace-pre-line">{skills}</p>
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: skills }} />
             </CardSection>
           )}
         </section>
@@ -82,7 +82,7 @@ export default function ImpactGridTemplate() {
             <div key={index} className="mb-3">
               <h3 className="font-bold">{exp.role} | {exp.company}</h3>
               <p className="text-[11px] text-gray-600">{exp.duration}</p>
-              <p className="whitespace-pre-line">{exp.description}</p>
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: exp.description }} />
             </div>
           ))}
         </Section>
@@ -101,7 +101,7 @@ export default function ImpactGridTemplate() {
                   project.name
                 )}
               </h3>
-              <p className="whitespace-pre-line">{project.description}</p>
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: project.description }} />
             </div>
           ))}
         </Section>
@@ -111,17 +111,17 @@ export default function ImpactGridTemplate() {
         <section className="grid grid-cols-3 gap-4">
           {hasContent(education) && (
             <CardSection title="Education">
-              <p className="whitespace-pre-line">{education}</p>
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: education }} />
             </CardSection>
           )}
           {hasContent(achievements) && (
             <CardSection title="Achievements">
-              <p className="whitespace-pre-line">{achievements}</p>
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: achievements }} />
             </CardSection>
           )}
           {hasContent(interests) && (
             <CardSection title="Interests">
-              <p className="whitespace-pre-line">{interests}</p>
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: interests }} />
             </CardSection>
           )}
         </section>
@@ -152,7 +152,7 @@ export default function ImpactGridTemplate() {
       {Array.isArray(customSections) && customSections.map((section, index) => (
         section.title || section.content ? (
           <Section key={index} title={section.title || 'Custom Section'}>
-            <p className="whitespace-pre-line">{section.content}</p>
+            <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: section.content }} />
           </Section>
         ) : null
       ))}

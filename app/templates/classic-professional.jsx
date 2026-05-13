@@ -57,7 +57,7 @@ export default function SingleColumnTemplate() {
       {hasContent(summary) && (
         <section className="mb-2">
           <h2 className="font-bold border-b border-gray-300 mb-0.5 uppercase text-[11px]">Professional Summary</h2>
-          <p className="whitespace-pre-line">{summary}</p>
+          <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: summary }} />
         </section>
       )}
 
@@ -65,7 +65,7 @@ export default function SingleColumnTemplate() {
       {hasContent(skills) && (
         <section className="mb-2">
           <h2 className="font-bold border-b border-gray-300 mb-0.5 uppercase text-[11px]">Skills</h2>
-          <p className="whitespace-pre-line">{skills}</p>
+          <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: skills }} />
         </section>
       )}
 
@@ -73,7 +73,7 @@ export default function SingleColumnTemplate() {
       {hasContent(education) && (
         <section className="mb-2">
           <h2 className="font-bold border-b border-gray-300 mb-0.5 uppercase text-[11px]">Education</h2>
-          <p className="whitespace-pre-line">{education}</p>
+          <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: education }} />
         </section>
       )}
 
@@ -85,7 +85,7 @@ export default function SingleColumnTemplate() {
             <div key={index} className="mb-1">
               <h3 className="text-[11px] font-bold">{exp.role} — {exp.company}</h3>
               <p className="text-[10px] text-gray-500 mb-0.5">{exp.duration}</p>
-              <p className="whitespace-pre-line">{exp.description}</p>
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: exp.description }} />
             </div>
           ))}
         </section>
@@ -106,7 +106,7 @@ export default function SingleColumnTemplate() {
                   proj.name
                 )}
               </h3>
-              <p className="whitespace-pre-line">{proj.description}</p>
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: proj.description }} />
             </div>
           ))}
         </section>
@@ -116,7 +116,7 @@ export default function SingleColumnTemplate() {
       {hasContent(achievements) && (
         <section className="mb-2">
           <h2 className="font-bold border-b border-gray-300 mb-0.5 uppercase text-[11px]">Achievements</h2>
-          <p className="whitespace-pre-line">{achievements}</p>
+          <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: achievements }} />
         </section>
       )}
 
@@ -124,7 +124,7 @@ export default function SingleColumnTemplate() {
       {hasContent(interests) && (
         <section className="mb-2">
           <h2 className="font-bold border-b border-gray-300 mb-0.5 uppercase text-[11px]">Interests</h2>
-          <p className="whitespace-pre-line">{interests}</p>
+          <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: interests }} />
         </section>
       )}
 
@@ -155,7 +155,7 @@ export default function SingleColumnTemplate() {
         section.title || section.content ? (
           <section key={index} className="mb-2">
             <h2 className="font-bold border-b border-gray-300 mb-0.5 uppercase text-[11px]">{section.title || 'Custom Section'}</h2>
-            <p className="whitespace-pre-line">{section.content}</p>
+            <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: section.content }} />
           </section>
         ) : null
       ))}

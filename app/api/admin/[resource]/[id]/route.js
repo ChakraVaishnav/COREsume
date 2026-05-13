@@ -11,6 +11,7 @@ const RESOURCE_CONFIG = {
   ratings: { model: "rating", idType: "int" },
   jobs: { model: "job", idType: "string" },
   jobUsage: { model: "jobUsage", idType: "string" },
+  featureUsage: { model: "featureUsage", idType: "string" },
 };
 
 function getResourceConfig(resource) {

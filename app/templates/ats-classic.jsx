@@ -60,35 +60,25 @@ export default function AtsClassicTemplate() {
         <aside className="border-r border-gray-300 bg-gray-50 px-6 py-6">
           {hasContent(skills) && (
             <SidebarSection title="Core Skills">
-              {skillList.length > 0 ? (
-                <ul className="space-y-1.5 text-[10.5px] leading-[1.45] text-black">
-                  {skillList.map((skill) => (
-                    <li key={skill} className="pl-3 -indent-3">
-                      <span className="font-bold">• </span>{skill}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="whitespace-pre-line">{skills}</p>
-              )}
+              <div className="whitespace-pre-line text-[10.5px] leading-[1.45] text-black" dangerouslySetInnerHTML={{ __html: skills }} />
             </SidebarSection>
           )}
 
           {hasContent(education) && (
             <SidebarSection title="Education">
-              <p className="whitespace-pre-line">{education}</p>
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: education }} />
             </SidebarSection>
           )}
 
           {hasContent(achievements) && (
             <SidebarSection title="Highlights">
-              <p className="whitespace-pre-line">{achievements}</p>
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: achievements }} />
             </SidebarSection>
           )}
 
           {hasContent(interests) && (
             <SidebarSection title="Interests">
-              <p className="whitespace-pre-line">{interests}</p>
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: interests }} />
             </SidebarSection>
           )}
         </aside>
@@ -96,7 +86,7 @@ export default function AtsClassicTemplate() {
         <main className="px-8 py-6">
           {hasContent(summary) && (
             <MainSection title="Profile Snapshot">
-              <p className="whitespace-pre-line">{summary}</p>
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: summary }} />
             </MainSection>
           )}
 
@@ -110,7 +100,7 @@ export default function AtsClassicTemplate() {
                     </div>
                     {exp.duration && <p className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500">{exp.duration}</p>}
                   </div>
-                  <p className="mt-2 whitespace-pre-line">{exp.description}</p>
+                  <div className="mt-2 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: exp.description }} />
                 </article>
               ))}
             </MainSection>
@@ -129,7 +119,7 @@ export default function AtsClassicTemplate() {
                       project.name
                     )}
                   </h3>
-                  <p className="mt-2 whitespace-pre-line">{project.description}</p>
+                  <div className="mt-2 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: project.description }} />
                 </article>
               ))}
             </MainSection>
@@ -160,7 +150,7 @@ export default function AtsClassicTemplate() {
           {Array.isArray(customSections) && customSections.map((section, index) => (
             section.title || section.content ? (
               <MainSection key={index} title={section.title || 'Custom Section'}>
-                <p className="whitespace-pre-line">{section.content}</p>
+                <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: section.content }} />
               </MainSection>
             ) : null
           ))}

@@ -5,25 +5,27 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import Footer from "@/components/Footer";
 
-const WHY_CHOOSE = [
+import Lenis from "lenis";
+
+const HOW_IT_WORKS = [
   {
-    title: "Create Your Account",
-    desc: "Sign up in seconds and start your resume-building journey with a clean interface.",
+    title: "Create acc, select template",
+    desc: "Sign up in seconds and choose a template.",
     icon: "account",
   },
   {
-    title: "Pick a Template You Like",
-    desc: "Choose from modern, professional resume templates designed for ATS and recruiters.",
-    icon: "template",
-  },
-  {
-    title: "Fill In Your Details",
-    desc: "Add education, experience, and skills. Formatting is handled automatically.",
+    title: "Fill Your Details",
+    desc: "Auto-fill from existing PDF or type manually.",
     icon: "edit",
   },
   {
-    title: "Download Your Resume",
-    desc: "Preview and export a polished ATS-friendly PDF quickly.",
+    title: "ATS Check",
+    desc: "Get score and AI improvements instantly.",
+    icon: "ai",
+  },
+  {
+    title: "Download & Apply",
+    desc: "PDF, DOCX, or custom print. One click.",
     icon: "download",
   },
 ];
@@ -36,36 +38,61 @@ const REVIEWS = [
     rating: 5,
     comment: "Excellent Website for resume building. very useful and time saving",
   },
+  {
+    username: "Chaitu",
+    rating: 5,
+    comment: "Excellent website for resume building. Very useful and time saving.",
+  },
 ];
 
 const FAQS = [
   {
-    question: "Does it work on mobile devices?",
-    answer:
-      "Yes. COREsume is supported on mobile and desktop. For best editing comfort, desktop is recommended.",
+    question: "Is COREsume really free?",
+    answer: "Yes. Building and downloading resumes is completely free. Credits are only needed for AI features beyond the daily free limit.",
   },
   {
-    question: "How many templates can I choose from?",
-    answer: "You can explore all available templates before purchase and choose what fits your profile.",
+    question: "What are credits used for?",
+    answer: "1 credit = 1 AI action (summary, skills, quantification). ATS checks and PDF uploads cost 3 credits beyond the 2 free/day limit.",
   },
   {
-    question: "Will I get an editable version of the resume?",
-    answer: "You will get a polished PDF output from the builder flow.",
+    question: "Will my resume pass ATS filters?",
+    answer: "Our AI-powered ATS analyzer uses advanced Gemini models to scan your resume for formatting, keyword density, and structure—providing real-time feedback to help you bypass modern hiring filters.",
   },
   {
-    question: "Is my data safe and secure?",
-    answer: "Yes. COREsume uses secure auth flow and protected APIs.",
+    question: "Can I upload my existing resume?",
+    answer: "Yes. Use Resume from PDF to auto-fill the entire form from your existing PDF no manual typing needed.",
+  },
+  {
+    question: "What download formats are supported?",
+    answer: "Quick PDF (instant), DOCX (Word-editable), and Custom PDF (adjust scale, margins, layout).",
   },
 ];
 
-function IconCheckCircle() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.25" aria-hidden>
-      <circle cx="12" cy="12" r="10" />
-      <path d="M8 12.5l2.5 2.5L16 9.5" />
-    </svg>
-  );
-}
+// Animation variants
+const fadeInUp = {
+  initial: { opacity: 0, y: 30 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: "-100px" },
+  transition: { duration: 0.6, ease: "easeOut" }
+};
+
+const staggerContainer = {
+  initial: { opacity: 0 },
+  whileInView: { 
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15,
+      delayChildren: 0.1
+    }
+  },
+  viewport: { once: true }
+};
+
+const staggerItem = {
+  initial: { opacity: 0, y: 20 },
+  whileInView: { opacity: 1, y: 0 },
+  transition: { duration: 0.5, ease: "easeOut" }
+};
 
 function IconUserPlus() {
   return (
@@ -109,28 +136,19 @@ function IconDownload() {
   );
 }
 
+function IconAI() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+    </svg>
+  );
+}
+
 function LoadingSpinner() {
   return (
     <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
       <circle cx="12" cy="12" r="10" opacity="0.25" />
       <path d="M12 2a10 10 0 0 1 10 10" />
-    </svg>
-  );
-}
-
-function WhyCardIcon({ type }) {
-  if (type === "account") return <IconUserPlus />;
-  if (type === "template") return <IconTemplate />;
-  if (type === "edit") return <IconEditDocument />;
-  if (type === "download") return <IconDownload />;
-  return <IconCheckCircle />;
-}
-
-function IconFeature() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-      <path d="M12 3v18" />
-      <path d="M3 12h18" />
     </svg>
   );
 }
@@ -159,7 +177,7 @@ export default function Home() {
   const [isValidating, setIsValidating] = useState(false);
   const [openFaq, setOpenFaq] = useState(0);
   const [showHeroResume, setShowHeroResume] = useState(true);
-  const featuresRef = useRef(null);
+  const howRef = useRef(null);
   const resumeCardRef = useRef(null);
   const [resumeCardStyle, setResumeCardStyle] = useState({
     transform: "perspective(1200px) rotateX(0deg) rotateY(0deg) translate3d(0,0,0) scale(1)",
@@ -168,7 +186,6 @@ export default function Home() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      // Show loading spinner while we check auth (cookies are HttpOnly, can't detect them in JS)
       setIsValidating(true);
       try {
         const res = await fetch("/api/user/info", { credentials: "include" });
@@ -185,6 +202,18 @@ export default function Home() {
       }
     };
     checkAuth();
+
+    // Initialize Lenis
+    const lenis = new Lenis();
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+
+    return () => {
+      lenis.destroy();
+    };
   }, []);
 
   useEffect(() => {
@@ -197,8 +226,13 @@ export default function Home() {
     return () => window.removeEventListener("resize", updateHeroResumeVisibility);
   }, []);
 
-  const scrollToFeatures = () => {
-    featuresRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const scrollToHowItWorks = () => {
+    const element = howRef.current;
+    if (element) {
+      const offset = 80; // Adjust for sticky header
+      const top = element.getBoundingClientRect().top + window.pageYOffset - offset;
+      window.scrollTo({ top, behavior: "smooth" });
+    }
   };
 
   const handleResumeCardMove = (event) => {
@@ -233,9 +267,9 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f7f7f8] text-[#111827]">
-      <header className="sticky top-0 z-40 border-b border-zinc-200 bg-white/95 backdrop-blur">
-        <div className="flex h-16 w-full items-center justify-between px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#f7f7f8] text-[#111827] w-full overflow-x-hidden">
+      <header className="sticky top-0 z-40 border-b border-zinc-200 bg-white/95 backdrop-blur w-full">
+        <div className="flex h-16 w-full items-center justify-between px-4 sm:px-6 md:px-8">
           <Link href="/" className="text-2xl font-extrabold tracking-tight [font-family:var(--font-heading)]">
             <span className="text-black">CORE</span>
             <span className="text-yellow-500">sume</span>
@@ -252,7 +286,7 @@ export default function Home() {
               (isAuthenticated ? (
                 <Link
                   href="/dashboard"
-                  className="rounded-md bg-yellow-400 px-4 py-2 text-xs font-bold text-black transition hover:bg-yellow-300 sm:text-sm"
+                  className="rounded-md bg-yellow-400 px-4 py-2 text-xs font-bold text-black transition hover:bg-yellow-300 sm:text-sm shadow-sm"
                 >
                   Dashboard
                 </Link>
@@ -266,7 +300,7 @@ export default function Home() {
                   </Link>
                   <Link
                     href="/signup"
-                    className="rounded-md bg-yellow-400 px-4 py-2 text-xs font-bold text-black transition hover:bg-yellow-300 sm:text-sm"
+                    className="rounded-md bg-yellow-400 px-4 py-2 text-xs font-bold text-black transition hover:bg-yellow-300 sm:text-sm shadow-sm"
                   >
                     Sign Up
                   </Link>
@@ -276,66 +310,94 @@ export default function Home() {
         </div>
       </header>
 
-      <main>
-        <section className="px-4 pb-12 pt-8 sm:px-6 lg:px-8 lg:pt-12">
-          <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-8 lg:grid-cols-2 lg:items-start">
+      <main className="w-full">
+        <section className="w-full pb-12 pt-8 lg:pt-12 px-4 sm:px-6 md:px-8">
+          <div className="w-full grid grid-cols-1 gap-8 lg:grid-cols-2 lg:items-center xl:gap-16">
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45 }}
-              className="order-2 flex flex-col items-start text-left lg:order-1"
+              className="order-2 flex flex-col items-start text-left lg:order-1 lg:pl-4 xl:pl-8"
             >
-
               <motion.h1
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.45, delay: 0.05 }}
-                className="max-w-xl text-4xl font-extrabold leading-tight text-[#111827] sm:text-5xl [font-family:var(--font-heading)]"
+                className="max-w-2xl text-4xl font-extrabold leading-tight text-[#111827] sm:text-5xl lg:text-6xl [font-family:var(--font-heading)]"
               >
-                Build a <span className="inline-block text-[1.4em] leading-none text-yellow-500 align-[-0.08em]">ATS</span> Friendly Job-Winning Resume in Minutes
+                The Resume Builder Built for <span className="text-yellow-500">Placements</span>
               </motion.h1>
 
-              <p className="mt-5 max-w-xl text-base leading-7 text-zinc-600 sm:text-lg">
-                Your resume is your first impression. COREsume helps you create clear, modern resumes with strong ATS readability.
-              </p>
+              <motion.p 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.45, delay: 0.15 }}
+                className="mt-6 max-w-2xl text-base leading-7 text-zinc-600 sm:text-lg"
+              >
+                ATS scoring, AI suggestions, job matching — built for students targeting top companies.
+              </motion.p>
 
-              <p className="mt-2 max-w-xl text-sm leading-7 text-zinc-500 sm:text-base">
-                Built for students, freshers, and experienced professionals aiming for better responses.
-              </p>
-              <p className="max-w-xl text-sm leading-7 text-zinc-500 sm:text-base">
-                Make every section recruiter-ready with clean structure, strong impact, and clear relevance.
-              </p>
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.45, delay: 0.2 }}
+                className="mt-3 font-semibold max-w-xl text-sm leading-6 text-zinc-900"
+              >
+                Trusted by students from universities across India
+              </motion.div>
 
-              <div className="mt-7 flex flex-wrap items-center gap-3">
-                <button
-                  onClick={scrollToFeatures}
-                  className="rounded-md bg-yellow-400 px-7 py-3 text-sm font-bold text-black transition hover:bg-yellow-300"
-                >
-                  Learn More
-                </button>
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.45, delay: 0.25 }}
+                className="mt-8 flex flex-wrap items-center gap-4"
+              >
                 {isValidating && (
-                  <div className="flex items-center gap-2 rounded-md border border-zinc-300 px-7 py-3">
+                  <div className="flex items-center gap-2 rounded-md bg-yellow-400 px-8 py-4">
                     <LoadingSpinner />
-                    <span className="text-sm font-medium text-zinc-600">Verifying...</span>
+                    <span className="text-sm font-bold text-black border-l border-yellow-500 pl-2">Verifying...</span>
                   </div>
                 )}
                 {authChecked && !isValidating &&
                   (isAuthenticated ? (
                     <Link
                       href="/dashboard"
-                      className="rounded-md border border-zinc-300 px-7 py-3 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50"
+                      className="rounded-md bg-yellow-400 px-8 py-4 text-base font-bold text-black transition hover:bg-yellow-300 shadow-sm"
                     >
                       Dashboard
                     </Link>
                   ) : (
                     <Link
                       href="/signup"
-                      className="rounded-md border border-zinc-300 px-7 py-3 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50"
+                      className="rounded-md bg-yellow-400 px-8 py-4 text-base font-bold text-black transition hover:bg-yellow-300 shadow-sm"
                     >
-                      Start Building
+                      Build My Free Resume
                     </Link>
                   ))}
-              </div>
+                  
+                <button
+                  onClick={scrollToHowItWorks}
+                  className="rounded-md border-2 border-zinc-300 px-8 py-4 text-base font-bold text-zinc-900 transition hover:bg-zinc-50"
+                >
+                  See How It Works
+                </button>
+              </motion.div>
+
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.45, delay: 0.3 }}
+                className="mt-10 flex gap-12 border-t border-zinc-200 pt-8 w-full max-w-xl"
+              >
+                <div>
+                  <p className="text-3xl font-extrabold text-zinc-900">250+</p>
+                  <p className="text-sm font-medium text-zinc-500 mt-1">Resumes Created</p>
+                </div>
+                <div>
+                  <p className="text-3xl font-extrabold text-zinc-900">9</p>
+                  <p className="text-sm font-medium text-zinc-500 mt-1">Templates Exactly</p>
+                </div>
+              </motion.div>
             </motion.div>
 
             {showHeroResume && (
@@ -343,9 +405,9 @@ export default function Home() {
                 initial={{ opacity: 0, x: 22 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.48, delay: 0.1 }}
-                className="order-1 flex justify-center lg:order-2 lg:justify-end"
+                className="order-1 flex justify-center lg:order-2 lg:justify-start lg:ml-4 xl:ml-8 lg:-mt-4 w-full"
               >
-                <div className="relative w-full max-w-md">
+                <div className="relative w-full max-w-[500px]">
                   <div
                     ref={resumeCardRef}
                     onMouseMove={handleResumeCardMove}
@@ -356,37 +418,72 @@ export default function Home() {
                       transition: "transform 120ms ease-out, box-shadow 120ms ease-out",
                       transformStyle: "preserve-3d",
                     }}
-                    className="relative h-133 overflow-hidden rounded-3xl border border-zinc-300 bg-white shadow-lg"
+                    className="relative h-[570px] overflow-hidden rounded-3xl border border-zinc-300 bg-white shadow-xl flex flex-col"
                   >
-                    <div className="flex h-14 items-center justify-between border-b border-zinc-300 bg-[#ececef] px-6">
+                    <div className="flex h-14 shrink-0 items-center justify-between border-b border-zinc-300 bg-[#ececef] px-6">
                       <div className="flex items-center gap-2">
                         <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
                         <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
                         <span className="h-3 w-3 rounded-full bg-[#28c840]" />
                       </div>
-                      <p className="text-[10px] font-medium text-zinc-500">my_resume.pdf</p>
-                      <p className="text-[10px] font-medium text-zinc-500">Saved</p>
+                      <p className="text-xs font-semibold text-zinc-500">my_resume.pdf</p>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-green-600 bg-green-100 px-2 py-1 rounded">Saved</p>
                     </div>
 
-                    <div className="px-9 pt-8">
-                      <div className="h-4 w-44 rounded-md bg-zinc-900" />
-                      <div className="mt-4 h-3 w-28 rounded-md bg-zinc-400" />
+                     <div className="px-10 pt-4 pb-10 flex-1 overflow-hidden relative pointer-events-none select-none">
+                      <div className="text-center mb-6 border-b border-zinc-300 pb-5">
+                        <h3 className="text-3xl font-extrabold text-zinc-900 uppercase tracking-tight [font-family:var(--font-heading)]">Alexandra Smith</h3>
+                        <div className="text-[11px] font-medium text-zinc-600 mt-2 flex flex-wrap justify-center gap-x-2 gap-y-1 w-full px-2">
+                          <span>alexandra@example.com</span>
+                          <span className="text-zinc-400 hidden sm:inline">•</span>
+                          <span className="whitespace-nowrap">+1 234 567 8900</span>
+                          <span className="text-zinc-400 hidden sm:inline">•</span>
+                          <span>linkedin.com/in/alexandra</span>
+                        </div>
+                      </div>
+                      
+                      <div className="mb-6">
+                        <h4 className="text-[11px] font-extrabold text-zinc-900 mb-3 tracking-widest uppercase border-b border-zinc-200 pb-1">Experience</h4>
+                        <div className="mb-4">
+                          <div className="flex justify-between items-baseline mb-0.5">
+                            <p className="text-sm font-bold text-zinc-900">Software Engineer</p>
+                            <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">2023 - Present</span>
+                          </div>
+                          <p className="text-xs font-medium text-zinc-700 mb-1.5 italic">Tech Solutions Inc. • Bangalore</p>
+                          <ul className="text-[11px] text-zinc-700 list-disc ml-4 space-y-1.5 leading-relaxed">
+                            <li>Developed scalable web applications focusing on frontend architectures and user experience.</li>
+                            <li>Optimized database queries decreasing load time by 30% across major dashboard routes.</li>
+                          </ul>
+                        </div>
+                        <div>
+                          <div className="flex justify-between items-baseline mb-0.5">
+                            <p className="text-sm font-bold text-zinc-900">Frontend Developer Intern</p>
+                            <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">2022 - 2023</span>
+                          </div>
+                          <p className="text-xs font-medium text-zinc-700 mb-1.5 italic">Creative Agency • Hyderabad</p>
+                          <ul className="text-[11px] text-zinc-700 list-disc ml-4 space-y-1.5 leading-relaxed">
+                            <li>Collaborated with design team to implement responsive UI components using React and Tailwind.</li>
+                            <li>Integrated REST APIs ensuring seamless data binding.</li>
+                          </ul>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <h4 className="text-[11px] font-extrabold text-zinc-900 mb-3 tracking-widest uppercase border-b border-zinc-200 pb-1">Education</h4>
+                        <div className="flex justify-between items-baseline mb-0.5">
+                          <p className="text-[13px] font-bold text-zinc-900">B.Tech, Computer Science</p>
+                          <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">2019 - 2023</span>
+                        </div>
+                        <p className="text-[11px] font-medium text-zinc-700 italic">Jawaharlal Nehru Technological University • CGPA: 8.5/10</p>
+                      </div>
 
-                      <div className="mt-6 h-0.5 w-full bg-zinc-300" />
-                      <div className="mt-5 h-3 w-24 rounded-md bg-yellow-400" />
-
-                      <div className="mt-5 space-y-3">
-                        <div className="h-2.5 w-11/12 rounded-full bg-zinc-300" />
-                        <div className="h-2.5 w-10/12 rounded-full bg-zinc-300" />
-                        <div className="h-2.5 w-9/12 rounded-full bg-zinc-300" />
-                        <div className="h-2.5 w-full rounded-full bg-zinc-300" />
-                        <div className="h-2.5 w-11/12 rounded-full bg-zinc-300" />
-                        <div className="h-2.5 w-3/4 rounded-full bg-zinc-300" />
-                        <div className="h-2.5 w-11/12 rounded-full bg-zinc-300" />
-                        <div className="h-2.5 w-10/12 rounded-full bg-zinc-300" />
-                        <div className="h-2.5 w-full rounded-full bg-zinc-300" />
-                        <div className="h-2.5 w-11/12 rounded-full bg-zinc-300" />
-                        <div className="h-2.5 w-10/12 rounded-full bg-zinc-300" />
+                      <div className="mt-6">
+                        <h4 className="text-[11px] font-extrabold text-zinc-900 mb-3 tracking-widest uppercase border-b border-zinc-200 pb-1">Skills</h4>
+                        <p className="text-[11px] font-medium text-zinc-700 leading-relaxed">
+                          <span className="font-bold text-zinc-900">Languages:</span> JavaScript, TypeScript, Python, Java, SQL<br/>
+                          <span className="font-bold text-zinc-900">Frameworks:</span> React.js, Next.js, Node.js, Express, Tailwind CSS<br/>
+                          <span className="font-bold text-zinc-900">Tools:</span> Git, Docker, AWS, Vercel, MongoDB
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -396,86 +493,134 @@ export default function Home() {
           </div>
         </section>
 
-        <section ref={featuresRef} id="features" className="px-4 pb-12 sm:px-6 lg:px-8">
-          <div className="w-full rounded-3xl border border-zinc-200 bg-zinc-50 px-4 py-10 sm:px-8">
-            <h2 className="text-center text-3xl font-extrabold text-[#111827] sm:text-4xl [font-family:var(--font-heading)]">
-              Why Choose CORE<span className="text-yellow-500">sume</span>?
-            </h2>
+        <motion.section 
+          ref={howRef} 
+          id="how" 
+          className="w-full pb-20 pt-16 px-4 sm:px-6 md:px-8 bg-white"
+          initial="initial"
+          whileInView="whileInView"
+          viewport={{ once: true, margin: "-100px" }}
+        >
+          <div className="w-full max-w-6xl mx-auto">
+            <motion.h2 
+              variants={fadeInUp}
+              className="mb-16 text-center text-3xl font-extrabold text-[#111827] sm:text-4xl [font-family:var(--font-heading)]"
+            >
+              How It Works
+            </motion.h2>
 
-            <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
-              {WHY_CHOOSE.map((item) => (
-                <article key={item.title} className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
-                  <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-yellow-50 text-yellow-600">
-                    <WhyCardIcon type={item.icon} />
+            <motion.div 
+              variants={staggerContainer}
+              className="relative flex flex-col md:flex-row justify-between gap-8 md:gap-4 w-full mt-10"
+            >
+              {/* Horizontal line for desktop connecting the numbers */}
+              <div className="hidden md:block absolute top-[28px] left-[10%] right-[10%] h-[2px] bg-zinc-200 z-0"></div>
+              
+              {HOW_IT_WORKS.map((item, i) => (
+                <motion.article 
+                  key={item.title} 
+                  variants={staggerItem}
+                  className="relative z-10 flex flex-col items-center text-center flex-1 group"
+                >
+                  <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-yellow-400 text-black font-extrabold text-xl shadow-sm z-10 mx-auto group-hover:scale-110 transition-transform duration-300">
+                    {i + 1}
                   </div>
-                  <h3 className="text-2xl font-semibold text-zinc-900 [font-family:var(--font-heading)]">{item.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-zinc-600">{item.desc}</p>
-                </article>
+                  <h3 className="text-xl font-bold text-zinc-900 [font-family:var(--font-heading)] mb-2 px-2">{item.title}</h3>
+                  <p className="text-sm leading-6 text-zinc-600 px-4 max-w-xs">{item.desc}</p>
+                </motion.article>
               ))}
-            </div>
+            </motion.div>
           </div>
-        </section>
+        </motion.section>
 
-        <section id="how" className="px-4 pb-12 pt-4 sm:px-6 lg:px-8">
-          <h2 className="mb-6 text-center text-3xl font-extrabold text-[#111827] sm:text-4xl [font-family:var(--font-heading)]">
-            How CORE<span className="text-yellow-500">sume</span> Works
-          </h2>
-
-          <div className="mx-auto max-w-5xl overflow-hidden rounded-xl border border-zinc-200 bg-white p-3 shadow-sm">
-            <video src="/COREsume%20DEMO.mp4" controls className="w-full rounded-lg" />
+        <motion.section 
+          className="w-full py-16 px-4 sm:px-6 md:px-8 bg-zinc-50 border-t border-zinc-200"
+          initial="initial"
+          whileInView="whileInView"
+          viewport={{ once: true, margin: "-100px" }}
+        >
+          <div className="w-full">
+            <motion.h2 
+              variants={fadeInUp}
+              className="mb-8 text-center text-3xl font-extrabold text-[#111827] sm:text-4xl [font-family:var(--font-heading)]"
+            >
+              What Students Say
+            </motion.h2>
+            <motion.div 
+              variants={staggerContainer}
+              className="grid w-full grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4"
+            >
+              {REVIEWS.map((item) => (
+                <motion.article 
+                  key={item.username} 
+                  variants={staggerItem}
+                  whileHover={{ y: -5, boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1)" }}
+                  className="rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm flex flex-col h-full transition-all duration-300"
+                >
+                  <StarRow count={item.rating} />
+                  <p className="mt-5 text-base leading-relaxed text-zinc-700 flex-1">&quot;{item.comment}&quot;</p>
+                  <p className="mt-4 text-sm font-bold text-zinc-900 border-t border-zinc-100 pt-4">@{item.username}</p>
+                </motion.article>
+              ))}
+            </motion.div>
           </div>
-        </section>
+        </motion.section>
 
-        <section className="px-4 pb-12 sm:px-6 lg:px-8">
-          <h2 className="mb-6 text-center text-3xl font-extrabold text-[#111827] sm:text-4xl [font-family:var(--font-heading)]">
-            Real User Reviews
-          </h2>
-          <div className="mx-auto grid max-w-6xl grid-cols-1 gap-4 md:grid-cols-3">
-            {REVIEWS.map((item) => (
-              <article key={item.username} className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
-                <StarRow count={item.rating} />
-                <p className="mt-3 text-sm leading-6 text-zinc-700">{item.comment}</p>
-                <p className="mt-3 text-sm font-bold text-zinc-900">@{item.username}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="px-4 pb-12 pt-2 sm:px-6 lg:px-8">
-          <h2 className="mb-6 text-center text-3xl font-extrabold text-[#111827] sm:text-4xl [font-family:var(--font-heading)]">
+        <motion.section 
+          className="w-full px-4 py-16 sm:px-6 md:px-8 border-t border-zinc-200 bg-white"
+          initial="initial"
+          whileInView="whileInView"
+          viewport={{ once: true, margin: "-100px" }}
+        >
+          <motion.h2 
+            variants={fadeInUp}
+            className="mb-10 text-center text-3xl font-extrabold text-[#111827] sm:text-4xl [font-family:var(--font-heading)]"
+          >
             Frequently Asked Questions
-          </h2>
+          </motion.h2>
 
-          <div className="mx-auto max-w-5xl space-y-3">
+          <motion.div 
+            variants={staggerContainer}
+            className="mx-auto max-w-4xl space-y-4"
+          >
             {FAQS.map((faq, index) => {
               const isOpen = openFaq === index;
               return (
-                <article key={faq.question} className="rounded-xl border border-zinc-200 bg-white px-5 py-4 shadow-sm">
+                <motion.article 
+                  key={faq.question} 
+                  variants={staggerItem}
+                  className="rounded-xl border border-zinc-200 bg-zinc-50 px-6 py-5 shadow-sm transition-all hover:bg-zinc-100/50"
+                >
                   <button
                     type="button"
                     onClick={() => setOpenFaq(isOpen ? -1 : index)}
-                    className="flex w-full items-center justify-between gap-3 text-left"
+                    className="flex w-full items-center justify-between gap-4 text-left"
                   >
-                    <div className="flex items-center gap-2">
-                      <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-yellow-50 text-yellow-600">
-                        <IconCheckCircle />
-                      </span>
-                      <h3 className="text-base font-semibold text-zinc-900">{faq.question}</h3>
+                    <div className="flex items-center gap-3">
+                      <h3 className="text-lg font-bold text-zinc-900 [font-family:var(--font-heading)]">{faq.question}</h3>
                     </div>
                     <span
-                      className={`inline-flex h-7 w-7 items-center justify-center rounded-full border text-sm transition ${
-                        isOpen ? "border-yellow-400 bg-yellow-400 text-black" : "border-zinc-200 text-zinc-500"
+                      className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-base font-bold transition-all ${
+                        isOpen ? "border-yellow-400 bg-yellow-400 text-black shadow-sm" : "border-zinc-300 text-zinc-500 bg-white"
                       }`}
                     >
                       {isOpen ? "-" : "+"}
                     </span>
                   </button>
-                  {isOpen && <p className="pt-3 text-sm leading-6 text-zinc-600">{faq.answer}</p>}
-                </article>
+                  {isOpen && (
+                    <motion.p 
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      className="pt-4 text-base leading-relaxed text-zinc-600"
+                    >
+                      {faq.answer}
+                    </motion.p>
+                  )}
+                </motion.article>
               );
             })}
-          </div>
-        </section>
+          </motion.div>
+        </motion.section>
       </main>
 
       <Footer />

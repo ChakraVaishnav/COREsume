@@ -1,6 +1,7 @@
 // app/api/ai/analyze-ats/route.js
 import { generateGeminiResponse } from "../../../utils/gemini";
 import { authenticateRequest } from "@/lib/auth/session";
+import { checkAtsLimit, incrementAts } from "@/lib/featureUsage";
 
 export const runtime = "nodejs";
 
@@ -359,6 +360,28 @@ export async function POST(req) {
     }
 
     const formData = await req.formData();
+    const useCredit = formData.get("useCredit") === "true";
+
+    const usageCheck = await checkAtsLimit(auth.userId);
+    
+    if (useCredit) {
+      if (usageCheck.creditsRemaining < 3) {
+        return Response.json({ 
+          error: "INSUFFICIENT_CREDITS", 
+          message: "You need at least 3 credits to analyze your resume." 
+        }, { status: 403 });
+      }
+    } else {
+      if (usageCheck.freeUsed >= usageCheck.freeLimit) {
+        return Response.json({
+          error: "Daily limit reached",
+          creditsRequired: usageCheck.creditsRequired,
+          resetTime: usageCheck.freeResetsAt,
+          freeUsed: usageCheck.freeUsed,
+          freeLimit: usageCheck.freeLimit
+        }, { status: 403 });
+      }
+    }
     const file = formData.get("resume");
     if (!file) return Response.json({ error: "No file provided" }, { status: 400 });
 
@@ -396,6 +419,7 @@ export async function POST(req) {
         resumeText,
         totalBullets
       );
+      await incrementAts(auth.userId, useCredit);
       return Response.json(
         buildFinalResponse({
           analysisData: fallbackAnalysis,
@@ -427,6 +451,7 @@ export async function POST(req) {
         resumeText,
         totalBullets
       );
+      await incrementAts(auth.userId, useCredit);
       return Response.json(
         buildFinalResponse({
           analysisData: fallbackAnalysis,
@@ -459,6 +484,7 @@ export async function POST(req) {
       contactCount,
       totalBullets: effectiveBullets,
     });
+    await incrementAts(auth.userId, useCredit);
     return Response.json(finalResponse);
 
   } catch (err) {

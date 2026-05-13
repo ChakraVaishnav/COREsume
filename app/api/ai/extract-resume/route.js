@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { generateGeminiJsonResponse } from "../../../utils/gemini";
 import { authenticateRequest } from "@/lib/auth/session";
+import { checkPdfLimit, incrementPdf } from "@/lib/featureUsage";
 
 export const runtime = "nodejs";
 
@@ -252,6 +253,28 @@ export async function POST(req) {
     }
 
     const formData = await req.formData();
+    const useCredit = formData.get("useCredit") === "true";
+
+    const usageCheck = await checkPdfLimit(auth.userId);
+    
+    if (useCredit) {
+      if (usageCheck.creditsRemaining < 3) {
+        return NextResponse.json({ 
+          error: "INSUFFICIENT_CREDITS", 
+          message: "You need at least 3 credits to extract data from this PDF." 
+        }, { status: 403 });
+      }
+    } else {
+      if (usageCheck.freeUsed >= usageCheck.freeLimit) {
+        return NextResponse.json({
+          error: "Daily limit reached",
+          creditsRequired: usageCheck.creditsRequired,
+          resetTime: usageCheck.freeResetsAt,
+          freeUsed: usageCheck.freeUsed,
+          freeLimit: usageCheck.freeLimit
+        }, { status: 403 });
+      }
+    }
     const file = formData.get("resume");
 
     if (!file) {
@@ -282,10 +305,12 @@ export async function POST(req) {
         finalData = parseExtractionJson(repairedText);
       }
 
+      await incrementPdf(auth.userId, useCredit);
       return NextResponse.json(finalData);
     } catch (aiError) {
       console.warn("AI extraction fallback to partial data:", aiError?.message || String(aiError));
       const partialData = buildPartialResumeData(resumeText, aiError?.message || "AI extraction failed");
+      await incrementPdf(auth.userId, useCredit);
       return NextResponse.json(partialData);
     }
 

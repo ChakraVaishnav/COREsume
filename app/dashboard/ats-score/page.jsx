@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -17,6 +17,17 @@ const TEMPLATES = [
   { name: "Compact Pro", slug: "compact-pro" },
 ];
 
+function formatCountdown(resetsAt) {
+  if (!resetsAt) return "";
+  const target = new Date(resetsAt).getTime();
+  const now = Date.now();
+  const diffMs = Math.max(0, target - now);
+  const totalMinutes = Math.floor(diffMs / 60000);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return `${hours}h ${minutes}m`;
+}
+
 export default function AtsScorePage() {
   const router = useRouter();
   const fileRef = useRef(null);
@@ -28,6 +39,18 @@ export default function AtsScorePage() {
   const [error, setError] = useState("");
   const [showTemplates, setShowTemplates] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  
+  const [usageData, setUsageData] = useState(null);
+  const [showLimitModal, setShowLimitModal] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/feature-usage/ats")
+      .then((r) => r.json())
+      .then((data) => {
+        if (!data.error) setUsageData(data);
+      })
+      .catch((e) => console.error(e));
+  }, []);
 
   const handleFile = (f) => {
     if (f && f.type === "application/pdf") {
@@ -45,18 +68,34 @@ export default function AtsScorePage() {
     handleFile(e.dataTransfer.files[0]);
   };
 
-  const analyze = async () => {
+  const analyze = async (useCredit = false) => {
     if (!file) return;
-    setAnalyzing(true);
+    
+    setAnalyzing(useCredit ? "credit" : "free");
     setError("");
     setResult(null);
     const formData = new FormData();
     formData.append("resume", file);
+    formData.append("useCredit", useCredit);
     try {
       const res = await fetch("/api/ai/analyze-ats", { method: "POST", body: formData });
       const data = await res.json();
-      if (!res.ok || data.error) throw new Error(data.error || "Analysis failed");
+      if (!res.ok) {
+        if (data.error === "INSUFFICIENT_CREDITS") {
+          setError("You don't have enough credits. Please top up.");
+        } else if (res.status === 403) {
+          setUsageData(data);
+          setError(data.message || data.error || "Limit reached");
+        } else {
+          setError(data.error || "Analysis failed");
+        }
+        return;
+      }
       setResult(data);
+      // Refresh usage after success
+      fetch("/api/feature-usage/ats")
+        .then((r) => r.json())
+        .then((d) => { if (!d.error) setUsageData(d); });
     } catch (e) {
       setError(e.message || "Something went wrong. Please try again.");
     } finally {
@@ -70,6 +109,7 @@ export default function AtsScorePage() {
     setError("");
     const formData = new FormData();
     formData.append("resume", file);
+    formData.append("useCredit", false); 
     try {
       const res = await fetch("/api/ai/extract-resume", { method: "POST", body: formData });
       const data = await res.json();
@@ -88,28 +128,40 @@ export default function AtsScorePage() {
   const scoreBg = (s) => s >= 80 ? "from-emerald-50 to-teal-50 border-emerald-200" : s >= 60 ? "from-yellow-50 to-amber-50 border-yellow-200" : "from-red-50 to-rose-50 border-red-200";
   const circumference = 2 * Math.PI * 54;
 
+  const isFreeDisabled = usageData ? usageData.freeUsed >= usageData.freeLimit : false;
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar fixed />
 
       <main className="grow pt-20 pb-16">
         <div className="w-full px-4 sm:px-8">
-          {/* Back */}
-          <button
-            onClick={() => router.push("/dashboard")}
-            className="inline-flex items-center gap-2 text-gray-500 hover:text-black text-sm font-medium mt-6 mb-6 transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Back to Dashboard
-          </button>
+          {/* Header area with back button and usage badge */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-6 mb-6 gap-4">
+            <button
+              onClick={() => router.push("/dashboard")}
+              className="inline-flex items-center gap-2 text-gray-500 hover:text-black text-sm font-medium transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to Dashboard
+            </button>
+
+            {usageData && (
+              <div className="inline-flex items-center rounded-full border border-yellow-300 bg-yellow-50 px-3 py-1.5 text-xs font-semibold text-yellow-800">
+                {usageData.freeSearchesRemainingToday > 0
+                  ? `${usageData.freeSearchesRemainingToday} free checks left today • ${usageData.creditsRemaining ?? 0} credits`
+                  : `Free resets in ${formatCountdown(usageData.freeResetsAt)} • ${usageData.creditsRemaining ?? 0} credits`}
+              </div>
+            )}
+          </div>
 
           {/* Split layout */}
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             {/* ── LEFT: Upload panel ── */}
-            <div className="w-full lg:w-105 lg:shrink-0">
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-black mb-1">ATS Score Checker</h1>
+            <div className="w-full lg:w-105 lg:shrink-0 bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+              <h1 className="text-2xl font-extrabold text-black mb-1">ATS Score Checker</h1>
               <p className="text-gray-500 text-sm mb-6">
                 Upload your resume PDF — AI will score it and suggest improvements.
               </p>
@@ -120,18 +172,18 @@ export default function AtsScorePage() {
                 onDragLeave={() => setDragOver(false)}
                 onDrop={handleDrop}
                 onClick={() => fileRef.current?.click()}
-                className={`flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-10 cursor-pointer transition-all duration-200 mb-4 ${
+                className={`flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-10 cursor-pointer transition-all duration-200 mb-4 ${
                   dragOver ? "border-yellow-400 bg-yellow-50"
                   : file ? "border-emerald-400 bg-emerald-50"
-                  : "border-gray-300 bg-white hover:border-yellow-400 hover:bg-yellow-50"
+                  : "border-gray-200 bg-gray-50/30 hover:border-yellow-400 hover:bg-yellow-50"
                 }`}
               >
                 <input ref={fileRef} type="file" accept="application/pdf" className="hidden"
                   onChange={(e) => handleFile(e.target.files?.[0])} />
                 {file ? (
                   <>
-                    <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mb-3">
-                      <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mb-3 text-emerald-600">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
@@ -140,14 +192,14 @@ export default function AtsScorePage() {
                   </>
                 ) : (
                   <>
-                    <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
-                      <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-12 h-12 rounded-full bg-white border border-gray-100 shadow-sm flex items-center justify-center mb-3 text-gray-400">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                           d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                       </svg>
                     </div>
-                    <p className="font-semibold text-gray-700 text-sm">Drop your resume PDF here</p>
-                    <p className="text-xs text-gray-400 mt-1">or click to browse</p>
+                    <p className="font-bold text-black text-sm">Drop your resume PDF here</p>
+                    <p className="text-xs text-gray-500 mt-1">or click to browse</p>
                   </>
                 )}
               </div>
@@ -158,29 +210,53 @@ export default function AtsScorePage() {
                 </div>
               )}
 
-              <button
-                onClick={analyze}
-                disabled={!file || analyzing}
-                className="w-full py-3.5 rounded-xl font-bold text-black bg-linear-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {analyzing ? (
-                  <>
-                    <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                    </svg>
-                    Analyzing…
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                    Analyze ATS Score
-                  </>
-                )}
-              </button>
+              <div className="space-y-3">
+                <button
+                  onClick={() => analyze(false)}
+                  disabled={!file || !!analyzing || isFreeDisabled}
+                  className="w-full py-3 rounded-xl font-bold text-black bg-yellow-400 hover:bg-yellow-500 transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {analyzing === "free" ? (
+                    <>
+                      <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                      </svg>
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      Use Free Analyzer
+                    </>
+                  )}
+                </button>
+
+                <button
+                  onClick={() => analyze(true)}
+                  disabled={!file || !!analyzing}
+                  className="w-full py-3 rounded-xl font-bold text-black border-2 border-yellow-400 bg-white hover:bg-yellow-50 transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {analyzing === "credit" ? (
+                    <>
+                      <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                      </svg>
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Analyze your resume with 3 credits
+                    </>
+                  )}
+                </button>
+              </div>
 
               {/* Info box */}
               {!result && !analyzing && (
@@ -345,6 +421,37 @@ export default function AtsScorePage() {
       </main>
 
       <Footer />
+
+      {/* Limit Modal */}
+      {showLimitModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
+            <h3 className="text-xl font-extrabold text-black mb-2">Daily Free Limit Reached</h3>
+            <p className="text-gray-600 text-sm mb-6 leading-relaxed">
+              You've used your <span className="font-bold text-black">{usageData?.freeLimit} free ATS checks</span> today.
+              This will cost <span className="font-bold text-black">{usageData?.creditsRequired} credits</span>.
+              <br /><br />
+              <span className="text-xs text-gray-500 font-medium px-3 py-1.5 bg-gray-100 rounded-md">
+                Resets at 12:00 AM IST
+              </span>
+            </p>
+            <div className="flex gap-3 justify-end items-center mt-4">
+              <button
+                onClick={() => setShowLimitModal(false)}
+                className="px-5 py-2.5 rounded-xl font-semibold text-gray-600 hover:bg-gray-100 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => analyze(true)}
+                className="px-5 py-2.5 rounded-xl font-bold bg-yellow-400 text-black hover:bg-yellow-500 transition-colors shadow-sm"
+              >
+                Use {usageData?.creditsRequired} Credits
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Template selector modal */}
       {showTemplates && (

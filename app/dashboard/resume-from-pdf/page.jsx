@@ -137,8 +137,18 @@ export default function ResumeFromPdfPage() {
   const [error, setError] = useState("");
   const [mounted, setMounted] = useState(false);
 
+  const [usageData, setUsageData] = useState(null);
+  const [showLimitModal, setShowLimitModal] = useState(false);
+  const [pendingSlug, setPendingSlug] = useState(null);
+
   useEffect(() => {
     setMounted(true);
+    fetch("/api/feature-usage/pdf")
+      .then((r) => r.json())
+      .then((data) => {
+        if (!data.error) setUsageData(data);
+      })
+      .catch((e) => console.error(e));
   }, []);
 
   // Set up sample data for template previews when moving to step 1
@@ -186,7 +196,7 @@ export default function ResumeFromPdfPage() {
     handleFile(e.dataTransfer.files[0]);
   };
 
-  const handleTemplateSelect = async (slug) => {
+  const handleTemplateSelect = async (slug, useCredit = false) => {
     // Restore real user data before extraction
     if (originalDataRef.current !== null) {
       localStorage.setItem("resumeFormData", originalDataRef.current);
@@ -194,11 +204,13 @@ export default function ResumeFromPdfPage() {
       localStorage.removeItem("resumeFormData");
     }
 
-    setExtracting(true);
+    setExtracting(useCredit ? "credit" : "free");
+    setShowLimitModal(false);
     setError("");
     setStep(2);
     const formData = new FormData();
     formData.append("resume", file);
+    formData.append("useCredit", useCredit);
     try {
       const res = await fetch("/api/ai/extract-resume", { method: "POST", body: formData });
       const raw = await res.text();
@@ -210,7 +222,25 @@ export default function ResumeFromPdfPage() {
         throw new Error("Extraction service returned an invalid response. Please try again.");
       }
 
-      if (!res.ok || data.error) throw new Error(data.error || "Extraction failed");
+      if (!res.ok) {
+        if (data.error === "INSUFFICIENT_CREDITS") {
+          setError("You don't have enough credits. Please top up.");
+          setStep(1);
+          return;
+        } else if (res.status === 403) {
+          setUsageData(data);
+          setError(data.message || data.error || "Limit reached");
+          setStep(1);
+          return;
+        }
+        throw new Error(data.error || "Extraction failed");
+      }
+      
+      // Refresh usage after success
+      fetch("/api/feature-usage/pdf")
+        .then((r) => r.json())
+        .then((d) => { if (!d.error) setUsageData(d); });
+        
       const normalized = normalizeExtractedResumeData(data);
       localStorage.removeItem("ResumePreviewData");
       localStorage.setItem("resumeFormData", JSON.stringify(normalized));
@@ -226,8 +256,12 @@ export default function ResumeFromPdfPage() {
 
       router.push(`/resume-form?template=${slug}&extracted=1`);
     } catch (e) {
-      setError(e.message || "Failed to extract resume data. Please try again.");
-      setStep(1);
+      if (e.message !== "Limit reached") {
+        setError(e.message || "Failed to extract resume data. Please try again.");
+        setStep(1);
+      } else {
+        setStep(1); // go back if limit modal is shown
+      }
     } finally {
       setExtracting(false);
     }
@@ -239,20 +273,29 @@ export default function ResumeFromPdfPage() {
 
       <main className="grow pt-20 pb-16">
         <div className="w-full px-4 sm:px-8">
-          {/* Back */}
-          <button
-            onClick={() => router.push("/dashboard")}
-            className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-800 text-sm font-medium mt-6 mb-6 transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Back to Dashboard
-          </button>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-6 mb-6 gap-4">
+            <button
+              onClick={() => router.push("/dashboard")}
+              className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-800 text-sm font-medium transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to Dashboard
+            </button>
+
+            {usageData && (
+              <div className="inline-flex items-center rounded-full border border-yellow-300 bg-yellow-50 px-3 py-1.5 text-xs font-semibold text-yellow-800">
+                {usageData.freeSearchesRemainingToday > 0
+                  ? `${usageData.freeSearchesRemainingToday} free extractions left today • ${usageData.creditsRemaining ?? 0} credits`
+                  : `Free resets in ${formatCountdown(usageData.freeResetsAt)} • ${usageData.creditsRemaining ?? 0} credits`}
+              </div>
+            )}
+          </div>
 
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             {/* ── LEFT PANEL ── */}
-            <div className="w-full lg:w-95 lg:shrink-0">
+            <div className="w-full lg:w-95 lg:shrink-0 bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
               <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-1">Resume from Existing PDF</h1>
               <p className="text-gray-500 text-sm mb-6">
                 Upload your resume PDF — AI extracts all your data and fills the form. No typing needed.
@@ -326,7 +369,7 @@ export default function ResumeFromPdfPage() {
               <button
                 onClick={() => file && setStep(1)}
                 disabled={!file || step > 0}
-                className="w-full py-3.5 rounded-xl font-bold text-gray-900 bg-yellow-400 hover:bg-yellow-500 transition-all shadow-md hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-xl font-bold text-black bg-yellow-400 hover:bg-yellow-500 transition-all shadow-sm hover:shadow-md disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -378,24 +421,31 @@ export default function ResumeFromPdfPage() {
                     {ALL_TEMPLATES.map((t) => (
                       <div
                         key={t.slug}
-                        onClick={() => handleTemplateSelect(t.slug)}
-                        className="group bg-white rounded-2xl shadow-md overflow-hidden border border-gray-200 hover:border-yellow-400 hover:shadow-xl transition-all duration-300 cursor-pointer hover:-translate-y-1 flex flex-col"
+                        className="group bg-white rounded-2xl shadow-md overflow-hidden border border-gray-200 hover:border-yellow-400 hover:shadow-xl transition-all duration-300 flex flex-col"
                       >
                         <div className="relative">
                           <TemplatePreview Component={t.Component} />
-                          {/* Hover overlay */}
-                          <div className="absolute inset-0 bg-yellow-400/0 group-hover:bg-yellow-400/10 transition-all duration-300 flex items-center justify-center">
-                            <span className="opacity-0 group-hover:opacity-100 transition-all duration-200 bg-yellow-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
-                              Use This Template
-                            </span>
-                          </div>
                         </div>
                         <div className="p-4 flex flex-col grow">
                           <h3 className="font-bold text-gray-900 text-sm mb-1">{t.name}</h3>
-                          <p className="text-gray-400 text-xs grow">{t.desc}</p>
-                          <button className="mt-3 w-full py-2 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-gray-900 text-xs font-bold transition-colors">
-                            Select Template
-                          </button>
+                          <p className="text-gray-400 text-xs mb-4">{t.desc}</p>
+                          
+                          <div className="space-y-2 mt-auto">
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); handleTemplateSelect(t.slug, false); }}
+                              disabled={usageData?.freeSearchesRemainingToday === 0 || !!extracting}
+                              className="w-full py-2 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-black text-[11px] font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              User Free Extract
+                            </button>
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); handleTemplateSelect(t.slug, true); }}
+                              disabled={!!extracting}
+                              className="w-full py-2 rounded-xl border-2 border-yellow-400 bg-white hover:bg-yellow-50 text-black text-[11px] font-bold transition-colors disabled:opacity-50"
+                            >
+                              Extract with 3 Credits
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -428,6 +478,37 @@ export default function ResumeFromPdfPage() {
       </main>
 
       <Footer />
+
+      {/* Limit Modal */}
+      {showLimitModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
+            <h3 className="text-xl font-extrabold text-black mb-2">Daily Free Limit Reached</h3>
+            <p className="text-gray-600 text-sm mb-6 leading-relaxed">
+              You've used your <span className="font-bold text-black">{usageData?.freeLimit} free PDF uploads</span> today.
+              This will cost <span className="font-bold text-black">{usageData?.creditsRequired} credits</span>.
+              <br /><br />
+              <span className="text-xs text-gray-500 font-medium px-3 py-1.5 bg-gray-100 rounded-md">
+                Resets at 12:00 AM IST
+              </span>
+            </p>
+            <div className="flex gap-3 justify-end items-center mt-4">
+              <button
+                onClick={() => setShowLimitModal(false)}
+                className="px-5 py-2.5 rounded-xl font-semibold text-gray-600 hover:bg-gray-100 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleTemplateSelect(pendingSlug, true)}
+                className="px-5 py-2.5 rounded-xl font-bold bg-yellow-400 text-black hover:bg-yellow-500 transition-colors shadow-sm"
+              >
+                Use {usageData?.creditsRequired} Credits
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

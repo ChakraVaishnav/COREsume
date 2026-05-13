@@ -8,23 +8,26 @@ datasource db {
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
-        
+
 model User {
-  id        Int      @id @default(autoincrement())
-  username  String
-  email     String   @unique
-  password  String
-  authProvider String @default("password")
-  emailVerified Boolean @default(true)
-  creds     Int      @default(0)
-  jobsInDb  Int      @default(0)
-  totalJobsSearched Int @default(0)
-  unlimited Boolean  @default(false)
-  ratings   Rating[]
-  resume    Resume?
-  jobs      Job[]
-  jobUsage  JobUsage?
-  otps      Otp[]
+  id                Int       @id @default(autoincrement())
+  username          String
+  email             String    @unique
+  password          String
+  authProvider      String    @default("password")
+  emailVerified     Boolean   @default(true)
+  creds             Int       @default(0)
+  jobsInDb          Int       @default(0)
+  totalJobsSearched Int       @default(0)
+  unlimited         Boolean   @default(false)
+  atsChecksTotal    Int       @default(0)
+  pdfUploadsTotal   Int       @default(0)
+  ratings           Rating[]
+  resume            Resume?
+  jobs              Job[]
+  jobUsage          JobUsage?
+  featureUsage      FeatureUsage[]
+  otps              Otp[]
 }
 
 model Otp {
@@ -57,35 +60,35 @@ model Resume {
 }
 
 model Job {
-  id                  String    @id @default(cuid())
-  userId              Int
-  searchId            String
+  id       String @id @default(cuid())
+  userId   Int
+  searchId String
 
-  jobTitle            String
-  companyName         String
-  jobDescription      String    @db.Text
-  skillsRequired      String[]
-  experienceRequired  String?
-  location            String?
-  salary              String?
-  jobLink             String
-  postedDate          String?
-  source              String?
+  jobTitle           String
+  companyName        String
+  jobDescription     String   @db.Text
+  skillsRequired     String[]
+  experienceRequired String?
+  location           String?
+  salary             String?
+  jobLink            String
+  postedDate         String?
+  source             String?
 
-  matchScore          Int
-  fitLabel            String
-  missingSkills       String[]
-  strengths           String[]
-  reasoning           String    @db.Text
-  aiSummary           String?   @db.Text
-  whyItMatches        String?   @db.Text
-  resumeImprovements  String[]
+  matchScore         Int
+  fitLabel           String
+  missingSkills      String[]
+  strengths          String[]
+  reasoning          String   @db.Text
+  aiSummary          String?  @db.Text
+  whyItMatches       String?  @db.Text
+  resumeImprovements String[]
 
-  tier                String
-  createdAt           DateTime  @default(now())
-  expiresAt           DateTime
+  tier      String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
 
-  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([searchId])
@@ -93,16 +96,28 @@ model Job {
 }
 
 model JobUsage {
-  id            String    @id @default(cuid())
-  userId        Int       @unique
-  date          String
-  searchCount   Int       @default(0)
-  jobsFetched   Int       @default(0)
-  tier          String    @default("free")
-  credits       Int       @default(0)
-  creditsUsed   Int       @default(0)
-  lastSearchAt  DateTime?
-  updatedAt     DateTime  @updatedAt
+  id           String    @id @default(cuid())
+  userId       Int       @unique
+  date         String
+  searchCount  Int       @default(0)
+  jobsFetched  Int       @default(0)
+  tier         String    @default("free")
+  credits      Int       @default(0)
+  creditsUsed  Int       @default(0)
+  lastSearchAt DateTime?
+  updatedAt    DateTime  @updatedAt
 
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model FeatureUsage {
+  id            String   @id @default(cuid())
+  userId        Int
+  user          User     @relation(fields: [userId], references: [id])
+  date          String
+  atsUsed       Int      @default(0)
+  pdfUsed       Int      @default(0)
+  updatedAt     DateTime @updatedAt
+  
+  @@unique([userId, date])
 }

@@ -111,9 +111,17 @@ export default function ForgotPasswordPage() {
             <button
               onClick={sendOtp}
               disabled={status === "sending"}
-              className="w-full bg-yellow-400 hover:bg-yellow-500 text-black py-2 rounded-md font-semibold"
+              className="w-full bg-yellow-400 hover:bg-yellow-500 text-black py-2 rounded-md font-semibold flex items-center justify-center gap-2"
             >
-              {status === "sending" ? "Sending..." : "Send OTP"}
+              {status === "sending" ? (
+                <>
+                  <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                  </svg>
+                  Sending...
+                </>
+              ) : "Send OTP"}
             </button>
           </>
         )}
@@ -131,9 +139,18 @@ export default function ForgotPasswordPage() {
             />
             <button
               onClick={verifyOtp}
-              className="w-full bg-yellow-400 hover:bg-yellow-500 text-black py-2 rounded-md font-semibold"
+              disabled={status === "verifying"}
+              className="w-full bg-yellow-400 hover:bg-yellow-500 text-black py-2 rounded-md font-semibold flex items-center justify-center gap-2"
             >
-              Verify OTP
+              {status === "verifying" ? (
+                <>
+                  <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                  </svg>
+                  Verifying...
+                </>
+              ) : "Verify OTP"}
             </button>
           </>
         )}
@@ -157,9 +174,18 @@ export default function ForgotPasswordPage() {
             />
             <button
               onClick={resetPassword}
-              className="w-full bg-yellow-400 hover:bg-yellow-500 text-black py-2 rounded-md font-semibold"
+              disabled={status === "resetting"}
+              className="w-full bg-yellow-400 hover:bg-yellow-500 text-black py-2 rounded-md font-semibold flex items-center justify-center gap-2"
             >
-              Reset Password
+              {status === "resetting" ? (
+                <>
+                  <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                  </svg>
+                  Resetting...
+                </>
+              ) : "Reset Password"}
             </button>
           </>
         )}

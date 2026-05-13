@@ -11,12 +11,13 @@ const RESOURCE_CONFIG = {
   ratings: { model: "rating", idType: "int", orderBy: { createdAt: "desc" } },
   jobs: { model: "job", idType: "string", orderBy: { createdAt: "desc" } },
   jobUsage: { model: "jobUsage", idType: "string", orderBy: { updatedAt: "desc" } },
+  featureUsage: { model: "featureUsage", idType: "string", orderBy: { updatedAt: "desc" } },
 };
 
 const RESOURCE_SEARCH_CONFIG = {
   users: {
     strings: ["username", "email"],
-    numbers: ["id", "creds", "jobsInDb", "totalJobsSearched"],
+    numbers: ["id", "creds", "jobsInDb", "totalJobsSearched", "atsChecksTotal", "pdfUploadsTotal"],
     booleans: ["unlimited"],
   },
   resumes: {
@@ -54,6 +55,10 @@ const RESOURCE_SEARCH_CONFIG = {
   jobUsage: {
     strings: ["id", "date", "tier"],
     numbers: ["userId", "searchCount", "jobsFetched", "credits", "creditsUsed"],
+  },
+  featureUsage: {
+    strings: ["id", "date"],
+    numbers: ["userId", "atsUsed", "pdfUsed"],
   },
 };
 

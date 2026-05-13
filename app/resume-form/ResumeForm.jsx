@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import { templates } from "../utils/template";
 import * as api from "@/lib/api";
+import RichTextEditor from "@/components/ui/RichTextEditor";
 
 const DEFAULT_FORM = {
   personalInfo: {
@@ -79,6 +80,22 @@ function ResumeForm() {
   const [previewKey, setPreviewKey] = useState(0);
   const previewContainerRef = useRef(null);
   const [loading, setLoading] = useState(true);
+  const [collapsedSections, setCollapsedSections] = useState({
+    personal: false,
+    summary: false,
+    education: false,
+    skills: false,
+    experience: false,
+    projects: false,
+    achievements: false,
+    interests: false,
+    codingProfiles: false,
+    custom: false,
+  });
+
+  const toggleSection = (section) => {
+    setCollapsedSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
 
   // Warning popup state
   const [showWarning, setShowWarning] = useState(false);
@@ -377,6 +394,18 @@ function ResumeForm() {
       updatedForm.appliedJob = e.target.value;
     }
 
+    setForm(updatedForm);
+  };
+
+  const handleRichChange = (value, path) => {
+    const keys = path.split(".");
+    const updatedForm = { ...form };
+    let obj = updatedForm;
+    for (let i = 0; i < keys.length - 1; i++) {
+      obj = obj[keys[i]];
+    }
+    const finalKey = keys[keys.length - 1];
+    obj[finalKey] = value;
     setForm(updatedForm);
   };
 
@@ -836,11 +865,9 @@ function ResumeForm() {
               Generate with AI
             </button>
           </div>
-          <textarea
+          <RichTextEditor
             value={form.summary}
-            onChange={(e) => handleChange(e, "summary")}
-            className="w-full border-2 border-gray-200 bg-white p-4 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all duration-200 hover:border-yellow-300"
-            rows={4}
+            onChange={(val) => handleRichChange(val, "summary")}
             placeholder="e.g. Experienced React developer with a passion for building performant UIs..."
           />
         </div>
@@ -871,12 +898,11 @@ function ResumeForm() {
             </div>
             <h2 className="text-2xl font-bold text-black">Education</h2>
           </div>
-          <textarea
+          <RichTextEditor
             value={form.education}
-            onChange={(e) => handleChange(e, "education")}
-            className="w-full border-2 border-gray-200 bg-white p-4 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all duration-200 hover:border-yellow-300"
-            rows={3}
+            onChange={(val) => handleRichChange(val, "education")}
             placeholder="e.g. Bachelor of Science in Computer Science, University of Technology, 2020-2024"
+            rows={3}
           />
         </div>
 
@@ -916,12 +942,10 @@ function ResumeForm() {
               Generate with AI
             </button>
           </div>
-          <textarea
+          <RichTextEditor
             value={form.skills}
-            onChange={(e) => handleChange(e, "skills")}
-            className="w-full border-2 border-gray-200 bg-white p-4 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all duration-200 hover:border-yellow-300"
-            rows={4}
-            placeholder="e.g. • Programming Languages: Java, JavaScript&#10;• Web Development: HTML5, CSS3, React.js&#10;• Back-End Frameworks: Spring Boot&#10;• Databases: PostgreSQL, MySQL"
+            onChange={(val) => handleRichChange(val, "skills")}
+            placeholder="e.g. • Programming Languages: Java, JavaScript&#10;• Web Development: HTML5, CSS3, React.js"
           />
         </div>
 
@@ -1073,12 +1097,11 @@ function ResumeForm() {
                     Enhance with AI
                   </button>
                 </div>
-                <textarea
+                <RichTextEditor
                   value={exp.description}
-                  onChange={(e) => handleChange(e, `experience.${index}.description`)}
-                  className="w-full border-2 border-gray-200 bg-white p-4 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all duration-200"
-                  rows={3}
+                  onChange={(val) => handleRichChange(val, `experience.${index}.description`)}
                   placeholder="e.g. Developed web applications, worked on database optimization, collaborated with team members..."
+                  rows={3}
                 />
               </div>
             </div>
@@ -1261,12 +1284,11 @@ function ResumeForm() {
                     </button>
                   </div>
                 </div>
-                <textarea
+                <RichTextEditor
                   value={proj.description}
-                  onChange={(e) => handleChange(e, `projects.${index}.description`)}
-                  className="w-full border-2 border-gray-200 bg-white p-4 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all duration-200"
-                  rows={3}
+                  onChange={(val) => handleRichChange(val, `projects.${index}.description`)}
                   placeholder="e.g. Developed a full-stack web application using React.js and Node.js..."
+                  rows={3}
                 />
               </div>
             </div>
@@ -1295,12 +1317,10 @@ function ResumeForm() {
               </div>
               <h2 className="text-2xl font-bold text-black">Achievements</h2>
             </div>
-            <textarea
+            <RichTextEditor
               value={form.achievements}
-              onChange={(e) => handleChange(e, "achievements")}
-              className="w-full border-2 border-gray-200 bg-white p-4 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all duration-200 hover:border-yellow-300"
-              rows={4}
-              placeholder="e.g. • Won 1st place in Hackathon 2023&#10;• Published 2 research papers&#10;• Led team of 5 developers"
+              onChange={(val) => handleRichChange(val, "achievements")}
+              placeholder="e.g. • Won 1st place in Hackathon 2023"
             />
           </div>
 
@@ -1324,12 +1344,10 @@ function ResumeForm() {
               </div>
               <h2 className="text-2xl font-bold text-black">Interests</h2>
             </div>
-            <textarea
+            <RichTextEditor
               value={form.interests}
-              onChange={(e) => handleChange(e, "interests")}
-              className="w-full border-2 border-gray-200 bg-white p-4 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all duration-200 hover:border-yellow-300"
-              rows={4}
-              placeholder="e.g. • Open Source Contribution&#10;• Machine Learning&#10;• Reading Tech Blogs&#10;• Playing Guitar"
+              onChange={(val) => handleRichChange(val, "interests")}
+              placeholder="e.g. • Open Source Contribution"
             />
           </div>
         </div>
@@ -1473,12 +1491,11 @@ function ResumeForm() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-black">Content</label>
-                  <textarea
+                  <RichTextEditor
                     value={section.content}
-                    onChange={(e) => handleCustomSectionChange(index, "content", e.target.value)}
-                    className="w-full border-2 border-gray-200 bg-white p-4 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all duration-200"
-                    rows={4}
+                    onChange={(val) => handleRichChange(val, `customSections.${index}.content`)}
                     placeholder="Write anything here — bullet points, paragraph, or any format you prefer..."
+                    rows={4}
                   />
                 </div>
               </div>

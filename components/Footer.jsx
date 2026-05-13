@@ -51,7 +51,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="mt-8 pt-8 border-t border-gray-200 text-center">
-          <p className="text-sm text-gray-600">© 2025 Coresume. All rights reserved.</p>
+          <p className="text-sm text-gray-600">© 2026 Coresume. All rights reserved.</p>
         </div>
         <div className="flex flex-wrap gap-4 justify-center mt-4 text-sm text-gray-500">
           <a href="/terms" className="hover:underline">Terms & Conditions</a>
