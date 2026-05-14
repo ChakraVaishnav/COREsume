@@ -28,6 +28,18 @@ model User {
   jobUsage          JobUsage?
   featureUsage      FeatureUsage[]
   otps              Otp[]
+  creditHistory     CreditHistory[]
+}
+
+model CreditHistory {
+  id        String   @id @default(cuid())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  credits   Int      // The amount changed (e.g., -3 or +10)
+  reason    String   // Detailed reason (e.g., "ATS Score Check", "Starter Pack Purchase")
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model Otp {

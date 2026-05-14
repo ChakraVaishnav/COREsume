@@ -3,12 +3,13 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FiArrowLeft, FiBriefcase, FiFileText, FiLogOut, FiUser } from "react-icons/fi";
+import { FiArrowLeft, FiBriefcase, FiCreditCard, FiFileText, FiLogOut, FiUser } from "react-icons/fi";
 
 const PROFILE_TABS = [
   { href: "/profile", key: "profile", label: "Profile", icon: FiUser },
   { href: "/profile/resume", key: "resume", label: "Your Resume", icon: FiFileText },
   { href: "/profile/jobs", key: "jobs", label: "Your Jobs", icon: FiBriefcase },
+  { href: "/profile/credits", key: "credits", label: "Credit History", icon: FiCreditCard },
 ];
 
 export default function ProfileSidebar({ onLogout, loggingOut }) {

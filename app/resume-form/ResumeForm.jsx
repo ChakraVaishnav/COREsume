@@ -504,11 +504,13 @@ function ResumeForm() {
   };
 
   // Deduct credit API
-  const deductCredit = async () => {
+  const deductCredit = async (reason) => {
     try {
       await fetch("/api/user/deduct-credit", {
         method: "POST",
         credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason }),
       });
       setCredits((prev) => (prev > 0 ? prev - 1 : 0));
     } catch (e) {
@@ -532,7 +534,14 @@ function ResumeForm() {
       }
       const res = await runAISuggestion(type, payload);
       if (!res) return;
-      await deductCredit();
+      const reasonMap = {
+        summary: "AI Summary Generation",
+        skills: "AI Skills Suggestion",
+        experience: "AI Experience Quantifying",
+        "project-generate": "AI Project Generation",
+        "project-enhance": "AI Project Enhancement"
+      };
+      await deductCredit(reasonMap[type] || "AI Content Suggestion");
       setPendingAISuggestion(null);
     }
     // Otherwise, show warning popup
@@ -556,7 +565,14 @@ function ResumeForm() {
       }
       const res = await runAISuggestion(type, payload);
       if (!res) return;
-      await deductCredit();
+      const reasonMap = {
+        summary: "AI Summary Generation",
+        skills: "AI Skills Suggestion",
+        experience: "AI Experience Quantifying",
+        "project-generate": "AI Project Generation",
+        "project-enhance": "AI Project Enhancement"
+      };
+      await deductCredit(reasonMap[type] || "AI Content Suggestion");
       setPendingAISuggestion(null);
     }
     if (dontRemind) {

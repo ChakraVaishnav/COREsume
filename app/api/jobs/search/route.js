@@ -7,6 +7,7 @@ import { analyzeJobs } from "@/lib/jobs/analyze";
 import { checkLimit, recordUsage } from "@/lib/jobs/rateLimit";
 import { authenticateRequest } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
+import { logCreditHistory } from "@/lib/featureUsage";
 
 export const runtime = "nodejs";
 
@@ -244,6 +245,16 @@ export async function POST(req) {
           where: { id: auth.userId },
           data: userUpdateData,
         });
+
+        if (normalizedSearchMode === "premium") {
+          await tx.creditHistory.create({
+            data: {
+              userId: auth.userId,
+              credits: -5,
+              reason: "Premium Job Search (30 jobs)"
+            }
+          });
+        }
       });
     } catch (dbError) {
       console.error("Job search DB write failed", {

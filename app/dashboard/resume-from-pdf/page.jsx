@@ -122,6 +122,17 @@ function TemplatePreview({ Component }) {
   );
 }
 
+function formatCountdown(resetsAt) {
+  if (!resetsAt) return "";
+  const target = new Date(resetsAt).getTime();
+  const now = Date.now();
+  const diffMs = Math.max(0, target - now);
+  const totalMinutes = Math.floor(diffMs / 60000);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return `${hours}h ${minutes}m`;
+}
+
 const STEPS = ["Upload PDF", "Choose Template", "Processing…"];
 
 export default function ResumeFromPdfPage() {
@@ -235,12 +246,12 @@ export default function ResumeFromPdfPage() {
         }
         throw new Error(data.error || "Extraction failed");
       }
-      
+
       // Refresh usage after success
       fetch("/api/feature-usage/pdf")
         .then((r) => r.json())
         .then((d) => { if (!d.error) setUsageData(d); });
-        
+
       const normalized = normalizeExtractedResumeData(data);
       localStorage.removeItem("ResumePreviewData");
       localStorage.setItem("resumeFormData", JSON.stringify(normalized));
@@ -287,8 +298,8 @@ export default function ResumeFromPdfPage() {
             {usageData && (
               <div className="inline-flex items-center rounded-full border border-yellow-300 bg-yellow-50 px-3 py-1.5 text-xs font-semibold text-yellow-800">
                 {usageData.freeSearchesRemainingToday > 0
-                  ? `${usageData.freeSearchesRemainingToday} free extractions left today • ${usageData.creditsRemaining ?? 0} credits`
-                  : `Free resets in ${formatCountdown(usageData.freeResetsAt)} • ${usageData.creditsRemaining ?? 0} credits`}
+                  ? `${usageData.freeSearchesRemainingToday} free extractions left today • resets in ${formatCountdown(usageData.freeResetsAt)}`
+                  : `Free resets in ${formatCountdown(usageData.freeResetsAt)}`}
               </div>
             )}
           </div>
@@ -305,19 +316,18 @@ export default function ResumeFromPdfPage() {
               <div className="flex items-center gap-1.5 mb-7">
                 {STEPS.map((s, i) => (
                   <div key={i} className="flex items-center gap-1">
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                      step > i ? "bg-yellow-500 text-white"
-                      : step === i ? "bg-yellow-300 text-gray-900"
-                      : "bg-gray-200 text-gray-400"
-                    }`}>
+                    <div className={`w-7 h-7 flex-none aspect-square rounded-full flex items-center justify-center text-xs font-bold transition-all ${step > i ? "bg-emerald-500 text-white"
+                        : step === i ? "bg-emerald-500 text-white shadow-sm ring-4 ring-emerald-100"
+                          : "bg-gray-200 text-gray-400"
+                      }`}>
                       {step > i ? (
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                         </svg>
                       ) : (i + 1)}
                     </div>
-                    <span className={`text-xs font-medium hidden sm:block ${step === i ? "text-gray-900 font-bold" : "text-gray-400"}`}>{s}</span>
-                    {i < STEPS.length - 1 && <div className="w-4 h-px bg-gray-300 mx-1" />}
+                    <span className={`text-xs font-medium hidden sm:block ${step === i ? "text-emerald-700 font-bold" : "text-gray-400"}`}>{s}</span>
+                    {i < STEPS.length - 1 && <div className={`w-4 h-px mx-1 ${step > i ? "bg-emerald-500" : "bg-gray-300"}`} />}
                   </div>
                 ))}
               </div>
@@ -334,22 +344,21 @@ export default function ResumeFromPdfPage() {
                 onDragLeave={() => setDragOver(false)}
                 onDrop={handleDrop}
                 onClick={() => fileRef.current?.click()}
-                className={`flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-10 cursor-pointer transition-all duration-200 mb-5 ${
-                  dragOver ? "border-yellow-400 bg-yellow-50"
-                  : file ? "border-yellow-300 bg-yellow-50"
-                  : "border-gray-300 bg-white hover:border-yellow-400 hover:bg-yellow-50"
-                }`}
+                className={`flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-10 cursor-pointer transition-all duration-200 mb-5 ${dragOver ? "border-emerald-400 bg-emerald-50"
+                    : file ? "border-emerald-400 bg-emerald-50"
+                      : "border-gray-300 bg-white hover:border-yellow-400 hover:bg-yellow-50"
+                  }`}
               >
                 <input ref={fileRef} type="file" accept="application/pdf" className="hidden"
                   onChange={(e) => handleFile(e.target.files?.[0])} />
                 {file ? (
                   <>
-                    <div className="w-12 h-12 rounded-full bg-yellow-400 flex items-center justify-center mb-3">
-                      <svg className="w-6 h-6 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mb-3 text-emerald-600">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
-                    <p className="font-bold text-gray-900 text-sm text-center break-all">{file.name}</p>
+                    <p className="font-bold text-emerald-700 text-sm text-center break-all">{file.name}</p>
                     <p className="text-xs text-gray-400 mt-1">Click to change file</p>
                   </>
                 ) : (
@@ -429,21 +438,21 @@ export default function ResumeFromPdfPage() {
                         <div className="p-4 flex flex-col grow">
                           <h3 className="font-bold text-gray-900 text-sm mb-1">{t.name}</h3>
                           <p className="text-gray-400 text-xs mb-4">{t.desc}</p>
-                          
+
                           <div className="space-y-2 mt-auto">
-                            <button 
+                            <button
                               onClick={(e) => { e.stopPropagation(); handleTemplateSelect(t.slug, false); }}
                               disabled={usageData?.freeSearchesRemainingToday === 0 || !!extracting}
                               className="w-full py-2 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-black text-[11px] font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                              User Free Extract
+                              User free extract
                             </button>
-                            <button 
+                            <button
                               onClick={(e) => { e.stopPropagation(); handleTemplateSelect(t.slug, true); }}
                               disabled={!!extracting}
                               className="w-full py-2 rounded-xl border-2 border-yellow-400 bg-white hover:bg-yellow-50 text-black text-[11px] font-bold transition-colors disabled:opacity-50"
                             >
-                              Extract with 3 Credits
+                              Extract your PDF with 3 credits
                             </button>
                           </div>
                         </div>

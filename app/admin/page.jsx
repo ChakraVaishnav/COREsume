@@ -11,6 +11,7 @@ const RESOURCE_OPTIONS = [
   { key: "jobs", label: "Job Table" },
   { key: "jobUsage", label: "Job Usage Table" },
   { key: "featureUsage", label: "Feature Usage Table" },
+  { key: "creditHistory", label: "Credit History Table" },
 ];
 
 const PAGE_SIZE = 50;
@@ -83,6 +84,11 @@ const CREATE_FIELD_HINTS = {
     { key: "atsUsed", type: "number" },
     { key: "pdfUsed", type: "number" },
   ],
+  creditHistory: [
+    { key: "userId", type: "number" },
+    { key: "credits", type: "number" },
+    { key: "reason", type: "string" },
+  ],
 };
 
 const SEARCH_PLACEHOLDERS = {
@@ -93,6 +99,7 @@ const SEARCH_PLACEHOLDERS = {
   jobs: "Search by title, company, source, search id...",
   jobUsage: "Search by user id, tier, date...",
   featureUsage: "Search by user id, date...",
+  creditHistory: "Search by reason, credits, user id...",
 };
 
 function prettyJson(value) {

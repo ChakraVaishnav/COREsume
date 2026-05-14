@@ -39,7 +39,7 @@ export default function AtsScorePage() {
   const [error, setError] = useState("");
   const [showTemplates, setShowTemplates] = useState(false);
   const [dragOver, setDragOver] = useState(false);
-  
+
   const [usageData, setUsageData] = useState(null);
   const [showLimitModal, setShowLimitModal] = useState(false);
 
@@ -70,7 +70,7 @@ export default function AtsScorePage() {
 
   const analyze = async (useCredit = false) => {
     if (!file) return;
-    
+
     setAnalyzing(useCredit ? "credit" : "free");
     setError("");
     setResult(null);
@@ -109,7 +109,7 @@ export default function AtsScorePage() {
     setError("");
     const formData = new FormData();
     formData.append("resume", file);
-    formData.append("useCredit", false); 
+    formData.append("useCredit", false);
     try {
       const res = await fetch("/api/ai/extract-resume", { method: "POST", body: formData });
       const data = await res.json();
@@ -151,8 +151,8 @@ export default function AtsScorePage() {
             {usageData && (
               <div className="inline-flex items-center rounded-full border border-yellow-300 bg-yellow-50 px-3 py-1.5 text-xs font-semibold text-yellow-800">
                 {usageData.freeSearchesRemainingToday > 0
-                  ? `${usageData.freeSearchesRemainingToday} free checks left today • ${usageData.creditsRemaining ?? 0} credits`
-                  : `Free resets in ${formatCountdown(usageData.freeResetsAt)} • ${usageData.creditsRemaining ?? 0} credits`}
+                  ? `${usageData.freeSearchesRemainingToday} free analysis left today • resets in ${formatCountdown(usageData.freeResetsAt)}`
+                  : `Free resets in ${formatCountdown(usageData.freeResetsAt)}`}
               </div>
             )}
           </div>
@@ -172,11 +172,10 @@ export default function AtsScorePage() {
                 onDragLeave={() => setDragOver(false)}
                 onDrop={handleDrop}
                 onClick={() => fileRef.current?.click()}
-                className={`flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-10 cursor-pointer transition-all duration-200 mb-4 ${
-                  dragOver ? "border-yellow-400 bg-yellow-50"
-                  : file ? "border-emerald-400 bg-emerald-50"
-                  : "border-gray-200 bg-gray-50/30 hover:border-yellow-400 hover:bg-yellow-50"
-                }`}
+                className={`flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-10 cursor-pointer transition-all duration-200 mb-4 ${dragOver ? "border-yellow-400 bg-yellow-50"
+                    : file ? "border-emerald-400 bg-emerald-50"
+                      : "border-gray-200 bg-gray-50/30 hover:border-yellow-400 hover:bg-yellow-50"
+                  }`}
               >
                 <input ref={fileRef} type="file" accept="application/pdf" className="hidden"
                   onChange={(e) => handleFile(e.target.files?.[0])} />
@@ -214,7 +213,7 @@ export default function AtsScorePage() {
                 <button
                   onClick={() => analyze(false)}
                   disabled={!file || !!analyzing || isFreeDisabled}
-                  className="w-full py-3 rounded-xl font-bold text-black bg-yellow-400 hover:bg-yellow-500 transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full py-3.5 rounded-xl font-black text-black bg-yellow-400 hover:bg-yellow-500 border-2 border-yellow-500 transition-all shadow-md hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {analyzing === "free" ? (
                     <>
@@ -227,7 +226,7 @@ export default function AtsScorePage() {
                   ) : (
                     <>
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
                       Use Free Analyzer
                     </>
@@ -237,7 +236,7 @@ export default function AtsScorePage() {
                 <button
                   onClick={() => analyze(true)}
                   disabled={!file || !!analyzing}
-                  className="w-full py-3 rounded-xl font-bold text-black border-2 border-yellow-400 bg-white hover:bg-yellow-50 transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full py-3.5 rounded-xl font-bold text-black border-2 border-yellow-400 bg-white hover:bg-yellow-50 transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {analyzing === "credit" ? (
                     <>
@@ -250,7 +249,7 @@ export default function AtsScorePage() {
                   ) : (
                     <>
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                       </svg>
                       Analyze your resume with 3 credits
                     </>
@@ -283,12 +282,24 @@ export default function AtsScorePage() {
             {/* ── RIGHT: Results panel ── */}
             <div className="flex-1 min-w-0">
               {!result && !analyzing && (
-                <div className="hidden lg:flex flex-col items-center justify-center min-h-64 text-center rounded-2xl border-2 border-dashed border-gray-200 bg-white py-16">
-                  <svg className="w-14 h-14 text-gray-200 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                  <p className="text-gray-300 font-semibold">Your ATS analysis will appear here</p>
+                <div className="hidden lg:flex flex-col items-center justify-center min-h-64 text-center rounded-2xl border-2 border-dashed border-gray-200 bg-white py-16 px-10">
+                  <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-4">
+                    <svg className="w-8 h-8 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                  </div>
+                  <p className="text-gray-500 font-extrabold text-lg mb-2">Your ATS analysis will appear here</p>
+                  <p className="text-gray-400 text-sm max-w-sm mb-6">
+                    The freemium analyzer provides the ATS score only.
+                    Upgrade to get detailed feedback on strengths, improvements, and spelling mistakes.
+                  </p>
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 text-xs font-bold animate-pulse">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    Analyze your resume with 3 credits for full report
+                  </div>
                 </div>
               )}
 

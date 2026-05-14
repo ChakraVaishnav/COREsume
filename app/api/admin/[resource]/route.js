@@ -12,6 +12,7 @@ const RESOURCE_CONFIG = {
   jobs: { model: "job", idType: "string", orderBy: { createdAt: "desc" } },
   jobUsage: { model: "jobUsage", idType: "string", orderBy: { updatedAt: "desc" } },
   featureUsage: { model: "featureUsage", idType: "string", orderBy: { updatedAt: "desc" } },
+  creditHistory: { model: "creditHistory", idType: "string", orderBy: { createdAt: "desc" } },
 };
 
 const RESOURCE_SEARCH_CONFIG = {
@@ -59,6 +60,10 @@ const RESOURCE_SEARCH_CONFIG = {
   featureUsage: {
     strings: ["id", "date"],
     numbers: ["userId", "atsUsed", "pdfUsed"],
+  },
+  creditHistory: {
+    strings: ["id", "reason"],
+    numbers: ["userId", "credits"],
   },
 };
 
@@ -150,6 +155,16 @@ export async function GET(req, context) {
     const where = buildSearchWhere(resource, query);
 
     const model = prisma[cfg.model];
+    if (!model) {
+      return withAdminCookies(
+        NextResponse.json({ 
+          error: "CLIENT_OUT_OF_SYNC", 
+          message: `The Prisma Client is out of sync. Please restart the dev server to access the "${resource}" resource.` 
+        }, { status: 500 }),
+        admin.cookieHeaders
+      );
+    }
+
     const [items, total] = await Promise.all([
       model.findMany({
         where,
@@ -211,7 +226,17 @@ export async function POST(req, context) {
       );
     }
 
-    const created = await prisma[cfg.model].create({ data });
+    const model = prisma[cfg.model];
+    if (!model) {
+      return withAdminCookies(
+        NextResponse.json({ 
+          error: "CLIENT_OUT_OF_SYNC", 
+          message: `The Prisma Client is out of sync. Please restart the dev server.` 
+        }, { status: 500 }),
+        admin.cookieHeaders
+      );
+    }
+    const created = await model.create({ data });
 
     return withAdminCookies(
       NextResponse.json({ message: "Created", item: created }, { status: 201 }),

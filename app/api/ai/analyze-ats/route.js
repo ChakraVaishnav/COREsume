@@ -323,7 +323,20 @@ function sanitizeImprovements(improvements) {
 
 // ─── Response Builder ─────────────────────────────────────────────────────────
 
-function buildFinalResponse({ analysisData, score, tierLabel, detectedSpellingMistakes = [] }) {
+function buildFinalResponse({ analysisData, score, tierLabel, detectedSpellingMistakes = [], isPremium = false }) {
+  if (!isPremium) {
+    return {
+      atsScore: score,
+      tier: tierLabel,
+      summary: "You are using the free analyzer. Upgrade to premium for detailed feedback on strengths, improvements, and spelling mistakes.",
+      strengths: [],
+      improvements: [],
+      spellingMistakes: [],
+      formattingTips: [],
+      isFree: true
+    };
+  }
+
   const spellingErrors = Number(analysisData.spellingErrors) || 0;
   const llmSpellingMistakes = Array.isArray(analysisData.spellingMistakes)
     ? analysisData.spellingMistakes.map((item) => String(item || "").trim()).filter(Boolean)
@@ -345,6 +358,7 @@ function buildFinalResponse({ analysisData, score, tierLabel, detectedSpellingMi
     improvements: sanitizeImprovements(analysisData.improvements),
     spellingMistakes,
     formattingTips: Array.isArray(analysisData.formattingTips) ? analysisData.formattingTips : [],
+    isFree: false
   };
 }
 
@@ -426,6 +440,7 @@ export async function POST(req) {
           score,
           tierLabel,
           detectedSpellingMistakes,
+          isPremium: useCredit
         })
       );
     }
@@ -458,6 +473,7 @@ export async function POST(req) {
           score,
           tierLabel,
           detectedSpellingMistakes,
+          isPremium: useCredit
         })
       );
     }
@@ -474,6 +490,7 @@ export async function POST(req) {
       score,
       tierLabel,
       detectedSpellingMistakes,
+      isPremium: useCredit
     });
 
     debugLog("[ATS_ANALYZE_SUCCESS]", {

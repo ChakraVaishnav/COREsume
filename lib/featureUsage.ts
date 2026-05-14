@@ -1,5 +1,30 @@
 import { prisma } from '@/lib/prisma'
 
+export async function logCreditHistory(userId: number, credits: number, reason: string) {
+  try {
+    // If the prisma client is already generated with the new model
+    if (prisma.creditHistory) {
+      await prisma.creditHistory.create({
+        data: {
+          userId,
+          credits,
+          reason
+        }
+      });
+    } else {
+      // Fallback for when the dev server is locking the prisma client generation
+      const id = `ch_${Math.random().toString(36).substring(2, 15)}`;
+      await prisma.$executeRaw`
+        INSERT INTO "CreditHistory" ("id", "userId", "credits", "reason", "createdAt")
+        VALUES (${id}, ${userId}, ${credits}, ${reason}, NOW())
+      `;
+    }
+  } catch (err) {
+    console.error("Failed to log credit history:", err);
+  }
+}
+
+
 export function getTodayIST(): string {
   return new Date().toLocaleDateString('en-CA', { 
     timeZone: 'Asia/Kolkata' 
@@ -108,6 +133,7 @@ export async function incrementAts(userId: number, usedCredit: boolean) {
       where: { id: userId },
       data: { creds: { decrement: 3 } }
     })
+    await logCreditHistory(userId, -3, "Premium ATS Score Analysis")
   }
   
   await prisma.user.update({
@@ -129,6 +155,7 @@ export async function incrementPdf(userId: number, usedCredit: boolean) {
       where: { id: userId },
       data: { creds: { decrement: 3 } }
     })
+    await logCreditHistory(userId, -3, "Premium Resume Extraction from PDF")
   }
   
   await prisma.user.update({

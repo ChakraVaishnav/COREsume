@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticateRequest } from "@/lib/auth/session";
 import crypto from "crypto";
+import { logCreditHistory } from "@/lib/featureUsage";
 
 export async function POST(req) {
   try {
@@ -63,6 +64,10 @@ export async function POST(req) {
         { status: 404 }
       );
     }
+
+    // Step 3: Log credit history
+    const planName = creditsToAdd === 5 ? "Starter Pack" : creditsToAdd === 10 ? "Value Pack" : creditsToAdd === 25 ? "Ultra Value Pack" : "Credit Pack";
+    await logCreditHistory(auth.userId, creditsToAdd, `Purchased ${planName}`);
 
     return NextResponse.json({ success: true });
   } catch (error) {
