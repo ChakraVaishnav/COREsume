@@ -213,7 +213,7 @@ export default function ImproveAccordingToJdPage() {
       // Save to React State & localStorage to persist through refresh
       setIsPremiumResult(useCredit);
       localStorage.setItem("jdEnhancedIsPremium", String(useCredit));
-      
+
       const parsedSuggestions = data.suggestions || [];
       setSuggestions(parsedSuggestions);
       localStorage.setItem("jdEnhancedSuggestions", JSON.stringify(parsedSuggestions));
@@ -241,11 +241,11 @@ export default function ImproveAccordingToJdPage() {
   const handleRefineTemplate = (slug) => {
     if (!enhancedData) return;
     setShowTemplates(false);
-    
+
     // Save to resumeFormData to trigger builder loading
     localStorage.setItem("jdEnhancedResumeData", JSON.stringify(enhancedData));
     localStorage.setItem("resumeTemplate", slug);
-    
+
     // Redirect with extracted source
     router.push(`/resume-form?template=${slug}&extracted=1&source=jd`);
   };
@@ -263,7 +263,7 @@ export default function ImproveAccordingToJdPage() {
 
       <main className="grow pt-20 pb-16">
         <div className="w-full px-4 sm:px-8">
-          
+
           {/* Header area with back button and usage badge */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-6 mb-6 gap-4">
             <button
@@ -287,7 +287,7 @@ export default function ImproveAccordingToJdPage() {
 
           {/* Core Panel Split Grid */}
           <div className="flex flex-col lg:flex-row gap-8 items-start">
-            
+
             {/* ── LEFT: Upload & Inputs Panel ── */}
             <div className="w-full lg:w-110 lg:shrink-0 bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
               <h1 className="text-2xl font-extrabold text-black mb-1">Tailor Resume to JD</h1>
@@ -304,13 +304,12 @@ export default function ImproveAccordingToJdPage() {
                 onDragLeave={() => setDragOver(false)}
                 onDrop={handleDrop}
                 onClick={() => fileRef.current?.click()}
-                className={`flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-8 cursor-pointer transition-all duration-200 mb-5 ${
-                  dragOver
+                className={`flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-8 cursor-pointer transition-all duration-200 mb-5 ${dragOver
                     ? "border-yellow-400 bg-yellow-50"
                     : file
-                    ? "border-emerald-400 bg-emerald-50"
-                    : "border-gray-200 bg-gray-50/30 hover:border-yellow-400 hover:bg-yellow-50"
-                }`}
+                      ? "border-emerald-400 bg-emerald-50"
+                      : "border-gray-200 bg-gray-50/30 hover:border-yellow-400 hover:bg-yellow-50"
+                  }`}
               >
                 <input
                   ref={fileRef}
@@ -441,7 +440,7 @@ export default function ImproveAccordingToJdPage() {
 
             {/* ── RIGHT: Output & Results Display Panel ── */}
             <div className="flex-1 w-full min-w-0">
-              
+
               {/* State A: Normal Empty Placeholder */}
               {!suggestions.length && !enhancing && (
                 <div className="hidden lg:flex flex-col items-center justify-center min-h-[500px] text-center rounded-2xl border-2 border-dashed border-gray-200 bg-white py-16 px-10">
@@ -455,7 +454,7 @@ export default function ImproveAccordingToJdPage() {
                     Upload your PDF and input a Job Description. AI will automatically evaluate alignment and rewrite your descriptions.
                   </p>
                   <div className="inline-flex items-center gap-2 px-4 py-2.5 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 text-xs font-bold">
-                    🚀 Premium optimization calculates precise before/after scoring.
+                    Premium optimization calculates precise before/after scoring.
                   </div>
                 </div>
               )}
@@ -490,7 +489,7 @@ export default function ImproveAccordingToJdPage() {
               {/* State C: Render Results */}
               {suggestions.length > 0 && !enhancing && (
                 <div className="space-y-6 animate-fade-in">
-                  
+
                   {/* Score progression panel */}
                   {isPremiumResult ? (
                     /* Premium Layout: Before vs After Side-by-Side */
@@ -501,7 +500,7 @@ export default function ImproveAccordingToJdPage() {
                       </h2>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
-                        
+
                         {/* Initial Score */}
                         <div className="flex items-center gap-4 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
                           <div className="relative shrink-0 w-24 h-24">
