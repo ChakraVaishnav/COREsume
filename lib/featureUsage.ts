@@ -33,11 +33,18 @@ export function getTodayIST(): string {
 
 export function getNextMidnightIST(): string {
   const now = new Date()
-  const ist = new Date(now.toLocaleString('en-US', { 
-    timeZone: 'Asia/Kolkata' 
-  }))
-  ist.setHours(24, 0, 0, 0)
-  return ist.toISOString()
+  const istOffsetMs = 5.5 * 60 * 60 * 1000
+  const currentIST = new Date(now.getTime() + istOffsetMs)
+  
+  const nextMidnightIST = new Date(Date.UTC(
+    currentIST.getUTCFullYear(),
+    currentIST.getUTCMonth(),
+    currentIST.getUTCDate() + 1,
+    0, 0, 0, 0
+  ))
+  
+  const nextMidnightUTC = new Date(nextMidnightIST.getTime() - istOffsetMs)
+  return nextMidnightUTC.toISOString()
 }
 
 export async function getOrCreateFeatureUsage(userId: number) {
@@ -128,13 +135,13 @@ export async function checkJdLimit(userId: number) {
   })
   
   const credits = user?.creds || 0
-  const allowed = usage!.jdUsed < 1 || credits >= 5
+  const allowed = usage!.jdUsed < 2 || credits >= 5
   
   return {
     allowed,
     freeUsed: usage!.jdUsed,
-    freeLimit: 1,
-    freeSearchesRemainingToday: Math.max(0, 1 - usage!.jdUsed),
+    freeLimit: 2,
+    freeSearchesRemainingToday: Math.max(0, 2 - usage!.jdUsed),
     creditsRemaining: credits,
     creditsRequired: 5,
     freeResetsAt: getNextMidnightIST()
