@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { saveFileToIDB, loadFileFromIDB } from "@/utils/idb";
 
 const TEMPLATES = [
   { name: "Classic Professional", slug: "classic-professional" },
@@ -30,17 +31,10 @@ function formatCountdown(resetsAt) {
 
 function renderSuggestionText(text) {
   if (!text) return "";
-  const parts = text.split(/(\*\*.*?\*\*)/g);
-  return parts.map((part, index) => {
-    if (part.startsWith("**") && part.endsWith("**")) {
-      return (
-        <strong key={index} className="font-extrabold text-black">
-          {part.slice(2, -2)}
-        </strong>
-      );
-    }
-    return part;
-  });
+  let htmlText = text
+    .replace(/\*\*(.*?)\*\*/g, '<strong class="font-extrabold text-black">$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em class="font-medium italic text-black">$1</em>');
+  return <span dangerouslySetInnerHTML={{ __html: htmlText }} />;
 }
 
 export default function ImproveAccordingToJdPage() {
@@ -101,25 +95,12 @@ export default function ImproveAccordingToJdPage() {
     const savedJd = localStorage.getItem("jdEnhancedJdText");
     if (savedJd) setJdText(savedJd);
 
-    // Persisted PDF File state (reconstruct File object from base64 data)
-    const savedFileName = localStorage.getItem("jdEnhancedFileName");
-    const savedFileData = localStorage.getItem("jdEnhancedFileData");
-    if (savedFileName && savedFileData) {
-      try {
-        const arr = savedFileData.split(',');
-        const mime = arr[0].match(/:(.*?);/)[1];
-        const bstr = atob(arr[1]);
-        let n = bstr.length;
-        const u8arr = new Uint8Array(n);
-        while (n--) {
-          u8arr[n] = bstr.charCodeAt(n);
-        }
-        const reconstructedFile = new File([u8arr], savedFileName, { type: mime });
-        setFile(reconstructedFile);
-      } catch (e) {
-        console.error("Failed to reconstruct saved PDF file:", e);
+    // Persisted PDF File state from IndexedDB
+    loadFileFromIDB('jdEnhancedFile').then(savedFile => {
+      if (savedFile) {
+        setFile(savedFile);
       }
-    }
+    }).catch(e => console.error("Failed to load PDF from IDB", e));
   }, []);
 
   const handleFile = (f) => {
@@ -127,17 +108,10 @@ export default function ImproveAccordingToJdPage() {
       setFile(f);
       setError("");
 
-      // Save to localStorage as Base64 Data URL so it persists on refresh
-      const reader = new FileReader();
-      reader.onload = () => {
-        try {
-          localStorage.setItem("jdEnhancedFileName", f.name);
-          localStorage.setItem("jdEnhancedFileData", reader.result);
-        } catch (e) {
-          console.warn("PDF too large to persist in localStorage directly:", e);
-        }
-      };
-      reader.readAsDataURL(f);
+      // Save to IndexedDB so it persists on refresh
+      saveFileToIDB(f, 'jdEnhancedFile').catch(e => {
+        console.warn("Failed to persist PDF to IDB:", e);
+      });
     } else {
       setError("Please upload a valid PDF file.");
     }
