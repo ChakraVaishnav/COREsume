@@ -576,7 +576,7 @@ function getScoreTier(score) {
   return { label: "Needs Work", desc: "Needs Work — COREsume Can Fix This", ringHex: "#ef4444", glowHex: "#ef4444" };
 }
 
-export function ShareModal({ score, summary, strengths, onClose }) {
+function ShareModal({ score, summary, strengths, onClose }) {
   const [generatingFor, setGeneratingFor] = useState(null);
   const [sharedFor, setSharedFor] = useState(null);
   const [isMobileShare, setIsMobileShare] = useState(false);
