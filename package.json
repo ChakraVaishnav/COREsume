@@ -23,6 +23,7 @@
     "framer-motion": "^12.23.6",
     "groq-sdk": "^1.1.2",
     "html-to-docx": "^1.8.0",
+    "html-to-image": "^1.11.13",
     "html2canvas": "^1.4.1",
     "jobspy-js": "^1.7.0",
     "jsonwebtoken": "^9.0.2",

@@ -1,10 +1,10 @@
-﻿"use client";
+"use client";
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import html2canvas from "html2canvas";
+import { toBlob } from "html-to-image";
 
 function renderSuggestionText(text) {
   if (!text) return "";
@@ -567,6 +567,8 @@ function ResultCard({ title, colorClass, icon, iconColor, children }) {
   );
 }
 
+// NOTE: This will be injected into ats-score/page.jsx
+
 function getScoreTier(score) {
   if (score >= 90) return { label: "Elite ATS Score", desc: "Elite ATS Score — Top Tier Resume", ringHex: "#10b981", glowHex: "#10b981" };
   if (score >= 75) return { label: "Strong ATS Score", desc: "Strong ATS Score — Above Average", ringHex: "#3b82f6", glowHex: "#3b82f6" };
@@ -574,34 +576,36 @@ function getScoreTier(score) {
   return { label: "Needs Work", desc: "Needs Work — COREsume Can Fix This", ringHex: "#ef4444", glowHex: "#ef4444" };
 }
 
-function ShareModal({ score, summary, strengths, onClose }) {
+export function ShareModal({ score, summary, strengths, onClose }) {
   const [generatingFor, setGeneratingFor] = useState(null);
   const [sharedFor, setSharedFor] = useState(null);
   const [isMobileShare, setIsMobileShare] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [confirmPlatform, setConfirmPlatform] = useState(null);
 
   useEffect(() => {
     setIsMobileShare(typeof navigator !== "undefined" && "share" in navigator);
   }, []);
 
   const tier = getScoreTier(score || 0);
-  const circumference = 2 * Math.PI * 50;
-  const dashOffset = circumference - (score / 100) * circumference;
 
-  // Build a PNG blob from the hidden card element
   const buildCardBlob = () =>
     new Promise(async (resolve, reject) => {
-      const element = document.getElementById("ats-share-card");
+      const element = document.getElementById("ats-share-card-preview");
       if (!element) return reject(new Error("Card element not found"));
       try {
-        const canvas = await html2canvas(element, {
-          useCORS: true, scale: 2, logging: false, backgroundColor: "#020617",
+        const blob = await toBlob(element, {
+          cacheBust: true,
+          pixelRatio: 4, // ultra high res output 4x
+          style: {
+            backgroundColor: "#020617",
+          }
         });
-        canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("Blob null")), "image/png");
+        if (blob) resolve(blob);
+        else reject(new Error("Blob null"));
       } catch (e) { reject(e); }
     });
 
-  // Download-only (standalone / Instagram)
   const downloadCard = async (platformName) => {
     setGeneratingFor(platformName);
     try {
@@ -618,7 +622,6 @@ function ShareModal({ score, summary, strengths, onClose }) {
     finally { setGeneratingFor(null); }
   };
 
-  // Mobile native share — sends the image file directly to any app
   const shareMobile = async () => {
     setGeneratingFor("mobile");
     try {
@@ -640,9 +643,13 @@ function ShareModal({ score, summary, strengths, onClose }) {
     } finally { setGeneratingFor(null); }
   };
 
-  // Download the image THEN open the platform — user just attaches it
-  const shareWithCard = async (platformName, openPlatform) => {
-    setGeneratingFor(platformName);
+  const handlePlatformClick = (p) => {
+    setConfirmPlatform(p);
+  };
+
+  const confirmDownloadAndShare = async () => {
+    if (!confirmPlatform) return;
+    setGeneratingFor(confirmPlatform.label);
     try {
       const blob = await buildCardBlob();
       const url = URL.createObjectURL(blob);
@@ -651,16 +658,18 @@ function ShareModal({ score, summary, strengths, onClose }) {
       link.href = url;
       link.click();
       URL.revokeObjectURL(url);
-      setSharedFor(platformName);
+      setSharedFor(confirmPlatform.label);
       setTimeout(() => setSharedFor(null), 10000);
     } catch (e) { console.error("Card generation failed:", e); }
     finally {
       setGeneratingFor(null);
-      setTimeout(() => openPlatform(), 400);
+      setTimeout(() => {
+        confirmPlatform.openPlatform();
+        setConfirmPlatform(null);
+      }, 400);
     }
   };
 
-  // Platform openers — all use coresume.in
   const openLinkedIn = () => {
     const text = "Just scored " + score + "/100 on the ATS Resume Checker by COREsume!\n\nCOREsume scans your resume against ATS algorithms so you never get filtered out before a recruiter sees it.\n\nhttps://coresume.in\n\n#Resume #ATS #CareerTips #JobSearch";
     window.open("https://www.linkedin.com/feed/?shareActive=true&text=" + encodeURIComponent(text), "_blank");
@@ -688,329 +697,238 @@ function ShareModal({ score, summary, strengths, onClose }) {
 
   const platforms = [
     {
-      id: "linkedin", label: "LinkedIn",
-      onClick: () => shareWithCard("LinkedIn", openLinkedIn),
-      hoverBg: "#eff6ff", hoverBorder: "#bfdbfe",
-      icon: (
-        <svg style={{ width: "16px", height: "16px", flexShrink: 0, color: "#2563eb" }} fill="currentColor" viewBox="0 0 24 24">
-          <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
-        </svg>
-      ),
+      id: "linkedin", label: "LinkedIn", openPlatform: openLinkedIn, hoverBg: "#eff6ff", hoverBorder: "#bfdbfe",
+      icon: <svg style={{ width: "20px", height: "20px", color: "#2563eb" }} fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" /></svg>,
     },
     {
-      id: "x", label: "X / Twitter",
-      onClick: () => shareWithCard("X / Twitter", openX),
-      hoverBg: "#f9fafb", hoverBorder: "#9ca3af",
-      icon: (
-        <svg style={{ width: "16px", height: "16px", flexShrink: 0, color: "#000" }} fill="currentColor" viewBox="0 0 24 24">
-          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-        </svg>
-      ),
+      id: "x", label: "X / Twitter", openPlatform: openX, hoverBg: "#f9fafb", hoverBorder: "#9ca3af",
+      icon: <svg style={{ width: "20px", height: "20px", color: "#000" }} fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>,
     },
     {
-      id: "whatsapp", label: "WhatsApp",
-      onClick: () => shareWithCard("WhatsApp", openWhatsApp),
-      hoverBg: "#f0fdf4", hoverBorder: "#6ee7b7",
-      icon: (
-        <svg style={{ width: "16px", height: "16px", flexShrink: 0 }} fill="#25D366" viewBox="0 0 24 24">
-          <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.457L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.625 1.451 5.403.002 9.789-4.382 9.792-9.788.001-2.593-1.01-5.032-2.848-6.871-1.838-1.839-4.28-2.848-6.87-2.849-5.409 0-9.796 4.386-9.798 9.793-.001 1.47.387 2.909 1.127 4.179l-.973 3.55 3.645-.956z" />
-        </svg>
-      ),
+      id: "whatsapp", label: "WhatsApp", openPlatform: openWhatsApp, hoverBg: "#f0fdf4", hoverBorder: "#6ee7b7",
+      icon: <svg style={{ width: "20px", height: "20px" }} fill="#25D366" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a5.8 5.8 0 00-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" /></svg>,
     },
     {
-      id: "reddit", label: "Reddit",
-      onClick: () => shareWithCard("Reddit", openReddit),
-      hoverBg: "#fff7ed", hoverBorder: "#fed7aa",
-      icon: (
-        <svg style={{ width: "16px", height: "16px", flexShrink: 0, color: "#f97316" }} fill="currentColor" viewBox="0 0 24 24">
-          <path d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.85-1.64-6.29-1.72l1.35-4.24 4.37.94c.04 1.13.97 2.03 2.1 2.03 1.15 0 2.08-.93 2.08-2.08s-.93-2.08-2.08-2.08c-1.05 0-1.92.77-2.06 1.77l-4.78-1.02c-.16-.04-.33.03-.4.18l-1.57 4.96c-2.48.06-4.73.7-6.39 1.72-.56-.76-1.46-1.24-2.42-1.24-1.65 0-3 1.35-3 3 0 1.05.54 1.97 1.37 2.51-.08.49-.12.99-.12 1.49 0 4.14 4.93 7.5 11 7.5s11-3.36 11-7.5c0-.5-.04-1-.12-1.49.83-.54 1.37-1.46 1.37-2.51zm-18 1c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm11.5 5.08c-.88.88-2.53.96-3.5.96s-2.62-.08-3.5-.96c-.19-.19-.19-.51 0-.7.19-.19.51-.19.7 0 .62.62 1.99.76 2.8.76s2.18-.14 2.8-.76c.19-.19.51-.19.7 0 .19.19.19.51 0 .7zm-.62-3.08c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z" />
-        </svg>
-      ),
+      id: "reddit", label: "Reddit", openPlatform: openReddit, hoverBg: "#fff7ed", hoverBorder: "#fed7aa",
+      icon: <svg style={{ width: "20px", height: "20px", color: "#f97316" }} fill="currentColor" viewBox="0 0 24 24"><path d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.85-1.64-6.29-1.72l1.35-4.24 4.37.94c.04 1.13.97 2.03 2.1 2.03 1.15 0 2.08-.93 2.08-2.08s-.93-2.08-2.08-2.08c-1.05 0-1.92.77-2.06 1.77l-4.78-1.02c-.16-.04-.33.03-.4.18l-1.57 4.96c-2.48.06-4.73.7-6.39 1.72-.56-.76-1.46-1.24-2.42-1.24-1.65 0-3 1.35-3 3 0 1.05.54 1.97 1.37 2.51-.08.49-.12.99-.12 1.49 0 4.14 4.93 7.5 11 7.5s11-3.36 11-7.5c0-.5-.04-1-.12-1.49.83-.54 1.37-1.46 1.37-2.51zm-18 1c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm11.5 5.08c-.88.88-2.53.96-3.5.96s-2.62-.08-3.5-.96c-.19-.19-.19-.51 0-.7.19-.19.51-.19.7 0 .62.62 1.99.76 2.8.76s2.18-.14 2.8-.76c.19-.19.51-.19.7 0 .19.19.19.51 0 .7zm-.62-3.08c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z" /></svg>,
     },
     {
-      id: "facebook", label: "Facebook",
-      onClick: () => shareWithCard("Facebook", openFacebook),
-      hoverBg: "#eff6ff", hoverBorder: "#bfdbfe",
-      icon: (
-        <svg style={{ width: "16px", height: "16px", flexShrink: 0, color: "#1d4ed8" }} fill="currentColor" viewBox="0 0 24 24">
-          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-        </svg>
-      ),
+      id: "facebook", label: "Facebook", openPlatform: openFacebook, hoverBg: "#eff6ff", hoverBorder: "#bfdbfe",
+      icon: <svg style={{ width: "20px", height: "20px", color: "#1d4ed8" }} fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>,
     },
     {
       id: "copy", label: copiedLink ? "Copied!" : "Copy Link",
       onClick: copyLink,
       hoverBg: "#f9fafb", hoverBorder: "#d1d5db",
-      icon: (
-        <svg style={{ width: "16px", height: "16px", flexShrink: 0, color: "#6b7280" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-        </svg>
-      ),
+      icon: <svg style={{ width: "20px", height: "20px", color: "#6b7280" }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>,
     },
   ];
 
   const isLoading = generatingFor !== null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-3 sm:p-6 overflow-y-auto">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col md:flex-row my-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-3 sm:p-6 overflow-y-auto font-sans">
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col md:flex-row my-4">
 
-        {/* Left: Card Preview */}
-        <div style={{ backgroundColor: "#0f172a", flexShrink: 0 }} className="md:w-[46%] p-6 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-gray-800">
-          <p style={{ color: "#9ca3af", fontSize: "10px", fontWeight: 800, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>
+        {/* Left: Beautiful Card Preview */}
+        <div style={{ backgroundColor: "#020617" }} className="md:w-1/2 p-10 flex flex-col items-center justify-center relative overflow-hidden">
+          <p style={{ color: "#9ca3af", fontSize: "11px", fontWeight: 800, letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "24px", position: "relative", zIndex: 10 }}>
             Card Preview
           </p>
-          <div style={{ width: "230px", height: "230px", borderRadius: "16px", overflow: "hidden", border: "1px solid #1e293b", boxShadow: "0 20px 50px rgba(0,0,0,0.5)", position: "relative", flexShrink: 0 }}>
-            <div style={{ position: "absolute", inset: 0, backgroundColor: "#020617", display: "flex", flexDirection: "column", padding: "14px", alignItems: "center", justifyContent: "space-between", fontFamily: "sans-serif", color: "#fff" }}>
-              <div style={{ position: "absolute", width: "120px", height: "120px", borderRadius: "50%", background: "#7c3aed", filter: "blur(40px)", opacity: 0.2, top: "-20px", left: "-20px" }} />
-              <div style={{ position: "absolute", width: "120px", height: "120px", borderRadius: "50%", background: "#eab308", filter: "blur(40px)", opacity: 0.2, bottom: "-20px", right: "-20px" }} />
-              <div style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", position: "relative", zIndex: 10 }}>
+
+          {/* This is the capture area! Notice the inline styles on this div are perfect for the final image wrapper */}
+          <div id="ats-share-card-preview" style={{ position: "relative", width: "320px", height: "320px", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+            <div style={{ position: "absolute", width: "300px", height: "300px", borderRadius: "50%", background: tier.glowHex, filter: "blur(100px)", opacity: 0.15, top: "50%", left: "50%", transform: "translate(-50%, -50%)" }} />
+            
+            <div style={{ width: "280px", height: "280px", borderRadius: "24px", background: "linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 30px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)", position: "relative", zIndex: 10, padding: "20px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-between", backdropFilter: "blur(20px)" }}>
+              
+              <div style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
-                  <div style={{ fontSize: "9px", fontWeight: 900, letterSpacing: "0.2em", color: "#fff" }}>COREsume</div>
-                  <div style={{ fontSize: "6px", color: "#9ca3af", fontWeight: 600 }}>ATS OPTIMIZER</div>
+                  <div style={{ fontSize: "12px", fontWeight: 900, letterSpacing: "0.15em", color: "#fff" }}>COREsume</div>
+                  <div style={{ fontSize: "8px", color: "#9ca3af", fontWeight: 700, marginTop: "2px" }}>ATS OPTIMIZER</div>
                 </div>
-                <div style={{ padding: "2px 6px", borderRadius: "9999px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", fontSize: "5px", fontWeight: 900, color: "#facc15", letterSpacing: "0.1em" }}>VERIFIED</div>
+                <div style={{ padding: "4px 10px", borderRadius: "9999px", background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)", fontSize: "7px", fontWeight: 900, color: "#facc15", letterSpacing: "0.1em" }}>VERIFIED</div>
               </div>
-              <div style={{ position: "relative", width: "80px", height: "80px", flexShrink: 0, zIndex: 10 }}>
-                <svg style={{ width: "100%", height: "100%", transform: "rotate(-90deg)" }} viewBox="0 0 100 100">
-                  <circle cx="50" cy="50" r="41" fill="none" stroke="#1e293b" strokeWidth="6" />
-                  <circle cx="50" cy="50" r="41" fill="none" strokeWidth="6" strokeLinecap="round"
-                    strokeDasharray={2 * Math.PI * 41}
-                    strokeDashoffset={2 * Math.PI * 41 - (score / 100) * (2 * Math.PI * 41)}
-                    stroke={tier.ringHex} />
+              
+              <div style={{ position: "relative", width: "120px", height: "120px", flexShrink: 0 }}>
+                <svg style={{ width: "100%", height: "100%", transform: "rotate(-90deg)", transformOrigin: "50% 50%" }} viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8" />
+                  <circle cx="50" cy="50" r="42" fill="none" strokeWidth="8" strokeLinecap="round"
+                    strokeDasharray={2 * Math.PI * 42}
+                    strokeDashoffset={2 * Math.PI * 42 - (score / 100) * (2 * Math.PI * 42)}
+                    stroke={tier.ringHex} 
+                    style={{ filter: `drop-shadow(0 0 8px ${tier.ringHex}80)` }} />
                 </svg>
                 <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                  <span style={{ fontSize: "22px", fontWeight: 900, color: "#fff", lineHeight: 1 }}>{score}</span>
-                  <span style={{ fontSize: "5px", color: "#6b7280", fontWeight: 700, textTransform: "uppercase", marginTop: "2px" }}>ATS Score</span>
+                  <span style={{ fontSize: "36px", fontWeight: 900, color: "#fff", lineHeight: 1, textShadow: "0 4px 12px rgba(0,0,0,0.5)" }}>{score}</span>
+                  <span style={{ fontSize: "8px", color: "#9ca3af", fontWeight: 800, textTransform: "uppercase", marginTop: "4px", letterSpacing: "0.1em" }}>Score</span>
                 </div>
               </div>
-              <div style={{ position: "relative", zIndex: 10, width: "100%", textAlign: "center" }}>
-                <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "5px 10px", borderRadius: "10px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", maxWidth: "100%" }}>
-                  <span style={{ fontSize: "8px", fontWeight: 700, color: "#fff" }}>{tier.desc}</span>
+              
+              <div style={{ width: "100%", textAlign: "center" }}>
+                <div style={{ display: "inline-flex", alignItems: "center", padding: "8px 16px", borderRadius: "100px", background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                  <span style={{ fontSize: "10px", fontWeight: 700, color: "#fff" }}>{tier.label}</span>
                 </div>
               </div>
-              <div style={{ width: "100%", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "6px", display: "flex", justifyContent: "space-between", alignItems: "center", position: "relative", zIndex: 10, fontSize: "6px", color: "#6b7280", fontWeight: 600 }}>
+              
+              <div style={{ width: "100%", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "10px", display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "8px", color: "#6b7280", fontWeight: 600 }}>
                 <span>coresume.in</span>
-                <span style={{ color: "#facc15", fontWeight: 700 }}>Check yours free</span>
+                <span style={{ color: "#facc15" }}>Check yours free</span>
               </div>
             </div>
           </div>
-          <p style={{ color: "#6b7280", fontSize: "10px", marginTop: "12px", textAlign: "center", lineHeight: 1.6, maxWidth: "220px" }}>
-            The scorecard image auto-downloads when you click any share button.
-          </p>
         </div>
 
         {/* Right: Sharing */}
-        <div className="flex-1 p-5 flex flex-col gap-3 overflow-y-auto">
-          <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-            <h3 className="text-lg font-black text-black">Share Your Score</h3>
-            <button onClick={onClose} className="text-gray-400 hover:text-black transition-colors cursor-pointer">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        <div className="md:w-1/2 p-8 flex flex-col gap-6 overflow-y-auto bg-gray-50">
+          <div className="flex items-center justify-between pb-4 border-b border-gray-200">
+            <h3 className="text-xl font-black text-gray-900">Share Your Score</h3>
+            <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-200 text-gray-500 transition-colors cursor-pointer">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
 
-          {/* How it works */}
-          <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5">
-            <p className="text-xs font-black text-amber-800 mb-0.5">How it works</p>
-            <p className="text-[11px] text-amber-900 leading-relaxed">
-              Clicking a platform button downloads your scorecard image, then opens the platform with your post pre-filled. Attach the downloaded image to your post before sharing.
-            </p>
-          </div>
-
-          {/* Success banner */}
-          {sharedFor && sharedFor !== "download" && sharedFor !== "instagram" && (
-            <div className="rounded-xl border border-emerald-300 bg-emerald-50 px-3 py-2.5 flex items-start gap-2">
-              <svg className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-              </svg>
-              <p className="text-[11px] text-emerald-800 font-semibold leading-relaxed">
-                Scorecard downloaded! Now attach it to your {sharedFor} post before hitting Share.
-              </p>
-            </div>
-          )}
-
-          {/* Mobile native share */}
-          {isMobileShare && (
-            <button
-              onClick={shareMobile}
-              disabled={isLoading}
-              className="w-full py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 cursor-pointer transition-all disabled:opacity-60"
-              style={{ backgroundColor: "#0f172a", color: "#fff" }}
-            >
-              {generatingFor === "mobile" ? (
-                <>
-                  <svg className="w-4 h-4 animate-spin" style={{ color: "#facc15" }} fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                  </svg>
-                  Preparing image...
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4" style={{ color: "#facc15" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                  </svg>
-                  Share via Phone — sends the image directly
-                </>
-              )}
-            </button>
-          )}
-
-          {/* Platform grid */}
-          <div>
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Share on Platforms</p>
-            <div className="grid grid-cols-2 gap-2">
-              {platforms.map((p) => (
-                <button
-                  key={p.id}
-                  onClick={p.onClick}
-                  disabled={isLoading}
-                  className="flex items-center gap-2 p-2.5 rounded-xl border border-gray-200 text-left transition-all text-xs font-bold text-black cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                  onMouseEnter={e => { if (!isLoading) { e.currentTarget.style.backgroundColor = p.hoverBg; e.currentTarget.style.borderColor = p.hoverBorder; } }}
-                  onMouseLeave={e => { e.currentTarget.style.backgroundColor = ""; e.currentTarget.style.borderColor = ""; }}
-                >
-                  {generatingFor === p.label ? (
-                    <svg className="w-4 h-4 animate-spin text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                    </svg>
-                  ) : p.icon}
-                  {p.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Download + Instagram */}
-          <div>
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Download Card</p>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <button
-                onClick={() => downloadCard("download")}
-                disabled={isLoading}
-                className="flex-1 py-3 rounded-2xl font-black text-black text-xs flex items-center justify-center gap-2 cursor-pointer transition-all disabled:opacity-50"
-                style={{ backgroundColor: "#facc15" }}
-                onMouseEnter={e => { if (!isLoading) e.currentTarget.style.backgroundColor = "#eab308"; }}
-                onMouseLeave={e => { e.currentTarget.style.backgroundColor = "#facc15"; }}
-              >
-                {generatingFor === "download" ? (
-                  <>
-                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                    </svg>
-                    Creating PNG...
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                    Download Card (PNG)
-                  </>
-                )}
-              </button>
-              <button
-                onClick={() => downloadCard("instagram")}
-                disabled={isLoading}
-                className="flex-1 py-3 rounded-2xl border-2 font-bold text-sm flex items-center justify-center gap-2 cursor-pointer transition-all disabled:opacity-50"
-                style={{ border: "2px solid #e1306c", color: "#e1306c" }}
-                onMouseEnter={e => { e.currentTarget.style.backgroundColor = "#fff0f5"; }}
-                onMouseLeave={e => { e.currentTarget.style.backgroundColor = "transparent"; }}
-              >
-                {generatingFor === "instagram" ? (
-                  <svg className="w-4 h-4 animate-spin shrink-0" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                  </svg>
-                ) : (
-                  <svg className="w-4 h-4 shrink-0" fill="#e1306c" viewBox="0 0 24 24">
-                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
-                  </svg>
-                )}
-                Instagram Story
-              </button>
-            </div>
-            {sharedFor === "instagram" && (
-              <div className="mt-2 bg-gray-900 text-white rounded-xl px-4 py-2.5 text-[11px] font-semibold text-center leading-relaxed">
-                Card downloaded! Open Instagram, tap + and choose the image as your Story or Post.
+          {/* Confirm Platform Dialog */}
+          {confirmPlatform ? (
+            <div className="flex flex-col flex-1 justify-center animate-in fade-in zoom-in-95 duration-200">
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center flex flex-col items-center">
+                <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mb-4">
+                  {confirmPlatform.icon}
+                </div>
+                <h4 className="text-lg font-bold text-gray-900 mb-2">Share to {confirmPlatform.label}</h4>
+                <p className="text-sm text-gray-500 mb-6 px-4">
+                  To post your score, we need to download the image to your device first. You can attach it to your {confirmPlatform.label} post in the next step.
+                </p>
+                <div className="flex flex-col gap-3 w-full">
+                  <button 
+                    onClick={confirmDownloadAndShare}
+                    disabled={isLoading}
+                    className="w-full py-3.5 rounded-xl font-bold text-white shadow-sm flex justify-center items-center gap-2 transition-all disabled:opacity-70"
+                    style={{ backgroundColor: confirmPlatform.id === 'whatsapp' ? '#25D366' : confirmPlatform.id === 'linkedin' ? '#2563eb' : confirmPlatform.id === 'x' ? '#000' : '#0f172a' }}
+                  >
+                    {generatingFor ? (
+                      <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" /></svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                    )}
+                    {generatingFor ? "Preparing Image..." : "Download & Continue"}
+                  </button>
+                  <button 
+                    onClick={() => setConfirmPlatform(null)}
+                    disabled={isLoading}
+                    className="w-full py-3.5 rounded-xl font-bold text-gray-600 hover:bg-gray-100 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
-            )}
-          </div>
-        </div>
-      </div>
-      {/* Hidden high-res card for html2canvas — uses ONLY inline styles to avoid oklch */}
-      {/* Hidden high-res card for html2canvas — uses ONLY inline styles to avoid oklch */}
-      <div style={{ position: "absolute", left: "-9999px", top: "-9999px", overflow: "hidden" }}>
-        <div
-          id="ats-share-card"
-          style={{
-            width: "800px",
-            height: "800px",
-            backgroundColor: "#020617",
-            display: "flex",
-            flexDirection: "column",
-            padding: "48px",
-            alignItems: "center",
-            justifyContent: "space-between",
-            fontFamily: "system-ui, -apple-system, sans-serif",
-            color: "#fff",
-            position: "relative",
-            overflow: "hidden",
-          }}
-        >
-          {/* Glow blobs */}
-          <div style={{ position: "absolute", width: "420px", height: "420px", borderRadius: "50%", background: "#7c3aed", filter: "blur(140px)", opacity: 0.25, top: "-70px", left: "-70px" }} />
-          <div style={{ position: "absolute", width: "420px", height: "420px", borderRadius: "50%", background: "#eab308", filter: "blur(140px)", opacity: 0.25, bottom: "-70px", right: "-70px" }} />
-          
-          {/* Grid */}
-          <div style={{
-            position: "absolute", inset: 0, opacity: 0.03,
-            backgroundImage: "linear-gradient(to right, #808080 2px, transparent 2px), linear-gradient(to bottom, #808080 2px, transparent 2px)",
-            backgroundSize: "40px 40px",
-          }} />
-
-          {/* Header */}
-          <div style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", position: "relative", zIndex: 10 }}>
-            <div>
-              <div style={{ fontSize: "32px", fontWeight: 900, letterSpacing: "0.2em", color: "#fff", lineHeight: 1 }}>COREsume</div>
-              <div style={{ fontSize: "21px", color: "#9ca3af", fontWeight: 600, marginTop: "6px" }}>ATS OPTIMIZER</div>
             </div>
-            <div style={{ padding: "8px 20px", borderRadius: "9999px", background: "rgba(255,255,255,0.05)", border: "2px solid rgba(255,255,255,0.1)", fontSize: "18px", fontWeight: 900, color: "#facc15", letterSpacing: "0.1em" }}>VERIFIED</div>
-          </div>
+          ) : (
+            <div className="flex flex-col gap-6">
+              
+              {/* Success Banner */}
+              {sharedFor && sharedFor !== "download" && sharedFor !== "instagram" && (
+                <div className="rounded-xl border border-emerald-300 bg-emerald-50 p-4 flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+                  <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                    <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                  </div>
+                  <div>
+                    <h5 className="text-sm font-bold text-emerald-900 mb-0.5">Image Ready!</h5>
+                    <p className="text-xs text-emerald-700 leading-relaxed">
+                      Your scorecard was downloaded successfully. Make sure to attach it to your {sharedFor} post!
+                    </p>
+                  </div>
+                </div>
+              )}
 
-          {/* Score Circle */}
-          <div style={{ position: "relative", width: "280px", height: "280px", flexShrink: 0, zIndex: 10 }}>
-            <svg style={{ width: "100%", height: "100%", transform: "rotate(-90deg)" }} viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="41" fill="none" stroke="#1e293b" strokeWidth="6" />
-              <circle cx="50" cy="50" r="41" fill="none" strokeWidth="6" strokeLinecap="round"
-                strokeDasharray={2 * Math.PI * 41}
-                strokeDashoffset={2 * Math.PI * 41 - (score / 100) * (2 * Math.PI * 41)}
-                stroke={tier.ringHex} />
-            </svg>
-            <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ fontSize: "76px", fontWeight: 900, color: "#fff", lineHeight: 1 }}>{score}</span>
-              <span style={{ fontSize: "18px", color: "#6b7280", fontWeight: 700, textTransform: "uppercase", marginTop: "8px" }}>ATS Score</span>
+              {/* Mobile native share */}
+              {isMobileShare && (
+                <button
+                  onClick={shareMobile}
+                  disabled={isLoading}
+                  className="w-full py-4 px-6 rounded-2xl font-bold text-[15px] flex items-center justify-between gap-3 cursor-pointer shadow-xl shadow-gray-200 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
+                  style={{ backgroundColor: "#0f172a", color: "#fff" }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="bg-white/10 p-2 rounded-lg">
+                      {generatingFor === "mobile" ? (
+                        <svg className="w-5 h-5 animate-spin text-yellow-400" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" /></svg>
+                      ) : (
+                        <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+                      )}
+                    </div>
+                    <span>Share instantly via Phone apps</span>
+                  </div>
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                </button>
+              )}
+
+              {/* Platform list */}
+              <div>
+                <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3">Share to Socials</p>
+                <div className="grid grid-cols-2 gap-3">
+                  {platforms.map((p) => {
+                    if (p.id === 'copy') return null;
+                    return (
+                      <button
+                        key={p.id}
+                        onClick={() => handlePlatformClick(p)}
+                        disabled={isLoading}
+                        className="flex items-center gap-3 p-3.5 rounded-xl border border-gray-200 bg-white shadow-sm transition-all text-sm font-bold text-gray-700 cursor-pointer hover:border-gray-300 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed group"
+                      >
+                        <div className="transition-transform group-hover:scale-110">{p.icon}</div>
+                        {p.label}
+                      </button>
+                    )
+                  })}
+                  <button
+                    onClick={copyLink}
+                    disabled={isLoading}
+                    className="flex items-center gap-3 p-3.5 rounded-xl border border-gray-200 bg-white shadow-sm transition-all text-sm font-bold text-gray-700 cursor-pointer hover:border-gray-300 hover:shadow-md disabled:opacity-50"
+                  >
+                    <div className="transition-transform group-hover:scale-110">
+                      <svg style={{ width: "20px", height: "20px", color: "#6b7280" }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                    </div>
+                    {copiedLink ? "Link Copied!" : "Copy Link"}
+                  </button>
+                </div>
+              </div>
+
+              {/* Download Buttons */}
+              <div>
+                <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3">Quick Actions</p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    onClick={() => downloadCard("download")}
+                    disabled={isLoading}
+                    className="flex-1 py-3.5 rounded-xl font-bold text-gray-900 text-[13px] flex items-center justify-center gap-2 cursor-pointer transition-all disabled:opacity-60 shadow-sm hover:shadow-md"
+                    style={{ backgroundColor: "#facc15" }}
+                  >
+                    {generatingFor === "download" ? (
+                      <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" /></svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                    )}
+                    Save Image
+                  </button>
+                  <button
+                    onClick={() => setConfirmPlatform({ id: "instagram", label: "Instagram", icon: <svg style={{ width: "24px", height: "24px" }} fill="#e1306c" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" /></svg>, openPlatform: () => { window.open("https://instagram.com", "_blank"); } })}
+                    disabled={isLoading}
+                    className="flex-1 py-3.5 rounded-xl border-2 font-bold text-[13px] flex items-center justify-center gap-2 cursor-pointer transition-all disabled:opacity-50 hover:bg-pink-50"
+                    style={{ borderColor: "#e1306c", color: "#e1306c" }}
+                  >
+                    <svg className="w-5 h-5 shrink-0" fill="#e1306c" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" /></svg>
+                    Post to IG Story
+                  </button>
+                </div>
+              </div>
+
             </div>
-          </div>
-
-          {/* Tier Label */}
-          <div style={{ position: "relative", zIndex: 10, width: "100%", textAlign: "center" }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: "20px", padding: "18px 36px", borderRadius: "36px", background: "rgba(255,255,255,0.05)", border: "2px solid rgba(255,255,255,0.1)", maxWidth: "100%" }}>
-              <span style={{ fontSize: "28px", fontWeight: 700, color: "#fff" }}>{tier.desc}</span>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div style={{ width: "100%", borderTop: "2px solid rgba(255,255,255,0.05)", paddingTop: "20px", display: "flex", justifyContent: "space-between", alignItems: "center", position: "relative", zIndex: 10, fontSize: "21px", color: "#6b7280", fontWeight: 600 }}>
-            <span>coresume.in</span>
-            <span style={{ color: "#facc15", fontWeight: 700 }}>Check yours free</span>
-          </div>
+          )}
         </div>
       </div>
     </div>
-
   );
 }
