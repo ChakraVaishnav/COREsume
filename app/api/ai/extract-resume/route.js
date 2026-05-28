@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { generateGeminiJsonResponse } from "../../../utils/gemini";
 import { authenticateRequest } from "@/lib/auth/session";
 import { checkPdfLimit, incrementPdf } from "@/lib/featureUsage";
+import { parsePdfText } from "@/lib/pdfParser";
 
 export const runtime = "nodejs";
 
@@ -281,11 +282,13 @@ export async function POST(req) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    const arrayBuffer = await file.arrayBuffer();
-
-    const { default: pdfParse } = await import("pdf-parse");
-    const parsed = await pdfParse(Buffer.from(arrayBuffer));
-    const resumeText = preprocessResumeText(String(parsed?.text || "").replace(/\s+\n/g, "\n"));
+    let resumeText = "";
+    try {
+      resumeText = await parsePdfText(file);
+      resumeText = preprocessResumeText(resumeText);
+    } catch (pdfError) {
+      return NextResponse.json({ error: "Failed to parse PDF file." }, { status: 400 });
+    }
 
     if (!resumeText || resumeText.trim().length < 20) {
       return NextResponse.json({ error: "Failed to read PDF content" }, { status: 400 });

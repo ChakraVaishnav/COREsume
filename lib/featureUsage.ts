@@ -120,6 +120,27 @@ export async function checkPdfLimit(userId: number) {
   }
 }
 
+export async function checkJdLimit(userId: number) {
+  const usage = await getOrCreateFeatureUsage(userId)
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { creds: true }
+  })
+  
+  const credits = user?.creds || 0
+  const allowed = usage!.jdUsed < 1 || credits >= 5
+  
+  return {
+    allowed,
+    freeUsed: usage!.jdUsed,
+    freeLimit: 1,
+    freeSearchesRemainingToday: Math.max(0, 1 - usage!.jdUsed),
+    creditsRemaining: credits,
+    creditsRequired: 5,
+    freeResetsAt: getNextMidnightIST()
+  }
+}
+
 export async function incrementAts(userId: number, usedCredit: boolean) {
   const date = getTodayIST()
   
@@ -163,3 +184,21 @@ export async function incrementPdf(userId: number, usedCredit: boolean) {
     data: { pdfUploadsTotal: { increment: 1 } }
   })
 }
+
+export async function incrementJd(userId: number, usedCredit: boolean) {
+  const date = getTodayIST()
+  
+  if (!usedCredit) {
+    await prisma.featureUsage.update({
+      where: { userId_date: { userId, date } },
+      data: { jdUsed: { increment: 1 } }
+    })
+  } else {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { creds: { decrement: 5 } }
+    })
+    await logCreditHistory(userId, -5, "Premium Resume Improvement according to JD")
+  }
+}
+

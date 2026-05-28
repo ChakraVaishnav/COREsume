@@ -129,6 +129,7 @@ model FeatureUsage {
   date          String
   atsUsed       Int      @default(0)
   pdfUsed       Int      @default(0)
+  jdUsed        Int      @default(0)
   updatedAt     DateTime @updatedAt
   
   @@unique([userId, date])

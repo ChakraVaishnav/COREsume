@@ -293,6 +293,24 @@ function ResumeForm() {
     async function fetchResumeFromDB() {
       setLoading(true);
       try {
+        const source = searchParams.get("source");
+        if (source === "jd") {
+          const jdData = localStorage.getItem("jdEnhancedResumeData");
+          if (jdData) {
+            try {
+              const parsed = JSON.parse(jdData);
+              const normalized = normalizeResumeFormData(parsed);
+              setForm(normalized);
+              localStorage.setItem("resumeFormData", JSON.stringify(normalized));
+              // migrate to DB in background so they are persisted
+              api.post("/api/resume/save", { data: normalized }).catch(() => {});
+              return;
+            } catch (e) {
+              console.error("Failed to load jdEnhancedResumeData:", e);
+            }
+          }
+        }
+
         const json = await api.get("/api/resume/get");
         const data = json?.data;
         if (data && typeof data === "object") {

@@ -83,6 +83,7 @@ const CREATE_FIELD_HINTS = {
     { key: "date", type: "string" },
     { key: "atsUsed", type: "number" },
     { key: "pdfUsed", type: "number" },
+    { key: "jdUsed", type: "number" },
   ],
   creditHistory: [
     { key: "userId", type: "number" },

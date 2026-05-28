@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { authenticateRequest } from '@/lib/auth/session'
-import { checkAtsLimit, checkPdfLimit } from '@/lib/featureUsage'
+import { checkAtsLimit, checkPdfLimit, checkJdLimit } from '@/lib/featureUsage'
 
 export async function GET(req: Request, props: { params: Promise<{ feature: string }> }) {
   try {
@@ -15,6 +15,8 @@ export async function GET(req: Request, props: { params: Promise<{ feature: stri
       result = await checkAtsLimit(auth.userId)
     } else if (params.feature === 'pdf') {
       result = await checkPdfLimit(auth.userId)
+    } else if (params.feature === 'jd') {
+      result = await checkJdLimit(auth.userId)
     } else {
       return NextResponse.json({ error: "Invalid feature" }, { status: 400 })
     }
@@ -24,3 +26,4 @@ export async function GET(req: Request, props: { params: Promise<{ feature: stri
     return NextResponse.json({ error: "Server error" }, { status: 500 })
   }
 }
+

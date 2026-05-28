@@ -59,7 +59,7 @@ const RESOURCE_SEARCH_CONFIG = {
   },
   featureUsage: {
     strings: ["id", "date"],
-    numbers: ["userId", "atsUsed", "pdfUsed"],
+    numbers: ["userId", "atsUsed", "pdfUsed", "jdUsed"],
   },
   creditHistory: {
     strings: ["id", "reason"],

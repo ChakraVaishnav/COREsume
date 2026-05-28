@@ -60,6 +60,20 @@ export default function Dashboard() {
       icon: (
         <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+        </svg>
+      ),
+      title: "Improve according to JD",
+      desc: "Tailor and optimize your resume bullet points and summary to match a company's specific job description.",
+      action: "Optimize for JD →",
+      href: "/dashboard/improve-according-to-jd",
+      badge: "AI Powered",
+      comingSoon: false,
+    },
+    {
+      icon: (
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
             d="M17 8l4 4m0 0l-4 4m4-4H3m3-7h8m-8 14h8" />
         </svg>
       ),
@@ -113,9 +127,10 @@ export default function Dashboard() {
           </p>
         </section>
 
-        {/* Feature cards — 4 in a row */}
+        {/* Feature cards — 3 in a row */}
         <section className="w-full px-4 sm:px-8 pb-12">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+
             {features.map((f, i) => (
               <div key={i} className={`relative rounded-2xl overflow-hidden shadow-md border border-gray-200 bg-white flex flex-col transition-all duration-300 ${f.comingSoon ? "opacity-70" : "hover:shadow-xl hover:-translate-y-1"}`}>
                 {/* Yellow top stripe */}
