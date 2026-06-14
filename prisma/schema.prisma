@@ -29,6 +29,7 @@ model User {
   featureUsage      FeatureUsage[]
   otps              Otp[]
   creditHistory     CreditHistory[]
+  couponUsages      CouponUsage[]
 }
 
 model CreditHistory {
@@ -133,4 +134,26 @@ model FeatureUsage {
   updatedAt     DateTime @updatedAt
   
   @@unique([userId, date])
+}
+
+model Coupon {
+  id            Int           @id @default(autoincrement())
+  couponCode    String        @unique
+  couponCredits Int
+  isActive      Boolean       @default(true)
+  usages        CouponUsage[]
+}
+
+model CouponUsage {
+  id            Int      @id @default(autoincrement())
+  couponId      Int
+  coupon        Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  userId        Int      @unique  // One coupon ever per user — enforced at DB level
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  username      String
+  couponCode    String
+  couponCredits Int
+  usedAt        DateTime @default(now())
+
+  @@index([couponId])
 }

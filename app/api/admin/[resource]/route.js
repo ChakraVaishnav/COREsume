@@ -13,6 +13,8 @@ const RESOURCE_CONFIG = {
   jobUsage: { model: "jobUsage", idType: "string", orderBy: { updatedAt: "desc" } },
   featureUsage: { model: "featureUsage", idType: "string", orderBy: { updatedAt: "desc" } },
   creditHistory: { model: "creditHistory", idType: "string", orderBy: { createdAt: "desc" } },
+  coupons: { model: "coupon", idType: "int", orderBy: { id: "desc" } },
+  couponUsages: { model: "couponUsage", idType: "int", orderBy: { usedAt: "desc" } },
 };
 
 const RESOURCE_SEARCH_CONFIG = {
@@ -64,6 +66,15 @@ const RESOURCE_SEARCH_CONFIG = {
   creditHistory: {
     strings: ["id", "reason"],
     numbers: ["userId", "credits"],
+  },
+  coupons: {
+    strings: ["couponCode"],
+    numbers: ["id", "couponCredits"],
+    booleans: ["isActive"],
+  },
+  couponUsages: {
+    strings: ["username", "couponCode"],
+    numbers: ["id", "userId", "couponId", "couponCredits"],
   },
 };
 

@@ -12,6 +12,9 @@ const RESOURCE_CONFIG = {
   jobs: { model: "job", idType: "string" },
   jobUsage: { model: "jobUsage", idType: "string" },
   featureUsage: { model: "featureUsage", idType: "string" },
+  creditHistory: { model: "creditHistory", idType: "string" },
+  coupons: { model: "coupon", idType: "int" },
+  couponUsages: { model: "couponUsage", idType: "int" },
 };
 
 function getResourceConfig(resource) {
