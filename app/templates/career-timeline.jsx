@@ -33,13 +33,15 @@ export default function TimelineTemplate() {
     customSections,
   } = form;
 
+  const stripHtml = (str) => (str || '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+
   const hasContent = (section) => {
     if (!section) return false;
     if (Array.isArray(section))
       return section.some((item) =>
-        Object.values(item).some((value) => value && value.trim() !== '')
+        Object.values(item).some((value) => value && stripHtml(value) !== '')
       );
-    return section.trim() !== '';
+    return stripHtml(section) !== '';
   };
 
   return (

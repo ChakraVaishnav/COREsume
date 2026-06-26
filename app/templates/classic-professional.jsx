@@ -28,13 +28,16 @@ export default function SingleColumnTemplate() {
 
   const { personalInfo, summary, skills, education, experience, projects, achievements, interests, codingProfiles, customSections } = form;
 
+  // Helper: strip HTML tags and non-breaking spaces to check for actual text content
+  const stripHtml = (str) => (str || '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+
   // Helper function to check if a section has content
   const hasContent = (section) => {
     if (!section) return false;
     if (Array.isArray(section)) return section.some(item => 
-      Object.values(item).some(value => value && value.trim() !== '')
+      Object.values(item).some(value => value && stripHtml(value) !== '')
     );
-    return section.trim() !== '';
+    return stripHtml(section) !== '';
   };
 
   return (
