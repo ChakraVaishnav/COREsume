@@ -44,8 +44,19 @@ export default function KanbanBoard({ applications, onStatusChange, onClickAppli
         mouseX.current = e.clientX;
       }
     };
+    const handleTouchMove = (e) => {
+      if (isDragging.current && e.touches.length > 0) {
+        mouseX.current = e.touches[0].clientX;
+      }
+    };
+    
     window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+    window.addEventListener("touchmove", handleTouchMove, { passive: true });
+    
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("touchmove", handleTouchMove);
+    };
   }, []);
 
   useEffect(() => {
