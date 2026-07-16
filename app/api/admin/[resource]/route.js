@@ -15,6 +15,7 @@ const RESOURCE_CONFIG = {
   creditHistory: { model: "creditHistory", idType: "string", orderBy: { createdAt: "desc" } },
   coupons: { model: "coupon", idType: "int", orderBy: { id: "desc" } },
   couponUsages: { model: "couponUsage", idType: "int", orderBy: { usedAt: "desc" } },
+  applications: { model: "application", idType: "string", orderBy: { createdAt: "desc" } },
 };
 
 const RESOURCE_SEARCH_CONFIG = {
@@ -75,6 +76,10 @@ const RESOURCE_SEARCH_CONFIG = {
   couponUsages: {
     strings: ["username", "couponCode"],
     numbers: ["id", "userId", "couponId", "couponCredits"],
+  },
+  applications: {
+    strings: ["id", "companyName", "role", "location", "salary", "priority", "status", "jobLink"],
+    numbers: ["userId"],
   },
 };
 

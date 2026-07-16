@@ -190,6 +190,13 @@ export default function Navbar({ fixed = false }) {
               )}
 
               <Link
+                href="/dashboard/pipeline"
+                className="text-sm bg-black text-white px-4 py-2 rounded-md hover:bg-white hover:text-black border-2 border-black transition-colors font-semibold"
+              >
+                Pipeline
+              </Link>
+
+              <Link
                 href="/pricing"
                 className="text-sm bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-white hover:text-yellow-500 border-2 border-yellow-500 transition-colors font-semibold"
               >
@@ -254,6 +261,13 @@ export default function Navbar({ fixed = false }) {
                 Coupon Code
               </button>
             )}
+            <Link
+              href="/dashboard/pipeline"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-4 py-2 text-sm font-semibold text-black rounded-lg hover:bg-yellow-50"
+            >
+              Pipeline
+            </Link>
             <Link
               href="/pricing"
               onClick={() => setMobileMenuOpen(false)}

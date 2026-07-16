@@ -30,6 +30,7 @@ model User {
   otps              Otp[]
   creditHistory     CreditHistory[]
   couponUsages      CouponUsage[]
+  applications      Application[]
 }
 
 model CreditHistory {
@@ -156,4 +157,27 @@ model CouponUsage {
   usedAt        DateTime @default(now())
 
   @@index([couponId])
+}
+
+// ─── Career Pipeline ─────────────────────────────────────────────────────────
+
+model Application {
+  id              String   @id @default(cuid())
+  userId          Int
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName     String
+  role            String
+  salary          String?
+  location        String?
+  jobType         String?
+  jobLink         String?
+  notes           String?  @db.Text
+  applicationDate DateTime @default(now())
+  status          String   @default("Applied")
+  priority        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
 }

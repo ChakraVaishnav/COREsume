@@ -14,6 +14,7 @@ const RESOURCE_OPTIONS = [
   { key: "creditHistory", label: "Credit History Table" },
   { key: "coupons", label: "Coupons Table" },
   { key: "couponUsages", label: "Coupon Usage Table" },
+  { key: "applications", label: "Job Applications Table" },
 ];
 
 const PAGE_SIZE = 50;
@@ -104,6 +105,16 @@ const CREATE_FIELD_HINTS = {
     { key: "couponCode", type: "string" },
     { key: "couponCredits", type: "number" },
   ],
+  applications: [
+    { key: "userId", type: "number" },
+    { key: "companyName", type: "string" },
+    { key: "role", type: "string" },
+    { key: "location", type: "string" },
+    { key: "salary", type: "string" },
+    { key: "priority", type: "string" },
+    { key: "status", type: "string" },
+    { key: "jobLink", type: "string" },
+  ],
 };
 
 const SEARCH_PLACEHOLDERS = {
@@ -117,6 +128,7 @@ const SEARCH_PLACEHOLDERS = {
   creditHistory: "Search by reason, credits, user id...",
   coupons: "Search by coupon code, credits, active status...",
   couponUsages: "Search by username, coupon code, user id...",
+  applications: "Search by company, role, status...",
 };
 
 function prettyJson(value) {
