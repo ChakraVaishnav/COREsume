@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticateRequest } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
+import { logApiError } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -36,7 +37,7 @@ export async function GET(req, { params }) {
     const response = NextResponse.json({ job });
     return appendSetCookieHeaders(response, auth.cookieHeaders);
   } catch (err) {
-    console.error("Jobs detail error:", err);
+    logApiError("Jobs detail error:", err);
     return NextResponse.json(
       { error: "INTERNAL_ERROR", message: "Something went wrong." },
       { status: 500 }
@@ -91,7 +92,7 @@ export async function DELETE(req, { params }) {
     const response = NextResponse.json({ message: "Deleted", id: jobId });
     return appendSetCookieHeaders(response, auth.cookieHeaders);
   } catch (err) {
-    console.error("Jobs delete error:", err);
+    logApiError("Jobs delete error:", err);
     return NextResponse.json(
       { error: "INTERNAL_ERROR", message: "Something went wrong." },
       { status: 500 }

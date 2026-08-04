@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticateRequest } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
+import { logApiError } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -23,7 +24,7 @@ export async function GET(req) {
     );
     return appendSetCookieHeaders(response, auth.cookieHeaders);
   } catch (err) {
-    console.error("[coupon/status]", err);
+    logApiError("[coupon/status]", err);
     return NextResponse.json(
       { error: "Something went wrong" },
       { status: 500 }

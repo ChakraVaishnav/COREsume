@@ -31,6 +31,7 @@ model User {
   creditHistory     CreditHistory[]
   couponUsages      CouponUsage[]
   applications      Application[]
+  orders Orders[]
 }
 
 model CreditHistory {
@@ -180,4 +181,22 @@ model Application {
 
   @@index([userId])
   @@index([status])
+}
+
+// Orders table 
+
+model Orders {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  orderId   String   @unique
+  paymentId String @unique
+  planId    Int
+  price     Int
+  credits   Int
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }

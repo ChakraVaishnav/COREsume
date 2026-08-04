@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSession } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
+import { logApiError } from "@/lib/logger";
 import {
   GOOGLE_OAUTH_MODE_COOKIE,
   GOOGLE_OAUTH_STATE_COOKIE,
@@ -154,7 +155,7 @@ export async function GET(req) {
     clearGoogleOAuthCookies(response);
     return appendSetCookieHeaders(response, session.cookieHeaders);
   } catch (error) {
-    console.error("Google OAuth callback failed", error);
+    logApiError("Google OAuth callback failed", error);
     return redirectWithError(req, mode, "google_signup_failed");
   }
 }

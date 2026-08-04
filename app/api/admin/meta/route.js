@@ -1,8 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin, withAdminCookies } from "@/lib/admin/access";
+import { logApiError } from "@/lib/logger";
 
 export const runtime = "nodejs";
+
+function logAdminMetaError(action, details = {}) {
+  logApiError(`[ADMIN_META:${action}]`, details);
+}
 
 export async function GET(req) {
   try {
@@ -19,11 +24,15 @@ export async function GET(req) {
     const response = NextResponse.json({
       authorized: true,
       admin: user,
-      resources: ["users", "resumes", "otp", "ratings", "jobs", "jobUsage"],
+      resources: ["users", "resumes", "otp", "ratings", "orders", "jobs", "jobUsage"],
     });
 
     return withAdminCookies(response, admin.cookieHeaders);
   } catch (err) {
+    logAdminMetaError("GET_FAILED", {
+      message: err?.message || "Unknown error",
+      stack: err?.stack || null,
+    });
     return NextResponse.json(
       { error: "INTERNAL_ERROR", message: err?.message || "Something went wrong." },
       { status: 500 }

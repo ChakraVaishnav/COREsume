@@ -8,6 +8,7 @@ const RESOURCE_OPTIONS = [
   { key: "resumes", label: "Resume Table" },
   { key: "otp", label: "OTP Table" },
   { key: "ratings", label: "Rating Table" },
+  { key: "orders", label: "Orders Table" },
   { key: "jobs", label: "Job Table" },
   { key: "jobUsage", label: "Job Usage Table" },
   { key: "featureUsage", label: "Feature Usage Table" },
@@ -46,6 +47,15 @@ const CREATE_FIELD_HINTS = {
     { key: "score", type: "number" },
     { key: "comment", type: "string" },
     { key: "template", type: "string" },
+  ],
+  orders: [
+    { key: "userId", type: "number" },
+    { key: "orderId", type: "string" },
+    { key: "paymentId", type: "string" },
+    { key: "planId", type: "number" },
+    { key: "price", type: "number" },
+    { key: "credits", type: "number" },
+    { key: "verified", type: "boolean" },
   ],
   jobs: [
     { key: "userId", type: "number" },
@@ -122,6 +132,7 @@ const SEARCH_PLACEHOLDERS = {
   resumes: "Search by resume id or user id...",
   otp: "Search by email, code, id...",
   ratings: "Search by template, comment, user id...",
+  orders: "Search by order id, payment id, user id, plan...",
   jobs: "Search by title, company, source, search id...",
   jobUsage: "Search by user id, tier, date...",
   featureUsage: "Search by user id, date...",
@@ -328,6 +339,10 @@ export default function AdminPage() {
         const data = await res.json().catch(() => ({}));
 
         if (!res.ok || !data?.authorized) {
+          console.error("[ADMIN_UI:AUTH_FAILED]", {
+            status: res.status,
+            message: data?.message || "Unauthorized",
+          });
           if (!active) return;
           setToast("Unauthorized");
           setTimeout(() => router.replace("/"), 1100);
@@ -337,7 +352,11 @@ export default function AdminPage() {
         if (!active) return;
         setAuthorized(true);
         setAdminUser(data.admin || null);
-      } catch {
+      } catch (err) {
+        console.error("[ADMIN_UI:AUTH_EXCEPTION]", {
+          message: err?.message || "Unknown error",
+          stack: err?.stack || null,
+        });
         if (!active) return;
         setToast("Unauthorized");
         setTimeout(() => router.replace("/"), 1100);
@@ -372,6 +391,13 @@ export default function AdminPage() {
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
+        console.error("[ADMIN_UI:FETCH_ROWS_FAILED]", {
+          resource,
+          query: searchQuery,
+          offset,
+          status: res.status,
+          message: data?.message || "Failed to load data",
+        });
         setToast(data?.message || "Failed to load data");
         if (reset) {
           setRows([]);
@@ -405,7 +431,14 @@ export default function AdminPage() {
       setTotal(safeTotal);
       setNextOffset(safeNextOffset);
       setHasMore(Boolean(data.hasMore ?? safeNextOffset < safeTotal));
-    } catch {
+    } catch (err) {
+      console.error("[ADMIN_UI:FETCH_ROWS_EXCEPTION]", {
+        resource,
+        query: searchQuery,
+        offset,
+        message: err?.message || "Unknown error",
+        stack: err?.stack || null,
+      });
       setToast("Failed to load data");
       if (reset) {
         setRows([]);
@@ -484,6 +517,10 @@ export default function AdminPage() {
         payload[field.key] = parsed;
       }
     } catch (error) {
+      console.error("[ADMIN_UI:CREATE_PARSE_FAILED]", {
+        resource,
+        message: error?.message || "Invalid create input",
+      });
       setToast(`Invalid value in create form: ${error?.message || "Please check your input"}`);
       return;
     }
@@ -498,6 +535,11 @@ export default function AdminPage() {
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
+        console.error("[ADMIN_UI:CREATE_FAILED]", {
+          resource,
+          status: res.status,
+          message: data?.message || "Create failed",
+        });
         setToast(data?.message || "Create failed");
         return;
       }
@@ -506,7 +548,12 @@ export default function AdminPage() {
       setCreateDraft({});
       closeCreateModal();
       await refreshRows();
-    } catch {
+    } catch (err) {
+      console.error("[ADMIN_UI:CREATE_EXCEPTION]", {
+        resource,
+        message: err?.message || "Unknown error",
+        stack: err?.stack || null,
+      });
       setToast("Create failed");
     }
   };
@@ -552,6 +599,11 @@ export default function AdminPage() {
         payload[field.key] = parseEditInputValue(editDraft[field.key], field.type);
       }
     } catch (error) {
+      console.error("[ADMIN_UI:UPDATE_PARSE_FAILED]", {
+        resource,
+        rowId: editingRowId,
+        message: error?.message || "Invalid update input",
+      });
       setToast(`Invalid value in form: ${error?.message || "Please check your input"}`);
       return;
     }
@@ -566,6 +618,12 @@ export default function AdminPage() {
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
+        console.error("[ADMIN_UI:UPDATE_FAILED]", {
+          resource,
+          rowId: editingRowId,
+          status: res.status,
+          message: data?.message || "Update failed",
+        });
         setToast(data?.message || "Update failed");
         return;
       }
@@ -573,7 +631,13 @@ export default function AdminPage() {
       setToast("Updated successfully");
       closeEditModal();
       await refreshRows();
-    } catch {
+    } catch (err) {
+      console.error("[ADMIN_UI:UPDATE_EXCEPTION]", {
+        resource,
+        rowId: editingRowId,
+        message: err?.message || "Unknown error",
+        stack: err?.stack || null,
+      });
       setToast("Update failed");
     }
   };
@@ -590,13 +654,25 @@ export default function AdminPage() {
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
+        console.error("[ADMIN_UI:DELETE_FAILED]", {
+          resource,
+          rowId,
+          status: res.status,
+          message: data?.message || "Delete failed",
+        });
         setToast(data?.message || "Delete failed");
         return;
       }
 
       setToast("Deleted successfully");
       await refreshRows();
-    } catch {
+    } catch (err) {
+      console.error("[ADMIN_UI:DELETE_EXCEPTION]", {
+        resource,
+        rowId,
+        message: err?.message || "Unknown error",
+        stack: err?.stack || null,
+      });
       setToast("Delete failed");
     }
   };

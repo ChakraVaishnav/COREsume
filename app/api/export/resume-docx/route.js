@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import HTMLtoDOCX from "html-to-docx";
+import { logApiError } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -242,7 +243,7 @@ export async function POST(req) {
       },
     });
   } catch (err) {
-    console.error("[export/resume-docx] Failed to generate DOCX:", {
+    logApiError("[export/resume-docx] Failed to generate DOCX:", {
       message: err?.message,
       stack: err?.stack,
       name: err?.name,

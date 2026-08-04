@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticateRequest } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
+import { logApiError } from "@/lib/logger";
 
 // GET /api/pipeline/applications/[id]/stages — list stages
 export async function GET(req, { params }) {
@@ -29,7 +30,7 @@ export async function GET(req, { params }) {
     const response = NextResponse.json({ stages }, { status: 200 });
     return appendSetCookieHeaders(response, auth.cookieHeaders);
   } catch (err) {
-    console.error("[pipeline/stages GET] Error:", err);
+    logApiError("[pipeline/stages GET] Error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -97,7 +98,7 @@ export async function POST(req, { params }) {
     const response = NextResponse.json({ stage, stages }, { status: 201 });
     return appendSetCookieHeaders(response, auth.cookieHeaders);
   } catch (err) {
-    console.error("[pipeline/stages POST] Error:", err);
+    logApiError("[pipeline/stages POST] Error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -151,7 +152,7 @@ export async function PUT(req, { params }) {
     const response = NextResponse.json({ stages }, { status: 200 });
     return appendSetCookieHeaders(response, auth.cookieHeaders);
   } catch (err) {
-    console.error("[pipeline/stages PUT] Error:", err);
+    logApiError("[pipeline/stages PUT] Error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

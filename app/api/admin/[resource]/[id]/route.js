@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin, withAdminCookies } from "@/lib/admin/access";
+import { logApiError } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -9,6 +10,7 @@ const RESOURCE_CONFIG = {
   resumes: { model: "resume", idType: "int" },
   otp: { model: "otp", idType: "string" },
   ratings: { model: "rating", idType: "int" },
+  orders: { model: "orders", idType: "int" },
   jobs: { model: "job", idType: "string" },
   jobUsage: { model: "jobUsage", idType: "string" },
   featureUsage: { model: "featureUsage", idType: "string" },
@@ -51,6 +53,10 @@ function normalizePayload(payload) {
   return safeData;
 }
 
+function logAdminApiError(action, details = {}) {
+  logApiError(`[ADMIN_API:${action}]`, details);
+}
+
 export async function PUT(req, context) {
   try {
     const admin = await requireAdmin(req);
@@ -61,6 +67,7 @@ export async function PUT(req, context) {
     const { resource, id: rawId } = await getRouteParams(context);
     const cfg = getResourceConfig(resource);
     if (!cfg) {
+      logAdminApiError("UPDATE_UNSUPPORTED_RESOURCE", { resource, rawId });
       return withAdminCookies(
         NextResponse.json({ error: "BAD_REQUEST", message: "Unsupported resource." }, { status: 400 }),
         admin.cookieHeaders
@@ -69,6 +76,7 @@ export async function PUT(req, context) {
 
     const id = parseId(rawId, cfg.idType);
     if (id === null || id === "") {
+      logAdminApiError("UPDATE_INVALID_ID", { resource, rawId, idType: cfg.idType });
       return withAdminCookies(
         NextResponse.json({ error: "BAD_REQUEST", message: "Invalid id." }, { status: 400 }),
         admin.cookieHeaders
@@ -79,6 +87,7 @@ export async function PUT(req, context) {
     const data = normalizePayload(body);
 
     if (!data) {
+      logAdminApiError("UPDATE_INVALID_PAYLOAD", { resource, id });
       return withAdminCookies(
         NextResponse.json({ error: "BAD_REQUEST", message: "Invalid payload." }, { status: 400 }),
         admin.cookieHeaders
@@ -92,6 +101,10 @@ export async function PUT(req, context) {
 
     return withAdminCookies(NextResponse.json({ message: "Updated", item: updated }), admin.cookieHeaders);
   } catch (err) {
+    logAdminApiError("UPDATE_FAILED", {
+      message: err?.message || "Unknown error",
+      stack: err?.stack || null,
+    });
     return NextResponse.json(
       { error: "CRUD_UPDATE_FAILED", message: err?.message || "Failed to update record." },
       { status: 400 }
@@ -109,6 +122,7 @@ export async function DELETE(req, context) {
     const { resource, id: rawId } = await getRouteParams(context);
     const cfg = getResourceConfig(resource);
     if (!cfg) {
+      logAdminApiError("DELETE_UNSUPPORTED_RESOURCE", { resource, rawId });
       return withAdminCookies(
         NextResponse.json({ error: "BAD_REQUEST", message: "Unsupported resource." }, { status: 400 }),
         admin.cookieHeaders
@@ -117,6 +131,7 @@ export async function DELETE(req, context) {
 
     const id = parseId(rawId, cfg.idType);
     if (id === null || id === "") {
+      logAdminApiError("DELETE_INVALID_ID", { resource, rawId, idType: cfg.idType });
       return withAdminCookies(
         NextResponse.json({ error: "BAD_REQUEST", message: "Invalid id." }, { status: 400 }),
         admin.cookieHeaders
@@ -127,6 +142,10 @@ export async function DELETE(req, context) {
 
     return withAdminCookies(NextResponse.json({ message: "Deleted", item: deleted }), admin.cookieHeaders);
   } catch (err) {
+    logAdminApiError("DELETE_FAILED", {
+      message: err?.message || "Unknown error",
+      stack: err?.stack || null,
+    });
     return NextResponse.json(
       { error: "CRUD_DELETE_FAILED", message: err?.message || "Failed to delete record." },
       { status: 400 }

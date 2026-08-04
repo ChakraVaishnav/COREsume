@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticateRequest } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
+import { logApiError } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -114,7 +115,7 @@ export async function POST(req) {
         { status: 409 }
       );
     }
-    console.error("[coupon/redeem]", err);
+    logApiError("[coupon/redeem]", err);
     return NextResponse.json(
       { error: "Something went wrong. Please try again." },
       { status: 500 }

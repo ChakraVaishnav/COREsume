@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendOtpMail } from "@/lib/mail";
+import { logApiError } from "@/lib/logger";
 
 const OTP_PURPOSE = "pre-signup";
 
@@ -36,7 +37,7 @@ export async function POST(req) {
 
     return NextResponse.json({ message: "OTP sent. Please check your email." }, { status: 200 });
   } catch (error) {
-    console.error("[signup/send-otp] error:", error.message);
+    logApiError("[signup/send-otp] error:", error.message);
     return NextResponse.json(
       { error: "Something went wrong. Please try again.", details: error.message },
       { status: 500 }

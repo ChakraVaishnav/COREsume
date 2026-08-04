@@ -8,6 +8,7 @@ import { checkLimit, recordUsage } from "@/lib/jobs/rateLimit";
 import { authenticateRequest } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
 import { logCreditHistory } from "@/lib/featureUsage";
+import { logApiError } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -52,7 +53,7 @@ export async function POST(req) {
     try {
       limitCheck = await checkLimit(auth.userId, normalizedSearchMode, user.creds || 0);
     } catch (limitError) {
-      console.error("Job limit check failed; continuing as fail-open", {
+      logApiError("Job limit check failed; continuing as fail-open", {
         userId: auth.userId,
         mode: normalizedSearchMode,
         error: limitError?.message || String(limitError),
@@ -81,7 +82,7 @@ export async function POST(req) {
       rawJobs = await fetchJobs(jobQuery, location || "India", jobLimit);
     } catch (err) {
       let fetchError = err?.message || "JOB_FETCH_FAILED";
-      console.error("Job fetch error:", {
+      logApiError("Job fetch error:", {
         code: fetchError,
         query: jobQuery,
         location: location || "India",
@@ -100,7 +101,7 @@ export async function POST(req) {
           });
         }
       } catch (fallbackError) {
-        console.error("Backup job provider failed", {
+        logApiError("Backup job provider failed", {
           code: fallbackError?.message || String(fallbackError),
           query: jobQuery,
           location: location || "India",
@@ -257,7 +258,7 @@ export async function POST(req) {
         }
       });
     } catch (dbError) {
-      console.error("Job search DB write failed", {
+      logApiError("Job search DB write failed", {
         userId: auth.userId,
         mode: normalizedSearchMode,
         error: dbError?.message || String(dbError),
@@ -280,7 +281,7 @@ export async function POST(req) {
     try {
       await recordUsage(auth.userId, normalizedSearchMode, jobsToStore.length, creditsAfterSearch);
     } catch (usageError) {
-      console.error("Job usage record failed", {
+      logApiError("Job usage record failed", {
         userId: auth.userId,
         mode: normalizedSearchMode,
         error: usageError?.message || String(usageError),
@@ -300,7 +301,7 @@ export async function POST(req) {
 
     return appendSetCookieHeaders(response, auth.cookieHeaders);
   } catch (err) {
-    console.error("Job search error:", err);
+    logApiError("Job search error:", err);
     return NextResponse.json(
       { error: "INTERNAL_ERROR", message: "Something went wrong." },
       { status: 500 }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin, withAdminCookies } from "@/lib/admin/access";
+import { logApiError } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -9,6 +10,7 @@ const RESOURCE_CONFIG = {
   resumes: { model: "resume", idType: "int", orderBy: { updatedAt: "desc" } },
   otp: { model: "otp", idType: "string", orderBy: { createdAt: "desc" } },
   ratings: { model: "rating", idType: "int", orderBy: { createdAt: "desc" } },
+  orders: { model: "orders", idType: "int", orderBy: { createdAt: "desc" } },
   jobs: { model: "job", idType: "string", orderBy: { createdAt: "desc" } },
   jobUsage: { model: "jobUsage", idType: "string", orderBy: { updatedAt: "desc" } },
   featureUsage: { model: "featureUsage", idType: "string", orderBy: { updatedAt: "desc" } },
@@ -33,6 +35,11 @@ const RESOURCE_SEARCH_CONFIG = {
   ratings: {
     strings: ["comment", "template"],
     numbers: ["id", "userId", "score"],
+  },
+  orders: {
+    strings: ["orderId", "paymentId"],
+    numbers: ["id", "userId", "planId", "price", "credits"],
+    booleans: ["verified"],
   },
   jobs: {
     strings: [
@@ -146,6 +153,10 @@ function normalizePayload(payload) {
   return safeData;
 }
 
+function logAdminApiError(action, details = {}) {
+  logApiError(`[ADMIN_API:${action}]`, details);
+}
+
 export async function GET(req, context) {
   try {
     const admin = await requireAdmin(req);
@@ -156,6 +167,7 @@ export async function GET(req, context) {
     const { resource } = await getRouteParams(context);
     const cfg = getResourceConfig(resource);
     if (!cfg) {
+      logAdminApiError("LIST_UNSUPPORTED_RESOURCE", { resource });
       return withAdminCookies(
         NextResponse.json({ error: "BAD_REQUEST", message: "Unsupported resource." }, { status: 400 }),
         admin.cookieHeaders
@@ -172,6 +184,7 @@ export async function GET(req, context) {
 
     const model = prisma[cfg.model];
     if (!model) {
+      logAdminApiError("LIST_PRISMA_MODEL_MISSING", { resource, model: cfg.model });
       return withAdminCookies(
         NextResponse.json({ 
           error: "CLIENT_OUT_OF_SYNC", 
@@ -209,6 +222,10 @@ export async function GET(req, context) {
       admin.cookieHeaders
     );
   } catch (err) {
+    logAdminApiError("LIST_FAILED", {
+      message: err?.message || "Unknown error",
+      stack: err?.stack || null,
+    });
     return NextResponse.json(
       { error: "INTERNAL_ERROR", message: err?.message || "Something went wrong." },
       { status: 500 }
@@ -226,6 +243,7 @@ export async function POST(req, context) {
     const { resource } = await getRouteParams(context);
     const cfg = getResourceConfig(resource);
     if (!cfg) {
+      logAdminApiError("CREATE_UNSUPPORTED_RESOURCE", { resource });
       return withAdminCookies(
         NextResponse.json({ error: "BAD_REQUEST", message: "Unsupported resource." }, { status: 400 }),
         admin.cookieHeaders
@@ -236,6 +254,7 @@ export async function POST(req, context) {
     const data = normalizePayload(body);
 
     if (!data) {
+      logAdminApiError("CREATE_INVALID_PAYLOAD", { resource });
       return withAdminCookies(
         NextResponse.json({ error: "BAD_REQUEST", message: "Invalid payload." }, { status: 400 }),
         admin.cookieHeaders
@@ -244,6 +263,7 @@ export async function POST(req, context) {
 
     const model = prisma[cfg.model];
     if (!model) {
+      logAdminApiError("CREATE_PRISMA_MODEL_MISSING", { resource, model: cfg.model });
       return withAdminCookies(
         NextResponse.json({ 
           error: "CLIENT_OUT_OF_SYNC", 
@@ -259,6 +279,10 @@ export async function POST(req, context) {
       admin.cookieHeaders
     );
   } catch (err) {
+    logAdminApiError("CREATE_FAILED", {
+      message: err?.message || "Unknown error",
+      stack: err?.stack || null,
+    });
     return NextResponse.json(
       { error: "CRUD_CREATE_FAILED", message: err?.message || "Failed to create record." },
       { status: 400 }

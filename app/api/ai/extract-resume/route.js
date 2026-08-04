@@ -3,6 +3,7 @@ import { generateGeminiJsonResponse } from "../../../utils/gemini";
 import { authenticateRequest } from "@/lib/auth/session";
 import { checkPdfLimit, incrementPdf } from "@/lib/featureUsage";
 import { parsePdfText } from "@/lib/pdfParser";
+import { logApiError } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -318,7 +319,7 @@ export async function POST(req) {
     }
 
   } catch (err) {
-    console.error("AI Extraction error:", err);
+    logApiError("AI Extraction error:", err);
     const message =
       err?.message === "INVALID_JSON_RESPONSE"
         ? "Failed to process resume with AI: Could not format extracted data. Please try again."

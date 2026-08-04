@@ -63,6 +63,7 @@ export default function Pricing() {
         const res = await fetch('/api/payment/get-key');
         const data = await res.json();
         if (data.success) setRazorpayKey(data.key);
+        console.log('Razorpay Key:', data.key);
       } catch (error) {}
     };
 
@@ -127,7 +128,7 @@ export default function Pricing() {
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
                 email: userEmail,
-                credits: plan.credits,
+                id: plan.id,
               }),
             });
 

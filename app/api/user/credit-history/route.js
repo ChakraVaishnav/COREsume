@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { authenticateRequest } from '@/lib/auth/session'
+import { logApiError } from "@/lib/logger";
 
 export async function GET(req) {
   try {
@@ -55,7 +56,7 @@ export async function GET(req) {
       totalPages: Math.ceil(total / limit)
     })
   } catch (err) {
-    console.error("Credit history fetch error:", err)
+    logApiError("Credit history fetch error:", err)
     return NextResponse.json({ error: "Server error" }, { status: 500 })
   }
 }

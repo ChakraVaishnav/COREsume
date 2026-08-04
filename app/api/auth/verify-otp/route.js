@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { createSession } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
+import { logApiError } from "@/lib/logger";
 
 const OTP_PURPOSE = "pre-signup";
 
@@ -61,7 +62,7 @@ export async function POST(req) {
     const response = NextResponse.json({ message: "Account created successfully!" }, { status: 200 });
     return appendSetCookieHeaders(response, session.cookieHeaders);
   } catch (error) {
-    console.error("[verify-otp] error:", error.message);
+    logApiError("[verify-otp] error:", error.message);
     return NextResponse.json(
       { error: "Something went wrong. Please try again.", details: error.message },
       { status: 500 }

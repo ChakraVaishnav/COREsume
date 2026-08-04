@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticateRequest } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
+import { logApiError } from "@/lib/logger";
 
 // GET /api/pipeline/applications — list all applications for the user
 export async function GET(req) {
@@ -43,7 +44,7 @@ export async function GET(req) {
     const response = NextResponse.json({ applications }, { status: 200 });
     return appendSetCookieHeaders(response, auth.cookieHeaders);
   } catch (err) {
-    console.error("[pipeline/applications GET] Error:", err);
+    logApiError("[pipeline/applications GET] Error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -93,7 +94,7 @@ export async function POST(req) {
     const response = NextResponse.json({ application }, { status: 201 });
     return appendSetCookieHeaders(response, auth.cookieHeaders);
   } catch (err) {
-    console.error("[pipeline/applications POST] Error:", err);
+    logApiError("[pipeline/applications POST] Error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

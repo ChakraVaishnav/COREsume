@@ -18,10 +18,50 @@ export async function POST(req) {
       razorpay_order_id,
       razorpay_payment_id,
       razorpay_signature,
-      credits,
-    } = await req.json();
+    }= await req.json();
 
-    const creditsToAdd = Number(credits);
+    if (
+      !razorpay_order_id ||
+      !razorpay_payment_id ||
+      !razorpay_signature)
+    {
+      return NextResponse.json(
+        { success: false, error: "Missing payment info" },
+        { status: 400 }
+      );
+    }
+    //get the order from the database
+    const order = await prisma.orders.findUnique({
+      where: { orderId: razorpay_order_id },
+    });
+    
+    // check if the order exists and belongs to the authenticated user
+    if(!order){
+      return NextResponse.json(
+        { success: false, error: "Order not found" },
+        { status: 404 }
+      );
+    }
+    if (order.userId !== auth.userId) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Unauthorized order",
+        },
+        {
+          status: 403,
+        }
+      );
+    }
+    //check if the order is already verified
+    if(order.verified){
+      return NextResponse.json(
+        { success: false, error: "Invalid Order ID" },
+        { status: 400 }
+      );
+    }
+
+    const creditsToAdd = Number(order?.credits);
     if (
       !razorpay_order_id ||
       !razorpay_payment_id ||
@@ -53,21 +93,42 @@ export async function POST(req) {
     }
 
     // Step 2: Atomically add credits to user
-    const updatedUser = await prisma.user.update({
-      where: { id: auth.userId },
-      data: { creds: { increment: creditsToAdd } },
-    });
+    await prisma.$transaction([
+      prisma.user.update({
+        where: {
+          id: auth.userId,
+        },
+        data: {
+          creds: {
+            increment: creditsToAdd,
+          },
+        },
+      }),
 
-    if (!updatedUser) {
-      return NextResponse.json(
-        { success: false, error: "User not found" },
-        { status: 404 }
-      );
-    }
+      prisma.orders.update({
+        where: {
+          orderId: razorpay_order_id,
+        },
+        data: {
+          verified: true,
+          paymentId: razorpay_payment_id,
+        },
+      }),
+    ]);
 
     // Step 3: Log credit history
-    const planName = creditsToAdd === 5 ? "Starter Pack" : creditsToAdd === 10 ? "Value Pack" : creditsToAdd === 25 ? "Ultra Value Pack" : "Credit Pack";
-    await logCreditHistory(auth.userId, creditsToAdd, `Purchased ${planName}`);
+    const planName =
+      order.planId === 1
+        ? "Starter Pack"
+        : order.planId === 2
+        ? "Value Pack"
+        : "Ultra Value Pack";
+
+    await logCreditHistory(
+      auth.userId,
+      creditsToAdd,
+      `Purchased ${planName}`
+    );
 
     return NextResponse.json({ success: true });
   } catch (error) {

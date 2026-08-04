@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticateRequest } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
+import { logApiError } from "@/lib/logger";
 
 // PUT /api/pipeline/applications/[id]/status — quick status update (Kanban drag)
 export async function PUT(req, { params }) {
@@ -39,7 +40,7 @@ export async function PUT(req, { params }) {
     const response = NextResponse.json({ application }, { status: 200 });
     return appendSetCookieHeaders(response, auth.cookieHeaders);
   } catch (err) {
-    console.error("[pipeline/applications/[id]/status PUT] Error:", err);
+    logApiError("[pipeline/applications/[id]/status PUT] Error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -1,5 +1,6 @@
 import { PrismaClient } from "../../../generated/prisma";
 import { sendOtpMail } from "@/lib/mail";
+import { logApiError } from "@/lib/logger";
 
 const prisma = new PrismaClient();
 
@@ -7,32 +8,93 @@ export async function POST(req) {
   try {
     const { email } = await req.json();
 
-    if (!email) {
-      return new Response(JSON.stringify({ error: "Email is required" }), { status: 400 });
+    if (!email || typeof email !== "string") {
+      return new Response(
+        JSON.stringify({ error: "Valid email is required" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
     }
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    const normalizedEmail = email.trim().toLowerCase();
 
-    if (!user) {
-      return new Response(JSON.stringify({ error: "No user with this email exists" }), { status: 404 });
-    }
-
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 min expiry
-
-    await prisma.otp.create({
-      data: {
-        email,
-        code: otp,
-        expiresAt,
+    const user = await prisma.user.findUnique({
+      where: {
+        email: normalizedEmail,
       },
     });
 
-    await sendOtpMail(email, otp, "forgot-password");
+    if (!user) {
+      return new Response(
+        JSON.stringify({
+          error: "No user with this email exists",
+        }),
+        {
+          status: 404,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    }
 
+    // Remove any previous forgot-password OTPs
+    await prisma.otp.deleteMany({
+      where: {
+        email: normalizedEmail,
+        purpose: "forgot-password",
+      },
+    });
 
-    return new Response(JSON.stringify({ message: "OTP sent successfully" }), { status: 200 });
+    const otp = Math.floor(
+      100000 + Math.random() * 900000
+    ).toString();
+
+    const expiresAt = new Date(
+      Date.now() + 10 * 60 * 1000
+    );
+
+    await prisma.otp.create({
+      data: {
+        email: normalizedEmail,
+        code: otp,
+        expiresAt,
+        purpose: "forgot-password",
+      },
+    });
+
+    await sendOtpMail(
+      normalizedEmail,
+      otp,
+      "forgot-password"
+    );
+
+    return new Response(
+      JSON.stringify({
+        message: "OTP sent successfully",
+      }),
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
   } catch (error) {
-    return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
+    logApiError(error);
+
+    return new Response(
+      JSON.stringify({
+        error: "Internal server error",
+      }),
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
   }
 }

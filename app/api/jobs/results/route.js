@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticateRequest } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
+import { logApiError } from "@/lib/logger";
 
 export const runtime = "nodejs";
 const MAX_STORED_JOBS = 50;
@@ -90,7 +91,7 @@ export async function GET(req) {
     });
     return appendSetCookieHeaders(response, auth.cookieHeaders);
   } catch (err) {
-    console.error("Jobs results error:", err);
+    logApiError("Jobs results error:", err);
     return NextResponse.json(
       { error: "INTERNAL_ERROR", message: "Something went wrong." },
       { status: 500 }

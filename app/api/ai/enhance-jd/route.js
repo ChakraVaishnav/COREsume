@@ -4,6 +4,7 @@ import { generateGeminiResponse, generateGeminiJsonResponse } from "../../../uti
 import { authenticateRequest } from "@/lib/auth/session";
 import { checkJdLimit, incrementJd } from "@/lib/featureUsage";
 import { parsePdfText } from "@/lib/pdfParser";
+import { logApiError } from "@/lib/logger";
 import {
   preprocessResumeText,
   countBullets,
@@ -410,7 +411,7 @@ export async function POST(req) {
     }
 
   } catch (error) {
-    console.error("Enhance according to JD error:", error);
+    logApiError("Enhance according to JD error:", error);
     return NextResponse.json({ error: "An unexpected error occurred while analyzing your resume." }, { status: 500 });
   }
 }

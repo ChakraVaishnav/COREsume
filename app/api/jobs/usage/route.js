@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticateRequest } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
+import { logApiError } from "@/lib/logger";
 import {
   FREE_DAILY_SEARCH_LIMIT,
   getISTDateKey,
@@ -54,7 +55,7 @@ export async function GET(req) {
 
     return appendSetCookieHeaders(response, auth.cookieHeaders);
   } catch (err) {
-    console.error("Jobs usage error:", err);
+    logApiError("Jobs usage error:", err);
     return NextResponse.json(
       { error: "INTERNAL_ERROR", message: "Something went wrong." },
       { status: 500 }

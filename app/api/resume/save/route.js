@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticateRequest } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
+import { logApiError } from "@/lib/logger";
 
 export async function POST(req) {
   try {
@@ -31,7 +32,7 @@ export async function POST(req) {
     const response = NextResponse.json({ success: true }, { status: 200 });
     return appendSetCookieHeaders(response, auth.cookieHeaders);
   } catch (err) {
-    console.error("[resume/save] Error:", err);
+    logApiError("[resume/save] Error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

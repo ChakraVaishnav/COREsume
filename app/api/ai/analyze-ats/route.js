@@ -3,6 +3,7 @@ import { generateGeminiResponse } from "../../../utils/gemini";
 import { authenticateRequest } from "@/lib/auth/session";
 import { checkAtsLimit, incrementAts } from "@/lib/featureUsage";
 import { parsePdfText } from "@/lib/pdfParser";
+import { logApiError } from "@/lib/logger";
 import {
   preprocessResumeText,
   countBullets,
@@ -63,7 +64,7 @@ function debugLog(event, payload) {
 }
 
 function errorLog(event, payload) {
-  console.error(event, payload);
+  logApiError(event, payload);
 }
 
 export async function POST(req) {

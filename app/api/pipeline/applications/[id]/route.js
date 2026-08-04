@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticateRequest } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
+import { logApiError } from "@/lib/logger";
 
 // GET /api/pipeline/applications/[id] — get single application with stages
 export async function GET(req, { params }) {
@@ -23,7 +24,7 @@ export async function GET(req, { params }) {
     const response = NextResponse.json({ application }, { status: 200 });
     return appendSetCookieHeaders(response, auth.cookieHeaders);
   } catch (err) {
-    console.error("[pipeline/applications/[id] GET] Error:", err);
+    logApiError("[pipeline/applications/[id] GET] Error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -67,7 +68,7 @@ export async function PUT(req, { params }) {
     const response = NextResponse.json({ application }, { status: 200 });
     return appendSetCookieHeaders(response, auth.cookieHeaders);
   } catch (err) {
-    console.error("[pipeline/applications/[id] PUT] Error:", err);
+    logApiError("[pipeline/applications/[id] PUT] Error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -94,7 +95,7 @@ export async function DELETE(req, { params }) {
     const response = NextResponse.json({ success: true }, { status: 200 });
     return appendSetCookieHeaders(response, auth.cookieHeaders);
   } catch (err) {
-    console.error("[pipeline/applications/[id] DELETE] Error:", err);
+    logApiError("[pipeline/applications/[id] DELETE] Error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

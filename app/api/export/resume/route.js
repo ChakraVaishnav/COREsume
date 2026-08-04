@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import puppeteer from "puppeteer";
+import { logApiError } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -162,7 +163,7 @@ export async function POST(req) {
       },
     });
   } catch (err) {
-    console.error("[export/resume] Failed to generate PDF:", err);
+    logApiError("[export/resume] Failed to generate PDF:", err);
     return NextResponse.json({ 
       error: "Failed to generate PDF", 
       details: err?.message,
