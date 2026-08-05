@@ -1,8 +1,8 @@
 import { PrismaClient } from "../../../generated/prisma";
-import { signForgotPasswordToken, 
-  buildForgotPasswordCookie
+import {
+  signForgotPasswordToken,
+  buildForgotPasswordCookie,
 } from "@/lib/auth/token";
-
 import { NextResponse } from "next/server";
 
 const prisma = new PrismaClient();
@@ -31,12 +31,15 @@ export async function POST(req) {
       );
     }
 
+    // Verify OTP
     const record = await prisma.otp.findFirst({
       where: {
         email: normalizedEmail,
         code: otp,
         purpose: "forgot-password",
-        expiresAt: { gt: new Date() }, // not expired
+        expiresAt: {
+          gt: new Date(),
+        },
       },
     });
 
@@ -47,31 +50,54 @@ export async function POST(req) {
       );
     }
 
-
-    // Delete the OTP after successful verification
-    await prisma.otp.deleteMany({ where: { email: normalizedEmail, purpose: "forgot-password"} });
-
-    //create token for password reset
-    const token = signForgotPasswordToken({
-      id:user.id,
-      email:user.email,
-      purpose:"password-reset"
+    // Consume OTP
+    await prisma.otp.deleteMany({
+      where: {
+        email: normalizedEmail,
+        purpose: "forgot-password",
+      },
     });
 
-    //create response 
-
-    const response = NextResponse.json({
-      message:"OTP verified successfully"
+    // Generate forgot password JWT
+    const resetToken = signForgotPasswordToken({
+      id: user.id,
+      email: user.email,
     });
+
+    // Store JTI in database
+    await prisma.token.create({
+      data: {
+        userId: user.id,
+        jti: resetToken.jti,
+        purpose: resetToken.purpose,
+        expiresAt: resetToken.expiresAt,
+      },
+    });
+
+    // Send JWT as HttpOnly cookie
+    const response = NextResponse.json(
+      {
+        message: "OTP verified successfully",
+      },
+      {
+        status: 200,
+      }
+    );
+
     response.headers.append(
       "Set-Cookie",
-      buildForgotPasswordCookie(token)
+      buildForgotPasswordCookie(resetToken.token)
     );
+
     return response;
   } catch (err) {
     return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
+      {
+        error: "Internal Server Error",
+      },
+      {
+        status: 500,
+      }
     );
   }
 }

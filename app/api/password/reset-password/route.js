@@ -1,13 +1,13 @@
 import { PrismaClient } from "../../../generated/prisma";
 import bcrypt from "bcryptjs";
-import{
+import {
   PASSWORD_RESET_COOKIE,
+  TOKEN_PURPOSE,
   verifyForgotPasswordToken,
-  buildClearForgotPasswordCookie
-}
-from "@/lib/auth/token";
+  buildClearForgotPasswordCookie,
+} from "@/lib/auth/token";
+import { NextResponse } from "next/server";
 
-import { NextResponse } from "next/server"; 
 const prisma = new PrismaClient();
 
 export async function POST(req) {
@@ -15,61 +15,108 @@ export async function POST(req) {
     const { password } = await req.json();
 
     if (!password) {
-      return new Response(JSON.stringify({ error: "Password required" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+      return NextResponse.json(
+        { error: "Password required" },
+        { status: 400 }
+      );
     }
+
     if (password.length < 8) {
       return NextResponse.json(
         { error: "Password must be at least 8 characters." },
         { status: 400 }
       );
     }
+
     const token = req.cookies.get(PASSWORD_RESET_COOKIE)?.value;
+
     if (!token) {
-      return new Response(JSON.stringify({ error: "Missing token" }),{
-        status:401,
-        headers: { "Content-Type": "application/json" },
-      });
+      return NextResponse.json(
+        { error: "Missing token" },
+        { status: 401 }
+      );
     }
 
     let payload;
+
     try {
       payload = verifyForgotPasswordToken(token);
-    } catch (error) {
-      return new Response(JSON.stringify({ error: "Invalid or expired token" }), {
-        status: 401,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-    if (!payload || payload.purpose !== "password-reset") {
-      return new Response(JSON.stringify({ error: "Invalid or expired token" }), {
-        status: 401,
-        headers: { "Content-Type": "application/json" },
-      });
+    } catch {
+      return NextResponse.json(
+        { error: "Invalid or expired token" },
+        { status: 401 }
+      );
     }
 
+    // Verify token purpose
+    if (!payload || payload.purpose !== TOKEN_PURPOSE.FORGOT_PASSWORD) {
+      return NextResponse.json(
+        { error: "Invalid or expired token" },
+        { status: 401 }
+      );
+    }
+
+    // Check JTI in database
+    const dbToken = await prisma.token.findUnique({
+      where: {
+        jti: payload.jti,
+      },
+    });
+
+    if (
+      !dbToken ||
+      dbToken.isRevoked ||
+      dbToken.expiresAt < new Date()
+    ) {
+      return NextResponse.json(
+        { error: "Invalid or expired token" },
+        { status: 401 }
+      );
+    }
+
+    // Hash new password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Update password
     await prisma.user.update({
-      where: { id: payload.id },
-      data: { password: hashedPassword },
-    });
-    const response = NextResponse.json({
-      message:"Password reset successful"
+      where: {
+        id: payload.id,
+      },
+      data: {
+        password: hashedPassword,
+      },
     });
 
+    // Revoke the reset token
+    await prisma.token.update({
+      where: {
+        jti: payload.jti,
+      },
+      data: {
+        isRevoked: true,
+      },
+    });
+
+    const response = NextResponse.json(
+      {
+        message: "Password reset successful",
+      },
+      {
+        status: 200,
+      }
+    );
+
+    // Clear reset cookie
     response.headers.append(
-        "Set-Cookie",
-        buildClearForgotPasswordCookie()
+      "Set-Cookie",
+      buildClearForgotPasswordCookie()
     );
 
     return response;
   } catch (error) {
-    return new Response(JSON.stringify({ error: "Something went wrong" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return NextResponse.json(
+      { error: "Something went wrong" },
+      { status: 500 }
+    );
   }
 }

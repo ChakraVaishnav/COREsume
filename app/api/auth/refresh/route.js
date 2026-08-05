@@ -1,8 +1,40 @@
 import { NextResponse } from "next/server";
 import { refreshSession } from "@/lib/auth/session";
-import { appendSetCookieHeaders, buildClearSessionCookies } from "@/lib/auth/token";
+import { appendSetCookieHeaders, buildClearSessionCookies, verifyRefreshToken } from "@/lib/auth/token";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(req) {
+  const refreshToken = req.cookies.get("refreshToken")?.value;
+  if (!refreshToken) {
+  const unauthorized = NextResponse.json(
+    { error: "Unauthorized" },
+    { status: 401 }
+  );
+
+  return appendSetCookieHeaders(
+    unauthorized,
+    buildClearSessionCookies()
+  );
+}
+  if(refreshToken){
+    try{
+      const payload = verifyRefreshToken(refreshToken);
+      const token = await prisma.token.findUnique({
+        where: {
+          jti: payload.jti,
+        },
+      });
+      if(!token || token.isRevoked || token.expiresAt < new Date()) {
+        const unauthorized = NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return appendSetCookieHeaders(unauthorized, buildClearSessionCookies());
+      }
+    }
+    catch(error){
+      const unauthorized = NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return appendSetCookieHeaders(unauthorized, buildClearSessionCookies());
+    }
+  }
+
   const refreshed = await refreshSession(req);
 
   if (!refreshed) {

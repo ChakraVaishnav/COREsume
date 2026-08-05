@@ -22,6 +22,8 @@ function LoginPageContent() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [showSessionModal, setShowSessionModal] = useState(false);
+const [pendingLogin, setPendingLogin] = useState(null);
 
   useEffect(() => {
     const oauthError = searchParams.get("error");
@@ -37,29 +39,81 @@ function LoginPageContent() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
+const handleLogin = async (e) => {
+  e.preventDefault();
+  setError(null);
+  setLoading(true);
 
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(form),
-      });
+  try {
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify(form),
+    });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Login failed");
-      // Force a full navigation so the server middleware sees the newly-set HttpOnly cookies
-      window.location.href = "/dashboard";
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+    const data = await res.json();
+
+    if (res.status === 409) {
+      setPendingLogin(form);
+      setShowSessionModal(true);
+      return;
     }
-  };
+
+    if (!res.ok) {
+      throw new Error(data.error || "Invalid credentials");
+    }
+
+    window.location.href = "/dashboard";
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
+const handleForceLogin = async () => {
+  if (!pendingLogin) return;
+
+  setLoading(true);
+  setError(null);
+
+  try {
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        ...pendingLogin,
+        force: true,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "Login failed");
+    }
+
+    setShowSessionModal(false);
+    setPendingLogin(null);
+
+    window.location.href = "/dashboard";
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
+const handleCancelLogin = () => {
+  setShowSessionModal(false);
+  setPendingLogin(null);
+};
 
   const handleGoogleLogin = () => {
     setError(null);
@@ -67,6 +121,47 @@ function LoginPageContent() {
   };
 
   return (
+    <>
+    {showSessionModal && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl">
+
+      <h2 className="text-2xl font-bold text-black">
+        Active Session Detected
+      </h2>
+
+      <p className="mt-4 text-gray-600 leading-relaxed">
+        Your account is currently signed in on another device.
+      </p>
+
+      <p className="mt-2 text-gray-500 text-sm">
+        If you continue, all other active sessions will be logged out and this
+        device will become the only active session.
+      </p>
+
+      <div className="mt-8 flex justify-end gap-3">
+
+        <button
+          onClick={handleCancelLogin}
+          disabled={loading}
+          className="rounded-xl border border-gray-300 px-5 py-2 font-medium text-gray-700 transition hover:bg-gray-100"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={handleForceLogin}
+          disabled={loading}
+          className="rounded-xl bg-red-500 px-5 py-2 font-semibold text-white transition hover:bg-red-600 disabled:opacity-60"
+        >
+          {loading ? "Logging in..." : "Continue"}
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+)}
     <main className="min-h-screen bg-white flex flex-col items-center justify-center px-6 py-12">
       <Link
   href="/"
@@ -153,6 +248,7 @@ function LoginPageContent() {
         </p>
       </div>
     </main>
+    </>
   );
 }
 

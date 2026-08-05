@@ -31,7 +31,8 @@ model User {
   creditHistory     CreditHistory[]
   couponUsages      CouponUsage[]
   applications      Application[]
-  orders Orders[]
+  orders Order[]
+  tokens Token[]
 }
 
 model CreditHistory {
@@ -183,9 +184,9 @@ model Application {
   @@index([status])
 }
 
-// Orders table 
+// Order table 
 
-model Orders {
+model Order {
   id        Int      @id @default(autoincrement())
   userId    Int
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -199,4 +200,20 @@ model Orders {
   createdAt DateTime @default(now())
 
   @@index([userId])
+}
+
+// Token table
+
+model Token{
+  id Int @id @default(autoincrement())
+  jti String @unique
+  purpose String
+  userId Int
+  user User @relation(fields : [userId], references: [id], onDelete : Cascade)
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  isRevoked Boolean @default(false)
+  @@index([userId])
+  @@index([purpose])
+  @@index([expiresAt])
 }

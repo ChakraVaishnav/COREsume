@@ -243,4 +243,88 @@ h1, h2, h3, h4, h5, h6 {
     text-decoration: none !important;
     position: relative;
     z-index: 10;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Landing Page — Feature Flow Section
+   ═══════════════════════════════════════════════════════════════ */
+
+.flow-track {
+  height: 2px;
+  width: 100%;
+  background: linear-gradient(90deg, rgba(255, 214, 0, 0.08) 0%, rgba(255, 214, 0, 0.85) 50%, rgba(255, 214, 0, 0.08) 100%);
+  position: relative;
+  overflow: hidden;
+  border-radius: 999px;
+}
+
+.flow-track::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.7) 50%, transparent 100%);
+  animation: flowSweep 3.5s linear infinite;
+}
+
+.flow-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 1rem;
+  padding: 1.25rem;
+  background: #ffffff;
+  opacity: 0;
+  transform: translateY(12px) scale(0.98);
+  animation: flowReveal 0.6s ease forwards;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.flow-card:hover {
+  transform: translateY(-4px);
+  border-color: #facc15;
+  box-shadow: 0 10px 25px -5px rgba(250, 204, 21, 0.2), 0 8px 10px -6px rgba(250, 204, 21, 0.1);
+}
+
+.flow-step {
+  min-width: 56px;
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #121212;
+  background: #ffd600;
+  border-radius: 999px;
+  padding: 0.25rem 0.6rem;
+  letter-spacing: 0.08em;
+}
+
+.flow-chip {
+  font-size: 0.7rem;
+  line-height: 1;
+  color: #4b5563;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  border-radius: 999px;
+  padding: 0.35rem 0.55rem;
+}
+
+@keyframes flowReveal {
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes flowSweep {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* Hide scrollbar utility */
+.hide-scrollbars {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbars::-webkit-scrollbar {
+  display: none;
 }

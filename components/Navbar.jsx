@@ -59,6 +59,11 @@ export default function Navbar({ fixed = false }) {
         credentials: "include",
       });
 
+      if (response.status === 401 || response.status === 404) {
+        window.location.href = "/login";
+        return;
+      }
+
       if (!response.ok) {
         if (response.status === 401) {
           window.location.href = "/login";

@@ -59,6 +59,14 @@ export async function POST(req) {
 
     // Issue session
     const session = await createSession({ id: user.id, email: user.email });
+    await prisma.token.create({
+      data: {
+        userId: user.id,
+        jti: session.refreshToken.jti,
+        purpose: session.refreshToken.purpose,
+        expiresAt: session.refreshToken.expiresAt,
+      },
+    });
     const response = NextResponse.json({ message: "Account created successfully!" }, { status: 200 });
     return appendSetCookieHeaders(response, session.cookieHeaders);
   } catch (error) {

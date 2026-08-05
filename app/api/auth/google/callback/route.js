@@ -1,9 +1,11 @@
+// ... all your imports remain the same
+
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSession } from "@/lib/auth/session";
-import { appendSetCookieHeaders } from "@/lib/auth/token";
+import { appendSetCookieHeaders, TOKEN_PURPOSE } from "@/lib/auth/token";
 import { logApiError } from "@/lib/logger";
 import {
   GOOGLE_OAUTH_MODE_COOKIE,
@@ -22,7 +24,7 @@ const AUTH_PROVIDER_GOOGLE = "google";
 
 const redirectWithError = (req, mode, errorCode) => {
   const response = NextResponse.redirect(
-    new URL(buildGoogleAuthErrorPath(mode, errorCode), req.url)
+    new URL(buildGoogleAuthErrorPath(mode, req.url))
   );
   clearGoogleOAuthCookies(response);
   return response;
@@ -49,6 +51,7 @@ const exchangeCodeForIdToken = async (code) => {
   }
 
   const data = await response.json();
+
   if (!data.id_token) {
     throw new Error("Google did not return an ID token");
   }
@@ -58,8 +61,12 @@ const exchangeCodeForIdToken = async (code) => {
 
 const verifyIdTokenPayload = async (idToken) => {
   const response = await fetch(
-    `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`,
-    { cache: "no-store" }
+    `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(
+      idToken
+    )}`,
+    {
+      cache: "no-store",
+    }
   );
 
   if (!response.ok) {
@@ -67,11 +74,15 @@ const verifyIdTokenPayload = async (idToken) => {
   }
 
   const payload = await response.json();
+
   if (payload.aud !== getGoogleClientId()) {
     throw new Error("Google token audience mismatch");
   }
 
-  if (payload.email_verified !== "true" && payload.email_verified !== true) {
+  if (
+    payload.email_verified !== "true" &&
+    payload.email_verified !== true
+  ) {
     throw new Error("Google account email is not verified");
   }
 
@@ -95,6 +106,7 @@ export async function GET(req) {
   const code = requestUrl.searchParams.get("code");
   const state = requestUrl.searchParams.get("state");
   const oauthError = requestUrl.searchParams.get("error");
+
   const mode = normalizeGoogleOAuthMode(
     req.cookies.get(GOOGLE_OAUTH_MODE_COOKIE)?.value
   );
@@ -108,6 +120,7 @@ export async function GET(req) {
   }
 
   const savedState = req.cookies.get(GOOGLE_OAUTH_STATE_COOKIE)?.value;
+
   if (!savedState || !state || savedState !== state) {
     return redirectWithError(req, mode, "google_invalid_state");
   }
@@ -119,6 +132,7 @@ export async function GET(req) {
   try {
     const idToken = await exchangeCodeForIdToken(code);
     const googlePayload = await verifyIdTokenPayload(idToken);
+
     const email = String(googlePayload.email).trim().toLowerCase();
 
     let user = await prisma.user.findFirst({
@@ -132,13 +146,22 @@ export async function GET(req) {
 
     if (user) {
       const provider = user.authProvider || AUTH_PROVIDER_PASSWORD;
+
       if (provider !== AUTH_PROVIDER_GOOGLE) {
-        return redirectWithError(req, mode, "google_email_password_exists");
+        return redirectWithError(
+          req,
+          mode,
+          "google_email_password_exists"
+        );
       }
     }
 
     if (!user) {
-      const hashedPassword = await bcrypt.hash(crypto.randomUUID(), 10);
+      const hashedPassword = await bcrypt.hash(
+        crypto.randomUUID(),
+        10
+      );
+
       user = await prisma.user.create({
         data: {
           username: buildUsernameFromGooglePayload(email),
@@ -150,12 +173,51 @@ export async function GET(req) {
       });
     }
 
-    const session = await createSession({ id: user.id, email: user.email });
-    const response = NextResponse.redirect(new URL("/dashboard", req.url));
+    // Revoke every active refresh token for this user
+    await prisma.token.updateMany({
+      where: {
+        userId: user.id,
+        purpose: TOKEN_PURPOSE.REFRESH,
+        isRevoked: false,
+      },
+      data: {
+        isRevoked: true,
+      },
+    });
+
+    // Create a fresh session
+    const session = await createSession({
+      id: user.id,
+      email: user.email,
+    });
+
+    // Persist the new refresh token
+    await prisma.token.create({
+      data: {
+        userId: user.id,
+        jti: session.refreshToken.jti,
+        purpose: session.refreshToken.purpose,
+        expiresAt: session.refreshToken.expiresAt,
+      },
+    });
+
+    const response = NextResponse.redirect(
+      new URL("/dashboard", req.url)
+    );
+
     clearGoogleOAuthCookies(response);
-    return appendSetCookieHeaders(response, session.cookieHeaders);
+
+    return appendSetCookieHeaders(
+      response,
+      session.cookieHeaders
+    );
   } catch (error) {
     logApiError("Google OAuth callback failed", error);
-    return redirectWithError(req, mode, "google_signup_failed");
+
+    return redirectWithError(
+      req,
+      mode,
+      "google_signup_failed"
+    );
   }
 }

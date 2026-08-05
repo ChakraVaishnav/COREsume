@@ -188,7 +188,10 @@ export default function Home() {
     const checkAuth = async () => {
       setIsValidating(true);
       try {
-        const res = await fetch("/api/user/info", { credentials: "include" });
+        const res = await fetch("/api/auth/refresh", {
+          method: "POST",
+          credentials: "include",
+        });
         if (res.ok) {
           setIsAuthenticated(true);
         } else {

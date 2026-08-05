@@ -5,6 +5,79 @@ import Link from "next/link";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
 
+const FEATURE_FLOW = [
+  {
+    step: "01",
+    icon: "🧾",
+    title: "Resume Builder + Live Preview",
+    desc: "Build section-by-section and instantly preview final output while you edit.",
+    chips: ["Personal Info", "Projects", "Skills", "Experience"],
+  },
+  {
+    step: "02",
+    icon: "🎨",
+    title: "9+ ATS-Friendly Templates",
+    desc: "Switch layouts that are modern for recruiters and clean for ATS parsers.",
+    chips: ["Classic", "Executive", "Compact", "Professional"],
+  },
+  {
+    step: "03",
+    icon: "📄",
+    title: "Resume from PDF",
+    desc: "Upload an existing PDF and auto-fill your form without manual retyping.",
+    chips: ["Fast Extraction", "Structured Fill", "Editable"],
+  },
+  {
+    step: "04",
+    icon: "✨",
+    title: "AI Resume Assistant",
+    desc: "Generate summaries, improve skills, quantify impact, and strengthen project bullets.",
+    chips: ["Summary", "Skills", "Quantify", "Project Bullets"],
+  },
+  {
+    step: "05",
+    icon: "🎯",
+    title: "ATS Score + Suggestions",
+    desc: "Get scoring, strengths, and actionable improvement guidance before you apply.",
+    chips: ["Rule-Based", "Instant", "Private"],
+  },
+  {
+    step: "06",
+    icon: "🔍",
+    title: "Smart Job Matching",
+    desc: "Find and rank jobs by resume fit with free and premium search modes.",
+    chips: ["High Fit", "Moderate Fit", "Low Fit"],
+  },
+  {
+    step: "07",
+    icon: "🗂️",
+    title: "Kanban Pipeline Tracker",
+    desc: "Track each application from Applied to Joined with drag-and-drop stage management.",
+    chips: ["Applied", "Interviewing", "Offer", "Joined"],
+  },
+  {
+    step: "08",
+    icon: "💾",
+    title: "Multiple Export Options",
+    desc: "Download quick PDF, editable DOCX, or custom PDF tuned for final submission.",
+    chips: ["Quick PDF", "DOCX", "Custom PDF"],
+  },
+  {
+    step: "09",
+    icon: "💳",
+    title: "Credits + Razorpay Payments",
+    desc: "Use daily free limits first, then top up credits securely when you need more AI actions.",
+    chips: ["Daily Free", "One-Time Packs", "Verified Credits"],
+  },
+  {
+    step: "10",
+    icon: "🔐",
+    title: "Secure Sessions + Protected APIs",
+    desc: "Cookie-based authenticated sessions keep your resume, jobs, and billing workflows safe.",
+    chips: ["JWT", "HttpOnly Cookies", "Protected Routes"],
+  },
+];
+
 export function LandingPage() {
   const [stats, setStats] = useState({
     resumeCount: "250+",
@@ -47,10 +120,10 @@ export function LandingPage() {
               Build My Resume Free &rarr;
             </Link>
             <a
-              href="#how-it-works"
+              href="#feature-flow"
               className="border border-[#E5E5E5] text-black font-semibold rounded-lg px-8 py-4 hover:bg-[#F9F9F9] transition-all text-lg w-full sm:w-auto text-center"
             >
-              See How It Works
+              Explore Product Flow
             </a>
           </div>
         </div>
@@ -67,37 +140,6 @@ export function LandingPage() {
             />
           </div>
         </div>
-      </section>
-
-      {/* STATS SECTION */}
-      <section className="py-12 bg-[#F9F9F9] border-y border-[#E5E5E5]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div>
-              <p className="text-4xl font-extrabold text-black font-serif">{stats.resumeCount}</p>
-              <p className="text-sm text-[#555555] mt-2 font-medium">Resumes Created</p>
-            </div>
-            <div>
-              <p className="text-4xl font-extrabold text-black font-serif">{stats.templateCount}+</p>
-              <p className="text-sm text-[#555555] mt-2 font-medium">Templates</p>
-            </div>
-            <div>
-              <p className="text-4xl font-extrabold text-black font-serif">{stats.languagesCount}+</p>
-              <p className="text-sm text-[#555555] mt-2 font-medium">Languages Supported</p>
-            </div>
-            <div>
-              <p className="text-4xl font-extrabold text-black font-serif">100%</p>
-              <p className="text-sm text-[#555555] mt-2 font-medium">Free to Start</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* TRUSTED BY SECTION */}
-      <section className="py-16 text-center">
-        <p className="text-lg font-medium text-[#555555]">
-          Trusted by students from universities across India 🇮🇳
-        </p>
       </section>
 
       {/* FEATURES SECTION */}
@@ -147,20 +189,50 @@ export function LandingPage() {
         </div>
       </section>
 
-      <section className="py-14 px-4 sm:px-8">
-        <div className="max-w-5xl mx-auto rounded-2xl border border-[#E5E5E5] bg-[#FFFDE7] p-8 sm:p-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
-          <div>
-            <h3 className="text-2xl font-bold font-serif text-black">Job Application Tracker</h3>
-            <p className="text-[#555555] mt-2 max-w-2xl">
-              Use the Kanban Pipeline to organize your job hunt visually and keep every application stage in one place.
+      <section id="feature-flow" className="py-20 px-4 sm:px-8 bg-[#0E0E0E] border-y border-black/10 overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-14">
+            <p className="inline-flex items-center gap-2 rounded-full bg-[#FFD600] px-4 py-1 text-xs font-extrabold tracking-wide text-black">
+              FULL PLATFORM WALKTHROUGH
+            </p>
+            <h2 className="mt-5 text-4xl lg:text-5xl font-bold text-white font-serif">Everything COREsume Does, In One Flow</h2>
+            <p className="mt-4 text-base sm:text-lg text-[#BDBDBD] max-w-3xl mx-auto">
+              From drafting your resume to tracking applications and unlocking premium actions, every major feature is connected in one smooth workflow.
             </p>
           </div>
-          <Link
-            href="/dashboard/pipeline"
-            className="inline-flex items-center justify-center bg-black text-white font-semibold rounded-lg px-6 py-3 hover:bg-[#222] transition-all"
-          >
-            Open Pipeline
-          </Link>
+
+          <div className="flow-track" aria-hidden="true" />
+
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+            {FEATURE_FLOW.map((item, idx) => (
+              <article
+                key={item.step}
+                className="flow-card"
+                style={{ animationDelay: `${idx * 90}ms` }}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flow-step">{item.step}</div>
+                  <span className="text-3xl" aria-hidden="true">{item.icon}</span>
+                </div>
+                <h3 className="mt-4 text-xl font-bold text-white leading-snug">{item.title}</h3>
+                <p className="mt-2 text-sm text-[#CECECE] leading-relaxed">{item.desc}</p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {item.chips.map((chip) => (
+                    <span key={chip} className="flow-chip">{chip}</span>
+                  ))}
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link
+              href="/signup"
+              className="bg-[#FFD600] text-black font-semibold rounded-lg px-7 py-3 hover:brightness-95 transition-all"
+            >
+              Start With Free Account
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -234,7 +306,7 @@ export function LandingPage() {
               credits="25 Credits"
             />
           </div>
-          
+
           <p className="text-[#555555] font-medium">
             ✦ 2 free ATS checks + 2 free PDF uploads every day — credits only needed beyond that.
           </p>
@@ -320,6 +392,79 @@ export function LandingPage() {
           </div>
         </div>
       </footer>
+
+      <style jsx>{`
+        .flow-track {
+          height: 2px;
+          width: 100%;
+          background: linear-gradient(90deg, rgba(255, 214, 0, 0.08) 0%, rgba(255, 214, 0, 0.85) 50%, rgba(255, 214, 0, 0.08) 100%);
+          position: relative;
+          overflow: hidden;
+          border-radius: 999px;
+        }
+
+        .flow-track::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          transform: translateX(-100%);
+          background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.7) 50%, transparent 100%);
+          animation: flowSweep 3.5s linear infinite;
+        }
+
+        .flow-card {
+          border: 1px solid #252525;
+          border-radius: 1rem;
+          padding: 1rem;
+          background: linear-gradient(180deg, #171717 0%, #111111 100%);
+          opacity: 0;
+          transform: translateY(12px) scale(0.98);
+          animation: flowReveal 0.6s ease forwards;
+          box-shadow: 0 16px 28px rgba(0, 0, 0, 0.25);
+          transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .flow-card:hover {
+          transform: translateY(-4px);
+          border-color: rgba(255, 214, 0, 0.55);
+          box-shadow: 0 18px 36px rgba(255, 214, 0, 0.12);
+        }
+
+        .flow-step {
+          min-width: 56px;
+          text-align: center;
+          font-size: 0.7rem;
+          font-weight: 800;
+          color: #121212;
+          background: #ffd600;
+          border-radius: 999px;
+          padding: 0.25rem 0.6rem;
+          letter-spacing: 0.08em;
+        }
+
+        .flow-chip {
+          font-size: 0.7rem;
+          line-height: 1;
+          color: #f5f5f5;
+          border: 1px solid #3a3a3a;
+          background: rgba(255, 255, 255, 0.03);
+          border-radius: 999px;
+          padding: 0.35rem 0.55rem;
+        }
+
+        @keyframes flowReveal {
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+
+        @keyframes flowSweep {
+          to {
+            transform: translateX(100%);
+          }
+        }
+      `}</style>
     </div>
   );
 }
@@ -345,9 +490,8 @@ function DownloadCard({ title, desc }) {
 
 function PricingCard({ title, price, subtitle, credits, popular }) {
   return (
-    <div className={`bg-white rounded-2xl p-8 relative flex flex-col h-full ${
-      popular ? "border-2 border-[#FFD600] shadow-xl" : "border border-[#E5E5E5] shadow-sm"
-    }`}>
+    <div className={`bg-white rounded-2xl p-8 relative flex flex-col h-full ${popular ? "border-2 border-[#FFD600] shadow-xl" : "border border-[#E5E5E5] shadow-sm"
+      }`}>
       {popular && (
         <div className="absolute top-0 right-8 -translate-y-1/2 bg-[#FFD600] text-black text-xs font-bold px-3 py-1 rounded-full tracking-wide">
           MOST POPULAR
@@ -377,9 +521,8 @@ function PricingCard({ title, price, subtitle, credits, popular }) {
           </li>
         ))}
       </ul>
-      <Link href="/dashboard/pricing" className={`block text-center py-4 rounded-xl font-bold w-full transition-all ${
-        popular ? "bg-[#FFD600] text-black hover:brightness-95" : "border border-[#E5E5E5] text-black hover:bg-[#F9F9F9]"
-      }`}>
+      <Link href="/dashboard/pricing" className={`block text-center py-4 rounded-xl font-bold w-full transition-all ${popular ? "bg-[#FFD600] text-black hover:brightness-95" : "border border-[#E5E5E5] text-black hover:bg-[#F9F9F9]"
+        }`}>
         Buy Now
       </Link>
     </div>
