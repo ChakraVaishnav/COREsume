@@ -139,6 +139,28 @@ export function LandingPage() {
             title="9+ ATS-Friendly Templates"
             desc="Modern, minimal designs built for ATS readability and recruiter approval."
           />
+          <FeatureCard
+            icon="🗂️"
+            title="Kanban Application Pipeline"
+            desc="Track every application in one board from Applied to Offer/Joined with easy drag-and-drop status updates."
+          />
+        </div>
+      </section>
+
+      <section className="py-14 px-4 sm:px-8">
+        <div className="max-w-5xl mx-auto rounded-2xl border border-[#E5E5E5] bg-[#FFFDE7] p-8 sm:p-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+          <div>
+            <h3 className="text-2xl font-bold font-serif text-black">Job Application Tracker</h3>
+            <p className="text-[#555555] mt-2 max-w-2xl">
+              Use the Kanban Pipeline to organize your job hunt visually and keep every application stage in one place.
+            </p>
+          </div>
+          <Link
+            href="/dashboard/pipeline"
+            className="inline-flex items-center justify-center bg-black text-white font-semibold rounded-lg px-6 py-3 hover:bg-[#222] transition-all"
+          >
+            Open Pipeline
+          </Link>
         </div>
       </section>
 

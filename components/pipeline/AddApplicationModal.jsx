@@ -2,9 +2,15 @@
 
 import { useState, useEffect } from "react";
 
+const REQUIRED_FIELDS = [
+  { key: "companyName", label: "Company Name" },
+  { key: "role", label: "Job Role" },
+];
+
 export default function AddApplicationModal({ open, onClose, onSubmit }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
 
   // Form fields
   const [companyName, setCompanyName] = useState("");
@@ -27,6 +33,7 @@ export default function AddApplicationModal({ open, onClose, onSubmit }) {
       setNotes("");
       setPriority("");
       setError("");
+      setFieldErrors({});
       setLoading(false);
     }
   }, [open]);
@@ -40,13 +47,23 @@ export default function AddApplicationModal({ open, onClose, onSubmit }) {
     return () => window.removeEventListener("keydown", handleKey);
   }, [open, onClose]);
 
-  const handleSubmit = async () => {
+  const validateForm = () => {
+    const errors = {};
+
     if (!companyName.trim()) {
-      setError("Company name is required");
-      return;
+      errors.companyName = "Company Name is required";
     }
     if (!role.trim()) {
-      setError("Job role is required");
+      errors.role = "Job Role is required";
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSubmit = async () => {
+    if (!validateForm()) {
+      setError("Please fill all required details before creating the application.");
       return;
     }
 
@@ -97,10 +114,26 @@ export default function AddApplicationModal({ open, onClose, onSubmit }) {
                 id="pipeline-company"
                 type="text"
                 value={companyName}
-                onChange={(e) => { setCompanyName(e.target.value); setError(""); }}
+                onChange={(e) => {
+                  const nextValue = e.target.value;
+                  setCompanyName(nextValue);
+                  setError("");
+                  if (fieldErrors.companyName && nextValue.trim()) {
+                    setFieldErrors((prev) => {
+                      const next = { ...prev };
+                      delete next.companyName;
+                      return next;
+                    });
+                  }
+                }}
                 placeholder="e.g. Google"
+                aria-invalid={Boolean(fieldErrors.companyName)}
+                className={fieldErrors.companyName ? "pipeline-input-error" : ""}
                 autoFocus
               />
+              {fieldErrors.companyName ? (
+                <p className="pipeline-field-error">{fieldErrors.companyName}</p>
+              ) : null}
             </div>
             <div className="pipeline-field">
               <label htmlFor="pipeline-role">Job Role *</label>
@@ -108,9 +141,25 @@ export default function AddApplicationModal({ open, onClose, onSubmit }) {
                 id="pipeline-role"
                 type="text"
                 value={role}
-                onChange={(e) => { setRole(e.target.value); setError(""); }}
+                onChange={(e) => {
+                  const nextValue = e.target.value;
+                  setRole(nextValue);
+                  setError("");
+                  if (fieldErrors.role && nextValue.trim()) {
+                    setFieldErrors((prev) => {
+                      const next = { ...prev };
+                      delete next.role;
+                      return next;
+                    });
+                  }
+                }}
                 placeholder="e.g. Software Engineer"
+                aria-invalid={Boolean(fieldErrors.role)}
+                className={fieldErrors.role ? "pipeline-input-error" : ""}
               />
+              {fieldErrors.role ? (
+                <p className="pipeline-field-error">{fieldErrors.role}</p>
+              ) : null}
             </div>
             <div className="pipeline-field">
               <label htmlFor="pipeline-salary">Salary / CTC</label>
@@ -195,6 +244,17 @@ export default function AddApplicationModal({ open, onClose, onSubmit }) {
               {error}
             </p>
           )}
+
+          {Object.keys(fieldErrors).length > 0 ? (
+            <div className="pipeline-validation-summary" role="alert" aria-live="polite">
+              <p>Missing required details:</p>
+              <ul>
+                {REQUIRED_FIELDS.filter((field) => fieldErrors[field.key]).map((field) => (
+                  <li key={field.key}>{field.label}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
         </div>
 
         <div className="pipeline-modal-footer">
@@ -208,7 +268,7 @@ export default function AddApplicationModal({ open, onClose, onSubmit }) {
           <button
             className={`pipeline-btn pipeline-btn-primary ${loading ? "pipeline-btn-loading" : ""}`}
             onClick={handleSubmit}
-            disabled={loading || !companyName.trim() || !role.trim()}
+            disabled={loading}
           >
             {loading ? <><span className="pipeline-spinner pipeline-spinner-sm" /> Creating...</> : "Create Application"}
           </button>

@@ -52,13 +52,19 @@ COREsume is a Next.js resume platform with AI-assisted writing, ATS analysis, cr
 2. Razorpay order creation and verification flow.
 3. Verified payments add credits to the authenticated user account.
 
-### 5. Auth and Session Security
+### 5. Application Pipeline (Kanban Board)
+1. Dedicated pipeline board at /dashboard/pipeline to track job applications stage-wise.
+2. Drag-and-drop status flow across Applied, Interviewing, On Hold, Offer, Joined, Rejected, Withdrawn, and Ghosted.
+3. Create-application modal with explicit required-field validation for Company Name and Job Role.
+4. Clear validation feedback for missing required fields before creation.
+
+### 6. Auth and Session Security
 1. JWT access token + refresh token in HttpOnly cookies.
 2. Session refresh support.
 3. Protected API routes use request authentication middleware.
 4. Sensitive AI, jobs, payment, user, feedback, and resume endpoints are authentication-guarded.
 
-### 6. SEO and Analytics
+### 7. SEO and Analytics
 1. Metadata, Open Graph, Twitter cards, and verification tags configured in app layout.
 2. Sitemap generation configured via next-sitemap.
 3. Vercel Analytics integrated globally.
@@ -185,5 +191,6 @@ npm run start
 ## Useful Paths
 1. Resume Form: /resume-form
 2. Jobs Dashboard: /dashboard/jobs
-3. Pricing: /pricing
-4. Profile: /profile
+3. Application Pipeline: /dashboard/pipeline
+4. Pricing: /pricing
+5. Profile: /profile
