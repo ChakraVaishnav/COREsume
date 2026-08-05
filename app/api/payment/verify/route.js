@@ -53,14 +53,6 @@ export async function POST(req) {
         }
       );
     }
-    //check if the order is already verified
-    if(order.verified){
-      return NextResponse.json(
-        { success: false, error: "Invalid Order ID" },
-        { status: 400 }
-      );
-    }
-
     const creditsToAdd = Number(order?.credits);
     if (
       !razorpay_order_id ||
@@ -92,9 +84,25 @@ export async function POST(req) {
       );
     }
 
-    // Step 2: Atomically add credits to user
-    await prisma.$transaction([
-      prisma.user.update({
+    // Step 2: Claim order + increment credits atomically to avoid double-credit race conditions.
+    const claimResult = await prisma.$transaction(async (tx) => {
+      const claimed = await tx.orders.updateMany({
+        where: {
+          orderId: razorpay_order_id,
+          userId: auth.userId,
+          verified: false,
+        },
+        data: {
+          verified: true,
+          paymentId: razorpay_payment_id,
+        },
+      });
+
+      if (claimed.count === 0) {
+        return { claimed: false };
+      }
+
+      await tx.user.update({
         where: {
           id: auth.userId,
         },
@@ -103,18 +111,17 @@ export async function POST(req) {
             increment: creditsToAdd,
           },
         },
-      }),
+      });
 
-      prisma.orders.update({
-        where: {
-          orderId: razorpay_order_id,
-        },
-        data: {
-          verified: true,
-          paymentId: razorpay_payment_id,
-        },
-      }),
-    ]);
+      return { claimed: true };
+    });
+
+    if (!claimResult.claimed) {
+      return NextResponse.json(
+        { success: false, error: "Order already processed" },
+        { status: 400 }
+      );
+    }
 
     // Step 3: Log credit history
     const planName =

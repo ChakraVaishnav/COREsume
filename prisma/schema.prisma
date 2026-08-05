@@ -191,7 +191,7 @@ model Orders {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   orderId   String   @unique
-  paymentId String @unique
+  paymentId String? @unique
   planId    Int
   price     Int
   credits   Int
