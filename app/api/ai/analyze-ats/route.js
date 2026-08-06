@@ -12,6 +12,7 @@ import {
   calculateATSScore,
   buildFinalResponse
 } from "@/lib/atsScorer";
+import { enforceRateLimit } from "@/lib/security/rateLimit";
 
 export const runtime = "nodejs";
 
@@ -68,13 +69,22 @@ function errorLog(event, payload) {
 }
 
 export async function POST(req) {
-  const requestId = `ats_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+
 
   try {
     const auth = await authenticateRequest(req);
     if (!auth?.userId) {
       return Response.json({ error: "UNAUTHORIZED", message: "Unauthorized" }, { status: 401 });
     }
+      const rateLimitResponse = await enforceRateLimit({
+    req,
+    type: "AI",
+    identifier: String(auth.userId),
+});
+
+if (rateLimitResponse) return rateLimitResponse;
+  const requestId = `ats_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
     const formData = await req.formData();
     const useCredit = formData.get("useCredit") === "true";

@@ -3,9 +3,16 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { createSession } from "@/lib/auth/session";
 import { appendSetCookieHeaders, TOKEN_PURPOSE } from "@/lib/auth/token";
+import { enforceRateLimit } from "@/lib/security/rateLimit";
 
 export async function POST(req) {
   try {
+    const rateLimitResponse = await enforceRateLimit({
+      req,
+      type: "LOGIN",
+    });
+
+    if (rateLimitResponse) return rateLimitResponse;
     const { email, password, force = false } = await req.json();
 
     // Check if user exists

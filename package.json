@@ -16,6 +16,8 @@
     "@hello-pangea/dnd": "^18.0.1",
     "@prisma/client": "^6.17.1",
     "@sparticuz/chromium": "^147.0.0",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.38.2",
     "@vercel/analytics": "^2.0.1",
     "bcryptjs": "^3.0.2",
     "cookie": "^1.0.2",

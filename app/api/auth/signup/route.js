@@ -2,11 +2,18 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendOtpMail } from "@/lib/mail";
 import { logApiError } from "@/lib/logger";
-
+import { enforceRateLimit } from "@/lib/security/rateLimit";
 const OTP_PURPOSE = "pre-signup";
 
 export async function POST(req) {
   try {
+    const rateLimitResponse = await enforceRateLimit({
+      req,
+      type: "SIGNUP",
+    });
+
+    if (rateLimitResponse) return rateLimitResponse;
+
     const { username, email, password } = await req.json();
 
     if (!username || !email || !password) {
