@@ -24,7 +24,7 @@ const AUTH_PROVIDER_GOOGLE = "google";
 
 const redirectWithError = (req, mode, errorCode) => {
   const response = NextResponse.redirect(
-    new URL(buildGoogleAuthErrorPath(mode, req.url))
+    new URL(buildGoogleAuthErrorPath(mode, errorCode), req.url)
   );
   clearGoogleOAuthCookies(response);
   return response;

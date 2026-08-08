@@ -10,13 +10,14 @@ const RESOURCE_CONFIG = {
   resumes: { model: "resume", idType: "int" },
   otp: { model: "otp", idType: "string" },
   ratings: { model: "rating", idType: "int" },
-  orders: { model: "orders", idType: "int" },
+  order: { model: "order", idType: "int" },
   jobs: { model: "job", idType: "string" },
   jobUsage: { model: "jobUsage", idType: "string" },
   featureUsage: { model: "featureUsage", idType: "string" },
   creditHistory: { model: "creditHistory", idType: "string" },
   coupons: { model: "coupon", idType: "int" },
   couponUsages: { model: "couponUsage", idType: "int" },
+  tokens: { model: "token", idType: "string" },
 };
 
 function getResourceConfig(resource) {

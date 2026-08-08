@@ -10,7 +10,7 @@ const RESOURCE_CONFIG = {
   resumes: { model: "resume", idType: "int", orderBy: { updatedAt: "desc" } },
   otp: { model: "otp", idType: "string", orderBy: { createdAt: "desc" } },
   ratings: { model: "rating", idType: "int", orderBy: { createdAt: "desc" } },
-  orders: { model: "orders", idType: "int", orderBy: { createdAt: "desc" } },
+  order: { model: "order", idType: "int", orderBy: { createdAt: "desc" } },
   jobs: { model: "job", idType: "string", orderBy: { createdAt: "desc" } },
   jobUsage: { model: "jobUsage", idType: "string", orderBy: { updatedAt: "desc" } },
   featureUsage: { model: "featureUsage", idType: "string", orderBy: { updatedAt: "desc" } },
@@ -18,6 +18,7 @@ const RESOURCE_CONFIG = {
   coupons: { model: "coupon", idType: "int", orderBy: { id: "desc" } },
   couponUsages: { model: "couponUsage", idType: "int", orderBy: { usedAt: "desc" } },
   applications: { model: "application", idType: "string", orderBy: { createdAt: "desc" } },
+  tokens: { model: "token", idType: "string", orderBy: { createdAt: "desc" } },
 };
 
 const RESOURCE_SEARCH_CONFIG = {
@@ -36,7 +37,7 @@ const RESOURCE_SEARCH_CONFIG = {
     strings: ["comment", "template"],
     numbers: ["id", "userId", "score"],
   },
-  orders: {
+  order: {
     strings: ["orderId", "paymentId"],
     numbers: ["id", "userId", "planId", "price", "credits"],
     booleans: ["verified"],
@@ -86,6 +87,12 @@ const RESOURCE_SEARCH_CONFIG = {
   },
   applications: {
     strings: ["id", "companyName", "role", "location", "salary", "priority", "status", "jobLink"],
+    numbers: ["userId"],
+  },
+  tokens: {
+    strings: ["jti", "purpose"],
+    booleans: ["isRevoked"],
+    stringArrays: ["createdAt", "expiresAt"],
     numbers: ["userId"],
   },
 };

@@ -71,7 +71,7 @@ export async function POST(req) {
     };
 
     const order = await razorpay.orders.create(options);
-    await prisma.orders.create({
+    await prisma.order.create({
       data:{
         userId: auth.userId,
         orderId: order.id,

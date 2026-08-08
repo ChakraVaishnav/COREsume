@@ -24,7 +24,7 @@ export async function GET(req) {
     const response = NextResponse.json({
       authorized: true,
       admin: user,
-      resources: ["users", "resumes", "otp", "ratings", "orders", "jobs", "jobUsage"],
+      resources: ["users", "resumes", "otp", "ratings", "order", "jobs", "jobUsage"],
     });
 
     return withAdminCookies(response, admin.cookieHeaders);

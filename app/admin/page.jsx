@@ -8,7 +8,7 @@ const RESOURCE_OPTIONS = [
   { key: "resumes", label: "Resume Table" },
   { key: "otp", label: "OTP Table" },
   { key: "ratings", label: "Rating Table" },
-  { key: "orders", label: "Orders Table" },
+  { key: "order", label: "Order Table" },
   { key: "jobs", label: "Job Table" },
   { key: "jobUsage", label: "Job Usage Table" },
   { key: "featureUsage", label: "Feature Usage Table" },
@@ -16,6 +16,7 @@ const RESOURCE_OPTIONS = [
   { key: "coupons", label: "Coupons Table" },
   { key: "couponUsages", label: "Coupon Usage Table" },
   { key: "applications", label: "Job Applications Table" },
+  {key:"tokens", label: "Tokens Table" },
 ];
 
 const PAGE_SIZE = 50;
@@ -48,7 +49,7 @@ const CREATE_FIELD_HINTS = {
     { key: "comment", type: "string" },
     { key: "template", type: "string" },
   ],
-  orders: [
+  order: [
     { key: "userId", type: "number" },
     { key: "orderId", type: "string" },
     { key: "paymentId", type: "string" },
@@ -125,6 +126,14 @@ const CREATE_FIELD_HINTS = {
     { key: "status", type: "string" },
     { key: "jobLink", type: "string" },
   ],
+  tokens: [
+    { key: "userId", type: "number" },
+    { key: "jti", type: "string" },
+    {key:"purpose", type: "string" },
+    {key:"isRevoked", type: "boolean" },
+    {key:"createdAt", type: "string" },
+    { key: "expiresAt", type: "string" },
+  ],
 };
 
 const SEARCH_PLACEHOLDERS = {
@@ -132,7 +141,7 @@ const SEARCH_PLACEHOLDERS = {
   resumes: "Search by resume id or user id...",
   otp: "Search by email, code, id...",
   ratings: "Search by template, comment, user id...",
-  orders: "Search by order id, payment id, user id, plan...",
+  order: "Search by order id, payment id, user id, plan...",
   jobs: "Search by title, company, source, search id...",
   jobUsage: "Search by user id, tier, date...",
   featureUsage: "Search by user id, date...",
