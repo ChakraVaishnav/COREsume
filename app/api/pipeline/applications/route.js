@@ -7,40 +7,70 @@ import { enforceRateLimit } from "@/lib/security/rateLimit";
 
 // GET /api/pipeline/applications — list all applications for the user
 export async function GET(req) {
+  let auth;
+
   try {
-    const auth = await authenticateRequest(req);
+    auth = await authenticateRequest(req);
+
     if (!auth) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
     }
 
     const rateLimitResponse = await enforceRateLimit({
       req,
       type: "PIPELINE",
       identifier: String(auth.userId),
-      cookieHeaders: auth.cookieHeaders,
     });
 
-    if (rateLimitResponse) return rateLimitResponse;
+    if (rateLimitResponse) {
+      return appendSetCookieHeaders(
+        rateLimitResponse,
+        auth.cookieHeaders
+      );
+    }
 
     const { searchParams } = new URL(req.url);
+
     const status = searchParams.get("status");
     const search = searchParams.get("search");
     const sortBy = searchParams.get("sortBy") || "updatedAt";
     const sortOrder = searchParams.get("sortOrder") || "desc";
 
-    const where = { userId: auth.userId };
+    const where = {
+      userId: auth.userId,
+    };
+
     if (status && status !== "all") {
       where.status = status;
     }
+
     if (search) {
       where.OR = [
-        { companyName: { contains: search, mode: "insensitive" } },
-        { role: { contains: search, mode: "insensitive" } },
+        {
+          companyName: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+        {
+          role: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
       ];
     }
 
     const orderBy = {};
-    if (sortBy === "applicationDate" || sortBy === "updatedAt" || sortBy === "createdAt") {
+
+    if (
+      sortBy === "applicationDate" ||
+      sortBy === "updatedAt" ||
+      sortBy === "createdAt"
+    ) {
       orderBy[sortBy] = sortOrder;
     } else {
       orderBy.updatedAt = "desc";
@@ -51,32 +81,58 @@ export async function GET(req) {
       orderBy,
     });
 
-    const response = NextResponse.json({ applications }, { status: 200 });
-    return appendSetCookieHeaders(response, auth.cookieHeaders);
+    const response = NextResponse.json(
+      { applications },
+      { status: 200 }
+    );
+
+    return appendSetCookieHeaders(
+      response,
+      auth.cookieHeaders
+    );
   } catch (err) {
     logApiError("[pipeline/applications GET] Error:", err);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+
+    const response = NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+
+    return auth
+      ? appendSetCookieHeaders(response, auth.cookieHeaders)
+      : response;
   }
 }
 
-// POST /api/pipeline/applications — create a new application with stages
+// POST /api/pipeline/applications — create a new application
 export async function POST(req) {
+  let auth;
+
   try {
-    const auth = await authenticateRequest(req);
+    auth = await authenticateRequest(req);
+
     if (!auth) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
     }
 
     const rateLimitResponse = await enforceRateLimit({
       req,
       type: "PIPELINE",
       identifier: String(auth.userId),
-      cookieHeaders: auth.cookieHeaders,
     });
 
-    if (rateLimitResponse) return rateLimitResponse;
+    if (rateLimitResponse) {
+      return appendSetCookieHeaders(
+        rateLimitResponse,
+        auth.cookieHeaders
+      );
+    }
 
     const body = await req.json();
+
     const {
       companyName,
       role,
@@ -89,9 +145,18 @@ export async function POST(req) {
     } = body;
 
     if (!companyName || !role) {
-      return NextResponse.json(
-        { error: "Company name and role are required" },
-        { status: 400 }
+      const response = NextResponse.json(
+        {
+          error: "Company name and role are required",
+        },
+        {
+          status: 400,
+        }
+      );
+
+      return appendSetCookieHeaders(
+        response,
+        auth.cookieHeaders
       );
     }
 
@@ -110,10 +175,25 @@ export async function POST(req) {
       },
     });
 
-    const response = NextResponse.json({ application }, { status: 201 });
-    return appendSetCookieHeaders(response, auth.cookieHeaders);
+    const response = NextResponse.json(
+      { application },
+      { status: 201 }
+    );
+
+    return appendSetCookieHeaders(
+      response,
+      auth.cookieHeaders
+    );
   } catch (err) {
     logApiError("[pipeline/applications POST] Error:", err);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+
+    const response = NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+
+    return auth
+      ? appendSetCookieHeaders(response, auth.cookieHeaders)
+      : response;
   }
 }
