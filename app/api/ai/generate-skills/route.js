@@ -15,11 +15,6 @@ export async function POST(req) {
       );
     }
 
-    const auth = await authenticateRequest(req);
-    if (!auth?.userId) {
-      return NextResponse.json({ error: "UNAUTHORIZED", message: "Unauthorized" }, { status: 401 });
-    }
-
     const rateLimitResponse = await enforceRateLimit({
       req,
       type: "AI",
