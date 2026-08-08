@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticateRequest } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
-
+import { enforceRateLimit } from "@/lib/security/rateLimit";
 const USERNAME_REGEX = /^[a-zA-Z0-9._ -]+$/;
 
 export async function PATCH(req) {
@@ -11,6 +11,16 @@ export async function PATCH(req) {
     if (!auth) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const rateLimitResponse = await enforceRateLimit({
+      req,
+      type: "USER",
+      identifier: String(auth.userId),
+      cookieHeaders: auth.cookieHeaders,
+    });
+
+    if (rateLimitResponse) return rateLimitResponse;
+
+    
 
     const body = await req.json().catch(() => ({}));
     const username = typeof body?.username === "string" ? body.username.trim() : "";

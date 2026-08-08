@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import puppeteer from "puppeteer";
 import { logApiError } from "@/lib/logger";
+import { authenticateRequest } from "@/lib/auth/session";
+import { appendSetCookieHeaders } from "@/lib/auth/token";
+import { enforceRateLimit } from "@/lib/security/rateLimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -48,6 +51,22 @@ function buildFileName(data) {
 }
 
 export async function POST(req) {
+const auth = await authenticateRequest(req);
+
+if (!auth) {
+  return NextResponse.json(
+    { error: "Unauthorized" },
+    { status: 401 }
+  );
+}
+  const rateLimitResponse = await enforceRateLimit({
+  req,
+  type: "EXPORT",
+  identifier: String(auth.userId),
+      cookieHeaders: auth.cookieHeaders,
+    });
+
+if (rateLimitResponse) return rateLimitResponse;
   let browser;
 
   try {
@@ -154,14 +173,16 @@ export async function POST(req) {
       margin: { top: "0", right: "0", bottom: "0", left: "0" },
     });
 
-    return new NextResponse(pdfBuffer, {
-      status: 200,
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="${buildFileName(resumeData)}"`,
-        "Cache-Control": "no-store",
-      },
-    });
+    const response = new NextResponse(pdfBuffer, {
+  status: 200,
+  headers: {
+    "Content-Type": "application/pdf",
+    "Content-Disposition": `attachment; filename="${buildFileName(resumeData)}"`,
+    "Cache-Control": "no-store",
+  },
+});
+
+return appendSetCookieHeaders(response, auth.cookieHeaders);
   } catch (err) {
     logApiError("[export/resume] Failed to generate PDF:", err);
     return NextResponse.json({ 

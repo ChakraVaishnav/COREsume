@@ -1,6 +1,7 @@
 import { PrismaClient } from "../../../generated/prisma";
 import { sendOtpMail } from "@/lib/mail";
 import { logApiError } from "@/lib/logger";
+import { enforceRateLimit, getClientIp } from "@/lib/security/rateLimit";
 
 const prisma = new PrismaClient();
 
@@ -19,6 +20,14 @@ export async function POST(req) {
     }
 
     const normalizedEmail = email.trim().toLowerCase();
+
+    const rateLimitResponse = await enforceRateLimit({
+      req,
+      type: "FORGOT_PASSWORD_SEND_OTP",
+      identifier: `${getClientIp(req)}:${normalizedEmail}`,
+    });
+
+    if (rateLimitResponse) return rateLimitResponse;
 
     const user = await prisma.user.findUnique({
       where: {

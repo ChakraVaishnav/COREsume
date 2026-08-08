@@ -9,6 +9,7 @@ import { authenticateRequest } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
 import { logCreditHistory } from "@/lib/featureUsage";
 import { logApiError } from "@/lib/logger";
+import { enforceRateLimit } from "@/lib/security/rateLimit";
 
 export const runtime = "nodejs";
 
@@ -21,6 +22,15 @@ export async function POST(req) {
         { status: 401 }
       );
     }
+
+    const rateLimitResponse = await enforceRateLimit({
+      req,
+      type: "JOBS",
+      identifier: String(auth.userId),
+      cookieHeaders: auth.cookieHeaders,
+    });
+
+    if (rateLimitResponse) return rateLimitResponse;
 
     const { resumeText, jobQuery, location, searchMode } = await req.json();
     if (!resumeText || !jobQuery) {

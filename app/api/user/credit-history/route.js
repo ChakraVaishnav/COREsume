@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { authenticateRequest } from '@/lib/auth/session'
 import { logApiError } from "@/lib/logger";
+import { enforceRateLimit } from "@/lib/security/rateLimit";
 
 export async function GET(req) {
   try {
@@ -9,6 +10,15 @@ export async function GET(req) {
     if (!auth?.userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
+
+    const rateLimitResponse = await enforceRateLimit({
+      req,
+      type: "USER",
+      identifier: String(auth.userId),
+      cookieHeaders: auth.cookieHeaders,
+    });
+
+    if (rateLimitResponse) return rateLimitResponse;
 
     const { searchParams } = new URL(req.url)
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'))

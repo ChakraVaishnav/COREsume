@@ -85,20 +85,6 @@ export function LandingPage() {
     languagesCount: 5,
   });
 
-  useEffect(() => {
-    fetch("/api/stats")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data && data.resumeCount) {
-          // Keep hardware default on frontend until big
-          if (data.resumeCount > 250) {
-            setStats((s) => ({ ...s, resumeCount: data.resumeCount + "+" }));
-          }
-        }
-      })
-      .catch((err) => console.error("Stats fetch error:", err));
-  }, []);
-
   return (
     <div className="min-h-screen bg-[#FFFFFF] font-sans text-[#111111] overflow-x-hidden">
       <Navbar fixed />

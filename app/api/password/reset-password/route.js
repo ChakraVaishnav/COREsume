@@ -7,6 +7,7 @@ import {
   buildClearForgotPasswordCookie,
 } from "@/lib/auth/token";
 import { NextResponse } from "next/server";
+import { enforceRateLimit } from "@/lib/security/rateLimit";
 
 const prisma = new PrismaClient();
 
@@ -55,6 +56,13 @@ export async function POST(req) {
         { status: 401 }
       );
     }
+
+    const rateLimitResponse = await enforceRateLimit({
+      req,
+      type: "RESET_PASSWORD",
+      identifier: String(payload.id),
+    });
+    if (rateLimitResponse) return rateLimitResponse;
 
     // Check JTI in database
     const dbToken = await prisma.token.findUnique({

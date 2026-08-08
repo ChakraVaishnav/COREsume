@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { authenticateRequest } from "@/lib/auth/session";
+import { appendSetCookieHeaders } from "@/lib/auth/token";
+import { enforceRateLimit } from "@/lib/security/rateLimit";
 
 export async function GET(req) {
   try {
@@ -11,14 +13,23 @@ export async function GET(req) {
       );
     }
 
-    return NextResponse.json({
+    const rateLimitResponse = await enforceRateLimit({
+      req,
+      type: "PAYMENT",
+      identifier: String(auth.userId),
+      cookieHeaders: auth.cookieHeaders,
+    });
+    if (rateLimitResponse) return rateLimitResponse;
+
+    const response = NextResponse.json({
       success: true,
       key: process.env.RAZOR_PAY_ID,
     });
+    return appendSetCookieHeaders(response, auth.cookieHeaders);
   } catch (error) {
     return NextResponse.json(
       { success: false, error: 'Failed to get payment key' },
       { status: 500 }
     );
   }
-} 
+}

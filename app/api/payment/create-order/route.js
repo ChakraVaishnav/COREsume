@@ -2,6 +2,7 @@ import Razorpay from 'razorpay';
 import { NextResponse } from "next/server";
 import { authenticateRequest } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
+import{enforceRateLimit} from "@/lib/security/rateLimit";
 const razorpay = new Razorpay({
   key_id: process.env.RAZOR_PAY_ID,
   key_secret: process.env.RAZOR_PAY_SECRET,
@@ -39,11 +40,19 @@ export async function POST(req) {
       );
     }
 
+    const rateLimitResponse = await enforceRateLimit({
+      req,
+      type: "PAYMENT",
+      identifier: String(auth.userId),
+      cookieHeaders: auth.cookieHeaders,
+    });
+    if (rateLimitResponse) return rateLimitResponse;
+
     const { plan } = await req.json();
     const selectedPlan = plans.find(p => p.id === plan.id);
     if (!selectedPlan) {
       return NextResponse.json(
-        { success: false, error: "Invalid plan selected" },
+        { success: false, error: "Invalid plan selected" }, 
         { status: 400 }
       );
     }

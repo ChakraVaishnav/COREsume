@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { authenticateRequest } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
 import { logApiError } from "@/lib/logger";
-
+import { enforceRateLimit } from "@/lib/security/rateLimit";
 // GET /api/pipeline/applications/[id] — get single application with stages
 export async function GET(req, { params }) {
   try {
@@ -11,6 +11,14 @@ export async function GET(req, { params }) {
     if (!auth) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const rateLimitResponse = await enforceRateLimit({
+      req,
+      type: "PIPELINE",
+      identifier: String(auth.userId),
+      cookieHeaders: auth.cookieHeaders,
+    });
+    if (rateLimitResponse) return rateLimitResponse;
 
     const { id } = await params;
     const application = await prisma.application.findFirst({
@@ -36,6 +44,14 @@ export async function PUT(req, { params }) {
     if (!auth) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const rateLimitResponse = await enforceRateLimit({
+      req,
+      type: "PIPELINE",
+      identifier: String(auth.userId),
+      cookieHeaders: auth.cookieHeaders,
+    });
+    if (rateLimitResponse) return rateLimitResponse;
 
     const { id } = await params;
 
@@ -80,6 +96,14 @@ export async function DELETE(req, { params }) {
     if (!auth) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const rateLimitResponse = await enforceRateLimit({
+      req,
+      type: "PIPELINE",
+      identifier: String(auth.userId),
+      cookieHeaders: auth.cookieHeaders,
+    });
+    if (rateLimitResponse) return rateLimitResponse;
 
     const { id } = await params;
 

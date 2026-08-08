@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { authenticateRequest } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
 import { logApiError } from "@/lib/logger";
+import { enforceRateLimit } from "@/lib/security/rateLimit";
 
 // PUT /api/pipeline/applications/[id]/stages/[stageId] — update single stage
 export async function PUT(req, { params }) {
@@ -11,6 +12,14 @@ export async function PUT(req, { params }) {
     if (!auth) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const rateLimitResponse = await enforceRateLimit({
+      req,
+      type: "PIPELINE",
+      identifier: String(auth.userId),
+      cookieHeaders: auth.cookieHeaders,
+    });
+    if (rateLimitResponse) return rateLimitResponse;
 
     const { id, stageId } = await params;
 
@@ -62,6 +71,14 @@ export async function DELETE(req, { params }) {
     if (!auth) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const rateLimitResponse = await enforceRateLimit({
+      req,
+      type: "PIPELINE",
+      identifier: String(auth.userId),
+      cookieHeaders: auth.cookieHeaders,
+    });
+    if (rateLimitResponse) return rateLimitResponse;
 
     const { id, stageId } = await params;
 

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { authenticateRequest } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
 import { logApiError } from "@/lib/logger";
+import { enforceRateLimit } from "@/lib/security/rateLimit";
 
 export async function POST(req) {
   try {
@@ -10,6 +11,15 @@ export async function POST(req) {
     if (!auth) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const rateLimitResponse = await enforceRateLimit({
+      req,
+      type: "RESUME_SAVE",
+      identifier: String(auth.userId),
+      cookieHeaders: auth.cookieHeaders,
+    });
+
+    if (rateLimitResponse) return rateLimitResponse;
 
     const body = await req.json();
     const { data } = body;

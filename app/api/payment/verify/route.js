@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { authenticateRequest } from "@/lib/auth/session";
 import crypto from "crypto";
 import { logCreditHistory } from "@/lib/featureUsage";
-
+import{enforceRateLimit} from "@/lib/security/rateLimit";
 export async function POST(req) {
   try {
     const auth = await authenticateRequest(req);
@@ -13,6 +13,14 @@ export async function POST(req) {
         { status: 401 }
       );
     }
+
+    const rateLimitResponse = await enforceRateLimit({
+      req,
+      type: "PAYMENT",
+      identifier: String(auth.userId),
+      cookieHeaders: auth.cookieHeaders,
+    });
+    if (rateLimitResponse) return rateLimitResponse;
 
     const {
       razorpay_order_id,

@@ -3,6 +3,7 @@
 import { generateGeminiResponse } from "../../../utils/gemini";
 import { NextResponse } from "next/server";
 import { authenticateRequest } from "@/lib/auth/session";
+import { enforceRateLimit } from "@/lib/security/rateLimit";
 
 export async function POST(req) {
   try {
@@ -13,6 +14,20 @@ export async function POST(req) {
         { status: 401 }
       );
     }
+
+    const auth = await authenticateRequest(req);
+    if (!auth?.userId) {
+      return NextResponse.json({ error: "UNAUTHORIZED", message: "Unauthorized" }, { status: 401 });
+    }
+
+    const rateLimitResponse = await enforceRateLimit({
+      req,
+      type: "AI",
+      identifier: String(auth.userId),
+      cookieHeaders: auth.cookieHeaders,
+    });
+
+    if (rateLimitResponse) return rateLimitResponse;
 
     const body = await req.json();
     const { jobRole, experienceLevel } = body;

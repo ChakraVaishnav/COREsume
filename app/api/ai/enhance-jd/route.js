@@ -189,7 +189,8 @@ export async function POST(req) {
     req,
     type: "AI",
     identifier: String(auth.userId),
-});
+      cookieHeaders: auth.cookieHeaders,
+    });
 
 if (rateLimitResponse) return rateLimitResponse;
   const requestId = `ats_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;

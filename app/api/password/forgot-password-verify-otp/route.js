@@ -4,6 +4,7 @@ import {
   buildForgotPasswordCookie,
 } from "@/lib/auth/token";
 import { NextResponse } from "next/server";
+import { enforceRateLimit, getClientIp } from "@/lib/security/rateLimit";
 
 const prisma = new PrismaClient();
 
@@ -19,6 +20,14 @@ export async function POST(req) {
     }
 
     const normalizedEmail = email.trim().toLowerCase();
+
+    const rateLimitResponse = await enforceRateLimit({
+      req,
+      type: "FORGOT_PASSWORD_VERIFY_OTP",
+      identifier: `${getClientIp(req)}:${normalizedEmail}`,
+    });
+
+    if (rateLimitResponse) return rateLimitResponse;
 
     const user = await prisma.user.findUnique({
       where: { email: normalizedEmail },

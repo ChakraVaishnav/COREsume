@@ -18,6 +18,7 @@ export default function Navbar({ fixed = false }) {
   const [couponError, setCouponError] = useState("");
   const [couponSuccess, setCouponSuccess] = useState("");
   const couponInputRef = useRef(null);
+  const [rateLimitError, setRateLimitError] = useState("");
 
   useEffect(() => {
     fetchCredits();
@@ -52,35 +53,39 @@ export default function Navbar({ fixed = false }) {
   }, [couponModalOpen]);
 
   const fetchCredits = async () => {
-    try {
-      setRefreshing(true);
-      const response = await fetch("/api/user/credits", {
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-      });
+  try {
+    setRefreshing(true);
+    setRateLimitError("");
 
-      if (response.status === 401 || response.status === 404) {
-        window.location.href = "/login";
-        return;
-      }
+    const response = await fetch("/api/user/credits", {
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    });
 
-      if (!response.ok) {
-        if (response.status === 401) {
-          window.location.href = "/login";
-          return;
-        }
-        throw new Error("Failed to fetch credits");
-      }
-
-      const data = await response.json();
-      setCredits(data.credits);
-    } catch (error) {
-      console.error("Error fetching credits:", error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
+    if (response.status === 401 || response.status === 404) {
+      window.location.href = "/login";
+      return;
     }
-  };
+
+    if (response.status === 429) {
+      const data = await response.json();
+      setRateLimitError(data.error);
+      return;
+    }
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch credits");
+    }
+
+    const data = await response.json();
+    setCredits(data.credits);
+  } catch (error) {
+    console.error("Error fetching credits:", error);
+  } finally {
+    setLoading(false);
+    setRefreshing(false);
+  }
+};
 
   const fetchCouponStatus = async () => {
     try {
@@ -167,17 +172,27 @@ export default function Navbar({ fixed = false }) {
           {/* Right Side Items */}
           <div className="flex items-center space-x-2 sm:space-x-4">
             {/* Credits + Refresh */}
-            <div className="text-sm font-medium text-gray-700 flex items-center whitespace-nowrap">
-              Credits: {loading ? "Loading..." : credits ?? 0}
-              <button
-                onClick={fetchCredits}
-                disabled={refreshing}
-                className="ml-1 text-yellow-500 hover:text-yellow-600 transition"
-                title="Refresh credits"
-              >
-                <FiRefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
-              </button>
-            </div>
+            <div className="flex flex-col">
+                <div className="text-sm font-medium text-gray-700 flex items-center whitespace-nowrap">
+                  Credits: {loading ? "Loading..." : credits ?? 0}
+
+                  <button
+                    onClick={fetchCredits}
+                    disabled={refreshing}
+                    className="ml-1 text-yellow-500 hover:text-yellow-600"
+                  >
+                    <FiRefreshCw
+                      className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
+                    />
+                  </button>
+                </div>
+
+                {rateLimitError && (
+                  <span className="text-xs text-red-500 mt-1">
+                    {rateLimitError}
+                  </span>
+                )}
+              </div>
 
             {/* Desktop actions */}
             <div className="hidden md:flex items-center space-x-4">

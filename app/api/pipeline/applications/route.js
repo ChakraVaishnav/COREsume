@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { authenticateRequest } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
 import { logApiError } from "@/lib/logger";
+import { enforceRateLimit } from "@/lib/security/rateLimit";
 
 // GET /api/pipeline/applications — list all applications for the user
 export async function GET(req) {
@@ -11,6 +12,15 @@ export async function GET(req) {
     if (!auth) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const rateLimitResponse = await enforceRateLimit({
+      req,
+      type: "PIPELINE",
+      identifier: String(auth.userId),
+      cookieHeaders: auth.cookieHeaders,
+    });
+
+    if (rateLimitResponse) return rateLimitResponse;
 
     const { searchParams } = new URL(req.url);
     const status = searchParams.get("status");
@@ -56,6 +66,15 @@ export async function POST(req) {
     if (!auth) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const rateLimitResponse = await enforceRateLimit({
+      req,
+      type: "PIPELINE",
+      identifier: String(auth.userId),
+      cookieHeaders: auth.cookieHeaders,
+    });
+
+    if (rateLimitResponse) return rateLimitResponse;
 
     const body = await req.json();
     const {

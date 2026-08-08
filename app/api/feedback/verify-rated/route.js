@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticateRequest } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
+import { enforceRateLimit } from "@/lib/security/rateLimit";
 
 // Reuse PrismaClient across lambda invocations when possible
 const sharedPrisma = globalThis.__prisma || prisma;
@@ -20,6 +21,14 @@ export async function GET(req) {
     if (!auth) {
       return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 });
     }
+
+    const rateLimitResponse = await enforceRateLimit({
+      req,
+      type: "FEEDBACK",
+      identifier: String(auth.userId),
+      cookieHeaders: auth.cookieHeaders,
+    });
+    if (rateLimitResponse) return rateLimitResponse;
 
     // Ensure Prisma has the rating model available
     if (!sharedPrisma.rating || typeof sharedPrisma.rating.findFirst !== 'function') {

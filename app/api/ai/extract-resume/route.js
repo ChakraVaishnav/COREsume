@@ -4,6 +4,7 @@ import { authenticateRequest } from "@/lib/auth/session";
 import { checkPdfLimit, incrementPdf } from "@/lib/featureUsage";
 import { parsePdfText } from "@/lib/pdfParser";
 import { logApiError } from "@/lib/logger";
+import { enforceRateLimit } from "@/lib/security/rateLimit";
 
 export const runtime = "nodejs";
 
@@ -253,6 +254,15 @@ export async function POST(req) {
         { status: 401 }
       );
     }
+
+    const rateLimitResponse = await enforceRateLimit({
+        req,
+        type: "AI",
+        identifier: String(auth.userId),
+      cookieHeaders: auth.cookieHeaders,
+    });
+
+      if (rateLimitResponse) return rateLimitResponse;
 
     const formData = await req.formData();
     const useCredit = formData.get("useCredit") === "true";

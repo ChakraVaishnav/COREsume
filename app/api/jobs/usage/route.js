@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { authenticateRequest } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
 import { logApiError } from "@/lib/logger";
+import { enforceRateLimit } from "@/lib/security/rateLimit";
 import {
   FREE_DAILY_SEARCH_LIMIT,
   getISTDateKey,
@@ -20,6 +21,15 @@ export async function GET(req) {
         { status: 401 }
       );
     }
+
+    const rateLimitResponse = await enforceRateLimit({
+      req,
+      type: "JOBS",
+      identifier: String(auth.userId),
+      cookieHeaders: auth.cookieHeaders,
+    });
+
+    if (rateLimitResponse) return rateLimitResponse;
 
     const user = await prisma.user.findUnique({
       where: { id: auth.userId },

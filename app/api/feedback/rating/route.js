@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticateRequest } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
+import { enforceRateLimit } from "@/lib/security/rateLimit";
 
 export async function POST(req) {
   try {
@@ -16,6 +17,14 @@ export async function POST(req) {
     if (!auth) {
       return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 });
     }
+
+    const rateLimitResponse = await enforceRateLimit({
+      req,
+      type: "FEEDBACK",
+      identifier: String(auth.userId),
+      cookieHeaders: auth.cookieHeaders,
+    });
+    if (rateLimitResponse) return rateLimitResponse;
 
     // Validate Prisma client has the rating model available
     if (!prisma.rating || typeof prisma.rating.create !== 'function') {

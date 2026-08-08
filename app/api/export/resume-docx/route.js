@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import HTMLtoDOCX from "html-to-docx";
 import { logApiError } from "@/lib/logger";
 
+import { authenticateRequest } from "@/lib/auth/session";
+import { appendSetCookieHeaders } from "@/lib/auth/token";
+import { enforceRateLimit } from "@/lib/security/rateLimit";
+
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -209,6 +213,22 @@ function buildHtml(resumeData) {
 
 export async function POST(req) {
   try {
+    const auth = await authenticateRequest(req);
+
+if (!auth) {
+  return NextResponse.json(
+    { error: "Unauthorized" },
+    { status: 401 }
+  );
+}
+  const rateLimitResponse = await enforceRateLimit({
+  req,
+  type: "EXPORT",
+  identifier: String(auth.userId),
+      cookieHeaders: auth.cookieHeaders,
+    });
+
+if (rateLimitResponse) return rateLimitResponse;
     const body = await req.json();
     const resumeData = body?.data;
 

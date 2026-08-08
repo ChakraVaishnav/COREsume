@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { authenticateRequest } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
 import { logApiError } from "@/lib/logger";
+import { enforceRateLimit } from "@/lib/security/rateLimit";
 
 export const runtime = "nodejs";
 
@@ -13,7 +14,13 @@ export async function GET(req) {
     if (!auth) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
+    const rateLimitResponse = await enforceRateLimit({
+      req,
+      type: "COUPON",
+      identifier: String(auth.userId),
+      cookieHeaders: auth.cookieHeaders,
+    });
+    if (rateLimitResponse) return rateLimitResponse;
     const existing = await prisma.couponUsage.findUnique({
       where: { userId: auth.userId },
     });

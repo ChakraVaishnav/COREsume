@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticateRequest } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
-
+import { enforceRateLimit } from "@/lib/security/rateLimit";
 export async function GET(req) {
   try {
     const auth = await authenticateRequest(req);
@@ -10,6 +10,14 @@ export async function GET(req) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const rateLimitResponse = await enforceRateLimit({
+      req,
+      type: "USER",
+      identifier: String(auth.userId),
+      cookieHeaders: auth.cookieHeaders,
+    });
+
+    if (rateLimitResponse) return rateLimitResponse;
     const user = await prisma.user.findUnique({
       where: { id: auth.userId },
       select: { creds: true },
