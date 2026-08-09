@@ -4,6 +4,7 @@ import { generateGeminiResponse } from "../../../utils/gemini";
 import { NextResponse } from "next/server";
 import { authenticateRequest } from "@/lib/auth/session";
 import { enforceRateLimit } from "@/lib/security/rateLimit";
+import { logApiError } from "@/lib/logger";
 
 export async function POST(req) {
   try {
@@ -50,6 +51,7 @@ Rules:
       status: 200,
     });
   } catch (error) {
+    logApiError("API/AI/GENERATE_SKILLS", error);
     return new Response(JSON.stringify({ error: "Failed to generate skills" }), {
       status: 500,
     });

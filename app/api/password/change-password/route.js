@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { authenticateRequest } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
 import { enforceRateLimit } from "@/lib/security/rateLimit";
+import { logApiError } from "@/lib/logger";
 
 export async function POST(req) {
   try {
@@ -47,6 +48,7 @@ export async function POST(req) {
     return appendSetCookieHeaders(response, auth.cookieHeaders);
 
   } catch (error) {
+    logApiError("API/PASSWORD/CHANGE_PASSWORD", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

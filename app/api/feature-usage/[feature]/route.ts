@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { authenticateRequest } from '@/lib/auth/session'
 import { checkAtsLimit, checkPdfLimit, checkJdLimit } from '@/lib/featureUsage'
+import { logApiError } from '@/lib/logger'
 
 export async function GET(req: Request, props: { params: Promise<{ feature: string }> }) {
   try {
@@ -23,7 +24,7 @@ export async function GET(req: Request, props: { params: Promise<{ feature: stri
     
     return NextResponse.json(result)
   } catch (err) {
+    logApiError("API/FEATURE_USAGE", err)
     return NextResponse.json({ error: "Server error" }, { status: 500 })
   }
 }
-

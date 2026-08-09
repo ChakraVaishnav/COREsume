@@ -4,6 +4,7 @@ import { authenticateRequest } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
 import { logCreditHistory } from "@/lib/featureUsage";
 import { enforceRateLimit } from "@/lib/security/rateLimit";
+import { logApiError } from "@/lib/logger";
 
 export async function POST(req) {
   try {
@@ -43,6 +44,7 @@ export async function POST(req) {
     const response = NextResponse.json({ success: true }, { status: 200 });
     return appendSetCookieHeaders(response, auth.cookieHeaders);
   } catch (error) {
+    logApiError("API/USER/DEDUCT_CREDIT", error);
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
   }
 }

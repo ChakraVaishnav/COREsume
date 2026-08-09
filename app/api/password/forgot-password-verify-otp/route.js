@@ -5,6 +5,7 @@ import {
 } from "@/lib/auth/token";
 import { NextResponse } from "next/server";
 import { enforceRateLimit, getClientIp } from "@/lib/security/rateLimit";
+import { logApiError } from "@/lib/logger";
 
 const prisma = new PrismaClient();
 
@@ -100,6 +101,7 @@ export async function POST(req) {
 
     return response;
   } catch (err) {
+    logApiError("API/PASSWORD/FORGOT_PASSWORD_VERIFY_OTP", err);
     return NextResponse.json(
       {
         error: "Internal Server Error",

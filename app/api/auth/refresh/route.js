@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { refreshSession } from "@/lib/auth/session";
 import { appendSetCookieHeaders, buildClearSessionCookies, verifyRefreshToken } from "@/lib/auth/token";
 import { prisma } from "@/lib/prisma";
+import { logApiError } from "@/lib/logger";
 
 export async function POST(req) {
   const refreshToken = req.cookies.get("refreshToken")?.value;
@@ -30,6 +31,7 @@ export async function POST(req) {
       }
     }
     catch(error){
+      logApiError("API/AUTH/REFRESH_VERIFY", error);
       const unauthorized = NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       return appendSetCookieHeaders(unauthorized, buildClearSessionCookies());
     }

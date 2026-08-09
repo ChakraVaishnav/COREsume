@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { createSession } from "@/lib/auth/session";
 import { appendSetCookieHeaders, TOKEN_PURPOSE } from "@/lib/auth/token";
 import { enforceRateLimit } from "@/lib/security/rateLimit";
+import { logApiError } from "@/lib/logger";
 
 export async function POST(req) {
   try {
@@ -98,6 +99,7 @@ export async function POST(req) {
 
     return appendSetCookieHeaders(response, session.cookieHeaders);
   } catch (error) {
+    logApiError("API/AUTH/LOGIN", error);
     return NextResponse.json(
       {
         error: "Something went wrong",

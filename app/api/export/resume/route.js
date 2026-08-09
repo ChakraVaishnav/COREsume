@@ -15,7 +15,6 @@ const BASE_PUPPETEER_ARGS = [
 ];
 
 async function launchBrowser() {
-  console.log("[export/resume] Launching browser. VERCEL:", !!process.env.VERCEL);
   const envExecutable = process.env.PUPPETEER_EXECUTABLE_PATH;
   if (envExecutable) {
     return puppeteer.launch({
@@ -113,7 +112,6 @@ if (rateLimitResponse) return rateLimitResponse;
     });
 
     const previewUrl = `${req.nextUrl.origin}/resume-preview?export=1`;
-    console.log("[export/resume] Navigating to:", previewUrl);
     await page.goto(previewUrl, { waitUntil: "domcontentloaded", timeout: 60_000 });
     await page.waitForSelector("#resume-container", { timeout: 30_000 });
     await page.waitForFunction(

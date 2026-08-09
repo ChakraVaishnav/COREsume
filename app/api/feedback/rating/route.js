@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { authenticateRequest } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
 import { enforceRateLimit } from "@/lib/security/rateLimit";
+import { logApiError } from "@/lib/logger";
 
 export async function POST(req) {
   try {
@@ -47,6 +48,7 @@ export async function POST(req) {
     const response = NextResponse.json({ success: true, rating }, { status: 201 });
     return appendSetCookieHeaders(response, auth.cookieHeaders);
   } catch (error) {
+    logApiError("API/FEEDBACK/RATING", error);
     return NextResponse.json({ error: 'Server error', details: error.message }, { status: 500 });
   }
 }

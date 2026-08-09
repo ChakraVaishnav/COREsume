@@ -4,6 +4,7 @@ import { generateGeminiResponse } from "../../../utils/gemini";
 import { NextResponse } from "next/server";
 import { authenticateRequest } from "@/lib/auth/session";
 import { enforceRateLimit } from "@/lib/security/rateLimit";
+import { logApiError } from "@/lib/logger";
 
 export async function POST(req) {
   try {
@@ -67,6 +68,7 @@ export async function POST(req) {
       status: 200,
     });
   } catch (error) {
+    logApiError("API/AI/ENHANCE_PROJECT_DESCRIPTION", error);
     return new Response(JSON.stringify({ error: "Failed to enhance project description" }), {
       status: 500,
     });

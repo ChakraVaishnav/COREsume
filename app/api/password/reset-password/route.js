@@ -8,6 +8,7 @@ import {
 } from "@/lib/auth/token";
 import { NextResponse } from "next/server";
 import { enforceRateLimit } from "@/lib/security/rateLimit";
+import { logApiError } from "@/lib/logger";
 
 const prisma = new PrismaClient();
 
@@ -122,6 +123,7 @@ export async function POST(req) {
 
     return response;
   } catch (error) {
+    logApiError("API/PASSWORD/RESET_PASSWORD", error);
     return NextResponse.json(
       { error: "Something went wrong" },
       { status: 500 }

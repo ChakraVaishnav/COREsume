@@ -4,6 +4,7 @@ import { authenticateRequest } from "@/lib/auth/session";
 import crypto from "crypto";
 import { logCreditHistory } from "@/lib/featureUsage";
 import{enforceRateLimit} from "@/lib/security/rateLimit";
+import { logApiError } from "@/lib/logger";
 export async function POST(req) {
   try {
     const auth = await authenticateRequest(req);
@@ -86,6 +87,10 @@ export async function POST(req) {
     const isAuthentic = expectedSignature === razorpay_signature;
 
     if (!isAuthentic) {
+      logApiError("API/PAYMENT/VERIFY_SIGNATURE_MISMATCH", {
+        orderId: razorpay_order_id,
+        userId: auth.userId,
+      });
       return NextResponse.json(
         { success: false, error: "Invalid payment signature" },
         { status: 400 }
@@ -147,6 +152,7 @@ export async function POST(req) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    logApiError("API/PAYMENT/VERIFY", error);
     return NextResponse.json(
       { success: false, error: "Server error", details: error.message },
       { status: 500 }

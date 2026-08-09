@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { authenticateRequest } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
 import { enforceRateLimit } from "@/lib/security/rateLimit";
+import { logApiError } from "@/lib/logger";
 export async function GET(req) {
   try {
     const auth = await authenticateRequest(req);
@@ -30,6 +31,7 @@ export async function GET(req) {
     const response = NextResponse.json({ credits: user.creds }, { status: 200 });
     return appendSetCookieHeaders(response, auth.cookieHeaders);
   } catch (err) {
+    logApiError("API/USER/CREDITS", err);
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 }

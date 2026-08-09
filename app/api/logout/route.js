@@ -6,6 +6,7 @@ import {
   buildClearSessionCookies,
   appendSetCookieHeaders,
 } from "@/lib/auth/token";
+import { logApiError } from "@/lib/logger";
 
 export async function POST(req) {
   try {
@@ -39,6 +40,7 @@ export async function POST(req) {
       buildClearSessionCookies()
     );
   } catch (error) {
+    logApiError("API/LOGOUT", error);
     const response = NextResponse.json(
       { success: true },
       { status: 200 }

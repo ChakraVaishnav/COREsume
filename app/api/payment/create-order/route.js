@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { authenticateRequest } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import{enforceRateLimit} from "@/lib/security/rateLimit";
+import { logApiError } from "@/lib/logger";
 const razorpay = new Razorpay({
   key_id: process.env.RAZOR_PAY_ID,
   key_secret: process.env.RAZOR_PAY_SECRET,
@@ -83,6 +84,7 @@ export async function POST(req) {
 
     return NextResponse.json({ success: true, order });
   } catch (error) {
+    logApiError("API/PAYMENT/CREATE_ORDER", error);
     return NextResponse.json({ success: false, error: 'Order creation failed' }, { status: 500 });
   }
 }

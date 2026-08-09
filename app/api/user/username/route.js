@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { authenticateRequest } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
 import { enforceRateLimit } from "@/lib/security/rateLimit";
+import { logApiError } from "@/lib/logger";
 const USERNAME_REGEX = /^[a-zA-Z0-9._ -]+$/;
 
 export async function PATCH(req) {
@@ -67,6 +68,7 @@ export async function PATCH(req) {
 
     return appendSetCookieHeaders(response, auth.cookieHeaders);
   } catch (error) {
+    logApiError("API/USER/USERNAME", error);
     return NextResponse.json(
       { error: "Something went wrong", details: error.message },
       { status: 500 }

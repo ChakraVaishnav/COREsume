@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { authenticateRequest } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
 import { enforceRateLimit } from "@/lib/security/rateLimit";
+import { logApiError } from "@/lib/logger";
 export async function GET(req) {
   try {
     const auth = await authenticateRequest(req);
@@ -36,6 +37,7 @@ export async function GET(req) {
     return appendSetCookieHeaders(response, auth.cookieHeaders);
 
   } catch (error) {
+    logApiError("API/USER/INFO", error);
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
   }
 }

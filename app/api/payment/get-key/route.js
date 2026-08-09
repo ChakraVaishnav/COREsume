@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { authenticateRequest } from "@/lib/auth/session";
 import { appendSetCookieHeaders } from "@/lib/auth/token";
 import { enforceRateLimit } from "@/lib/security/rateLimit";
+import { logApiError } from "@/lib/logger";
 
 export async function GET(req) {
   try {
@@ -27,6 +28,7 @@ export async function GET(req) {
     });
     return appendSetCookieHeaders(response, auth.cookieHeaders);
   } catch (error) {
+    logApiError("API/PAYMENT/GET_KEY", error);
     return NextResponse.json(
       { success: false, error: 'Failed to get payment key' },
       { status: 500 }
