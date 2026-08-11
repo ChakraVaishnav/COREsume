@@ -60,6 +60,6 @@ export async function GET(req) {
     return appendSetCookieHeaders(response, auth.cookieHeaders);
   } catch (error) {
     logApiError("API/FEEDBACK/VERIFY_RATED", error);
-    return NextResponse.json({ error: 'Server error', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
