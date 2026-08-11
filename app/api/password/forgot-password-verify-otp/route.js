@@ -1,4 +1,4 @@
-import { PrismaClient } from "../../../generated/prisma";
+import { prisma } from "@/lib/prisma";
 import {
   signForgotPasswordToken,
   buildForgotPasswordCookie,
@@ -7,7 +7,6 @@ import { NextResponse } from "next/server";
 import { enforceRateLimit, getClientIp } from "@/lib/security/rateLimit";
 import { logApiError } from "@/lib/logger";
 
-const prisma = new PrismaClient();
 
 export async function POST(req) {
   try {
