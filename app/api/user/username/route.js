@@ -70,7 +70,7 @@ export async function PATCH(req) {
   } catch (error) {
     logApiError("API/USER/USERNAME", error);
     return NextResponse.json(
-      { error: "Something went wrong", details: error.message },
+      { error: "Something went wrong" },
       { status: 500 }
     );
   }
