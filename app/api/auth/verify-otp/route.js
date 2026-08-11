@@ -78,7 +78,7 @@ if (rateLimitResponse) return rateLimitResponse;
   } catch (error) {
     logApiError("[verify-otp] error:", error.message);
     return NextResponse.json(
-      { error: "Something went wrong. Please try again.", details: error.message },
+      { error: "Something went wrong. Please try again." },
       { status: 500 }
     );
   }
