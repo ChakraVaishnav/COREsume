@@ -32,8 +32,8 @@ export async function POST(req) {
     if (
       !razorpay_order_id ||
       !razorpay_payment_id ||
-      !razorpay_signature)
-    {
+      !razorpay_signature
+    ) {
       return NextResponse.json(
         { success: false, error: "Missing payment info" },
         { status: 400 }
@@ -154,7 +154,7 @@ export async function POST(req) {
   } catch (error) {
     logApiError("API/PAYMENT/VERIFY", error);
     return NextResponse.json(
-      { success: false, error: "Server error", details: error.message },
+      { success: false, error: "Server error" },
       { status: 500 }
     );
   }
