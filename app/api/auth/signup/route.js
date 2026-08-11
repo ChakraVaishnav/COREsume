@@ -46,7 +46,7 @@ export async function POST(req) {
   } catch (error) {
     logApiError("[signup/send-otp] error:", error.message);
     return NextResponse.json(
-      { error: "Something went wrong. Please try again.", details: error.message },
+      { error: "Something went wrong. Please try again." },
       { status: 500 }
     );
   }
