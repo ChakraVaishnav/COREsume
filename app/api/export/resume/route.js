@@ -184,9 +184,7 @@ return appendSetCookieHeaders(response, auth.cookieHeaders);
   } catch (err) {
     logApiError("[export/resume] Failed to generate PDF:", err);
     return NextResponse.json({ 
-      error: "Failed to generate PDF", 
-      details: err?.message,
-      stack: err?.stack 
+      error: "Failed to generate PDF" 
     }, { status: 500 });
   } finally {
     if (browser) {
