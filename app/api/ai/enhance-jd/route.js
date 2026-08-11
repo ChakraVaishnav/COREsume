@@ -4,6 +4,7 @@ import { generateGeminiResponse, generateGeminiJsonResponse } from "../../../uti
 import { authenticateRequest } from "@/lib/auth/session";
 import { checkJdLimit, incrementJd } from "@/lib/featureUsage";
 import { parsePdfText } from "@/lib/pdfParser";
+import { validatePdfFile } from "@/lib/validateFile";
 import { logApiError } from "@/lib/logger";
 import {
   preprocessResumeText,
@@ -203,6 +204,9 @@ if (rateLimitResponse) return rateLimitResponse;
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
+
+    const fileValidation = validatePdfFile(file);
+    if (!fileValidation.valid) return fileValidation.response;
 
     if (!jdText || jdText.trim().length < 10) {
       return NextResponse.json({ error: "Please enter a valid job description." }, { status: 400 });
