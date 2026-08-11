@@ -3,6 +3,7 @@ import { generateGeminiResponse } from "../../../utils/gemini";
 import { authenticateRequest } from "@/lib/auth/session";
 import { checkAtsLimit, incrementAts } from "@/lib/featureUsage";
 import { parsePdfText } from "@/lib/pdfParser";
+import { validatePdfFile } from "@/lib/validateFile";
 import { logApiError } from "@/lib/logger";
 import {
   preprocessResumeText,
@@ -112,6 +113,9 @@ if (rateLimitResponse) return rateLimitResponse;
     }
     const file = formData.get("resume");
     if (!file) return Response.json({ error: "No file provided" }, { status: 400 });
+
+    const fileValidation = validatePdfFile(file);
+    if (!fileValidation.valid) return fileValidation.response;
 
     let resumeText = "";
     try {
