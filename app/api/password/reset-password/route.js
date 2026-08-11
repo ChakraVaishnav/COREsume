@@ -1,4 +1,4 @@
-import { PrismaClient } from "../../../generated/prisma";
+import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import {
   PASSWORD_RESET_COOKIE,
@@ -10,7 +10,6 @@ import { NextResponse } from "next/server";
 import { enforceRateLimit } from "@/lib/security/rateLimit";
 import { logApiError } from "@/lib/logger";
 
-const prisma = new PrismaClient();
 
 export async function POST(req) {
   try {
@@ -86,25 +85,23 @@ export async function POST(req) {
     // Hash new password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Update password
-    await prisma.user.update({
-      where: {
-        id: payload.id,
-      },
-      data: {
-        password: hashedPassword,
-      },
-    });
+    // Update password + revoke ALL tokens (reset + refresh) atomically
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: payload.id },
+        data: { password: hashedPassword },
+      }),
+      prisma.token.updateMany({
+        where: {
+          userId: payload.id,
+          isRevoked: false,
+        },
+        data: {
+          isRevoked: true,
+        },
+      }),
+    ]);
 
-    // Revoke the reset token
-    await prisma.token.update({
-      where: {
-        jti: payload.jti,
-      },
-      data: {
-        isRevoked: true,
-      },
-    });
 
     const response = NextResponse.json(
       {
