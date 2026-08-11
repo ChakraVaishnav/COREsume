@@ -201,13 +201,20 @@ export async function GET(req, context) {
       );
     }
 
-    const [items, total] = await Promise.all([
-      model.findMany({
+    const findManyArgs = {
         where,
         take,
         skip: offset,
         orderBy: cfg.orderBy,
-      }),
+      };
+
+      // Exclude password hash from user records
+      if (resource === "users") {
+        findManyArgs.omit = { password: true };
+      }
+
+    const [items, total] = await Promise.all([
+      model.findMany(findManyArgs),
       model.count({ where }),
     ]);
 
@@ -234,7 +241,7 @@ export async function GET(req, context) {
       stack: err?.stack || null,
     });
     return NextResponse.json(
-      { error: "INTERNAL_ERROR", message: err?.message || "Something went wrong." },
+      { error: "INTERNAL_ERROR", message: "Something went wrong." },
       { status: 500 }
     );
   }
@@ -279,7 +286,14 @@ export async function POST(req, context) {
         admin.cookieHeaders
       );
     }
-    const created = await model.create({ data });
+    const createArgs = { data };
+
+      // Exclude password hash from created user record
+      if (resource === "users") {
+        createArgs.omit = { password: true };
+      }
+
+    const created = await model.create(createArgs);
 
     return withAdminCookies(
       NextResponse.json({ message: "Created", item: created }, { status: 201 }),
@@ -291,7 +305,7 @@ export async function POST(req, context) {
       stack: err?.stack || null,
     });
     return NextResponse.json(
-      { error: "CRUD_CREATE_FAILED", message: err?.message || "Failed to create record." },
+      { error: "CRUD_CREATE_FAILED", message: "Failed to create record." },
       { status: 400 }
     );
   }
