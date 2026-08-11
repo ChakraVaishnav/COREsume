@@ -3,6 +3,7 @@ import { generateGeminiJsonResponse } from "../../../utils/gemini";
 import { authenticateRequest } from "@/lib/auth/session";
 import { checkPdfLimit, incrementPdf } from "@/lib/featureUsage";
 import { parsePdfText } from "@/lib/pdfParser";
+import { validatePdfFile } from "@/lib/validateFile";
 import { logApiError } from "@/lib/logger";
 import { enforceRateLimit } from "@/lib/security/rateLimit";
 
@@ -292,6 +293,9 @@ export async function POST(req) {
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
+
+    const fileValidation = validatePdfFile(file);
+    if (!fileValidation.valid) return fileValidation.response;
 
     let resumeText = "";
     try {
