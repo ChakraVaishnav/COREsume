@@ -1,9 +1,8 @@
-import { PrismaClient } from "../../../generated/prisma";
+import { prisma } from "@/lib/prisma";
 import { sendOtpMail } from "@/lib/mail";
 import { logApiError } from "@/lib/logger";
 import { enforceRateLimit, getClientIp } from "@/lib/security/rateLimit";
 
-const prisma = new PrismaClient();
 
 export async function POST(req) {
   try {
@@ -100,9 +99,7 @@ export async function POST(req) {
       }),
       {
         status: 500,
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
       }
     );
   }
