@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { saveFileToIDB, loadFileFromIDB } from "@/utils/idb";
+import { sanitizeHtml } from "@/lib/sanitizeHtml";
 
 const TEMPLATES = [
   { name: "Classic Professional", slug: "classic-professional" },
@@ -34,7 +35,7 @@ function renderSuggestionText(text) {
   let htmlText = text
     .replace(/\*\*(.*?)\*\*/g, '<strong class="font-extrabold text-black">$1</strong>')
     .replace(/\*(.*?)\*/g, '<em class="font-medium italic text-black">$1</em>');
-  return <span dangerouslySetInnerHTML={{ __html: htmlText }} />;
+  return <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(htmlText) }} />;
 }
 
 export default function ImproveAccordingToJdPage() {
@@ -262,7 +263,7 @@ export default function ImproveAccordingToJdPage() {
           {/* Core Panel Split Grid */}
           <div className="flex flex-col lg:flex-row gap-8 items-start">
 
-            {/* ── LEFT: Upload & Inputs Panel ── */}
+            {/* 🔶 LEFT: Upload & Inputs Panel 🔶 */}
             <div className="w-full lg:w-110 lg:shrink-0 bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
               <h1 className="text-2xl font-extrabold text-black mb-1">Tailor Resume to JD</h1>
               <p className="text-gray-500 text-sm mb-6 leading-relaxed">
@@ -278,11 +279,12 @@ export default function ImproveAccordingToJdPage() {
                 onDragLeave={() => setDragOver(false)}
                 onDrop={handleDrop}
                 onClick={() => fileRef.current?.click()}
-                className={`flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-8 cursor-pointer transition-all duration-200 mb-5 ${dragOver
+                className={`flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-8 cursor-pointer transition-all duration-200 mb-5 ${
+                  dragOver
                     ? "border-yellow-400 bg-yellow-50"
                     : file
-                      ? "border-emerald-400 bg-emerald-50"
-                      : "border-gray-200 bg-gray-50/30 hover:border-yellow-400 hover:bg-yellow-50"
+                    ? "border-emerald-400 bg-emerald-50"
+                    : "border-gray-200 bg-gray-50/30 hover:border-yellow-400 hover:bg-yellow-50"
                   }`}
               >
                 <input
@@ -339,12 +341,12 @@ export default function ImproveAccordingToJdPage() {
                 </div>
               )}
 
-              {/* CTA Action Buttons */}
+              {/* CTA Buttons */}
               <div className="space-y-3">
                 <button
                   onClick={() => runEnhancement(false)}
                   disabled={!file || !jdText.trim() || !!enhancing || isFreeDisabled}
-                  className="w-full py-3.5 rounded-xl font-black text-black bg-yellow-400 hover:bg-yellow-500 border-2 border-yellow-500 transition-all shadow-md hover:shadow-lg disabled:opacity-45 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full py-3.5 rounded-xl font-bold text-black bg-yellow-400 hover:bg-yellow-500 border-2 border-yellow-500 transition-all shadow-md hover:shadow-lg disabled:opacity-45 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {enhancing === "free" ? (
                     <>
@@ -412,7 +414,7 @@ export default function ImproveAccordingToJdPage() {
               </div>
             </div>
 
-            {/* ── RIGHT: Output & Results Display Panel ── */}
+            {/* 🔶 RIGHT: Output & Results Display Panel 🔶 */}
             <div className="flex-1 w-full min-w-0">
 
               {/* State A: Normal Empty Placeholder */}
@@ -420,10 +422,10 @@ export default function ImproveAccordingToJdPage() {
                 <div className="hidden lg:flex flex-col items-center justify-center min-h-[500px] text-center rounded-2xl border-2 border-dashed border-gray-200 bg-white py-16 px-10">
                   <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-4 text-gray-300">
                     <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5l14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                     </svg>
                   </div>
-                  <p className="text-gray-600 font-extrabold text-lg mb-2">Tailored Optimization Dashboard</p>
+                  <p className="text-gray-500 font-extrabold text-lg mb-2">Tailored Optimization Dashboard</p>
                   <p className="text-gray-400 text-sm max-w-sm leading-relaxed mb-6">
                     Upload your PDF and input a Job Description. AI will automatically evaluate alignment and rewrite your descriptions.
                   </p>
@@ -592,7 +594,7 @@ export default function ImproveAccordingToJdPage() {
                       </div>
                       <button
                         onClick={() => setShowTemplates(true)}
-                        className="bg-yellow-400 hover:bg-yellow-500 text-black font-black text-xs px-5 py-3 rounded-xl transition-all shadow-md shrink-0 w-full sm:w-auto text-center"
+                        className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold text-xs px-5 py-3 rounded-xl transition-all shadow-md shrink-0 sm:w-auto text-center"
                       >
                         Get your updated resume →
                       </button>
@@ -621,7 +623,7 @@ export default function ImproveAccordingToJdPage() {
                   {!isPremiumResult && (
                     <div className="bg-yellow-50/50 border border-yellow-200/60 rounded-2xl p-5 text-center">
                       <p className="text-xs font-semibold text-yellow-800 leading-relaxed max-w-lg mx-auto">
-                        💡 Want us to write these improvements for you instantly? Spend 5 credits to unlock the Premium Optimization to automatically rewrite and construct your new resume!
+                        🎯 Want us to write these improvements for you instantly? Spend 5 credits to unlock the Premium Optimization to automatically rewrite and construct your new resume!
                       </p>
                     </div>
                   )}
@@ -629,7 +631,6 @@ export default function ImproveAccordingToJdPage() {
                 </div>
               )}
             </div>
-
           </div>
         </div>
       </main>
@@ -674,8 +675,8 @@ export default function ImproveAccordingToJdPage() {
           <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
             <h3 className="text-xl font-extrabold text-black mb-2">Daily Free Limit Reached</h3>
             <p className="text-gray-600 text-sm mb-6 leading-relaxed">
-              You've used your <span className="font-bold text-black">{usageData?.freeLimit} free JD optimizations</span> today.
-              You can upgrade to premium which will cost <span className="font-bold text-black">{usageData?.creditsRequired} credits</span>.
+              You've used your <span className="font-bold text-black">{usageData?.freeLimit}</span> free JD optimizations today.
+              You can upgrade to premium which will cost <span className="font-bold text-black">{usageData?.creditsRequired}</span> credits.
               <br /><br />
               <span className="text-xs text-gray-500 font-semibold px-3 py-1.5 bg-gray-100 rounded-md">
                 Resets at 12:00 AM IST
