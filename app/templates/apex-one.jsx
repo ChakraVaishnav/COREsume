@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { sanitizeHtml } from '@/lib/sanitizeHtml';
 
 export default function PremiumTwoColumnTemplate({ data }) {
   const [form, setForm] = useState(null);
@@ -103,25 +104,25 @@ export default function PremiumTwoColumnTemplate({ data }) {
 
           {hasContent(skills) && (
             <Section title="Key Skills">
-              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: skills }} />
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(skills) }} />
             </Section>
           )}
 
           {hasContent(education) && (
             <Section title="Education">
-              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: education }} />
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(education) }} />
             </Section>
           )}
 
           {hasContent(achievements) && (
             <Section title="Achievements">
-              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: achievements }} />
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(achievements) }} />
             </Section>
           )}
 
           {hasContent(interests) && (
             <Section title="Interests">
-              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: interests }} />
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(interests) }} />
             </Section>
           )}
         </aside>
@@ -130,7 +131,7 @@ export default function PremiumTwoColumnTemplate({ data }) {
         <main className="col-span-2 space-y-6 pl-4 text-[13px] font-normal">
           {hasContent(summary) && (
             <Section title="Professional Summary">
-              <div className="text-justify whitespace-pre-line" dangerouslySetInnerHTML={{ __html: summary }} />
+              <div className="text-justify whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(summary) }} />
             </Section>
           )}
 
@@ -142,7 +143,7 @@ export default function PremiumTwoColumnTemplate({ data }) {
                     {exp.role} — {exp.company}
                   </h3>
                   <p className="text-gray-600 text-[12px]">{exp.duration}</p>
-                  <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: exp.description }} />
+                  <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(exp.description) }} />
                 </div>
               ))}
             </Section>
@@ -165,7 +166,7 @@ export default function PremiumTwoColumnTemplate({ data }) {
                       project.name
                     )}
                   </h3>
-                  <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: project.description }} />
+                  <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(project.description) }} />
                 </div>
               ))}
             </Section>
@@ -196,7 +197,7 @@ export default function PremiumTwoColumnTemplate({ data }) {
           {Array.isArray(customSections) && customSections.map((section, index) => (
             section.title || section.content ? (
               <Section key={index} title={section.title || 'Custom Section'}>
-                <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: section.content }} />
+                <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(section.content) }} />
               </Section>
             ) : null
           ))}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { sanitizeHtml } from '@/lib/sanitizeHtml';
 
 export default function TimelineTemplate() {
   const [form, setForm] = useState(null);
@@ -72,7 +73,7 @@ export default function TimelineTemplate() {
         <section className="mb-4">
           <h2 className="font-bold uppercase text-[13px] mb-1">Summary</h2>
           <div className="pl-2 border-l-2 border-black ml-2">
-            <div className="pl-2 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: summary }} />
+            <div className="pl-2 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(summary) }} />
           </div>
         </section>
       )}
@@ -82,7 +83,7 @@ export default function TimelineTemplate() {
         <section className="mb-4">
           <h2 className="font-bold uppercase text-[13px] mb-1">Skills</h2>
           <div className="pl-2 border-l-2 border-black ml-2">
-            <div className="pl-2 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: skills }} />
+            <div className="pl-2 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(skills) }} />
           </div>
         </section>
       )}
@@ -92,7 +93,7 @@ export default function TimelineTemplate() {
         <section className="mb-4">
           <h2 className="font-bold uppercase text-[13px] mb-1">Education</h2>
           <div className="pl-2 border-l-2 border-black ml-2">
-            <div className="pl-2 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: education }} />
+            <div className="pl-2 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(education) }} />
           </div>
         </section>
       )}
@@ -109,7 +110,7 @@ export default function TimelineTemplate() {
                   {exp.role} — {exp.company}
                 </h3>
                 <p className="text-[11px] italic mb-0.5">{exp.duration}</p>
-                <div className="text-[12px] whitespace-pre-line" dangerouslySetInnerHTML={{ __html: exp.description }} />
+                <div className="text-[12px] whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(exp.description) }} />
               </div>
             ))}
           </div>
@@ -133,7 +134,7 @@ export default function TimelineTemplate() {
                     proj.name
                   )}
                 </h3>
-                <div className="text-[12px] whitespace-pre-line" dangerouslySetInnerHTML={{ __html: proj.description }} />
+                <div className="text-[12px] whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(proj.description) }} />
               </div>
             ))}
           </div>
@@ -145,7 +146,7 @@ export default function TimelineTemplate() {
         <section className="mb-4">
           <h2 className="font-bold uppercase text-[13px] mb-1">Achievements</h2>
           <div className="pl-2 border-l-2 border-black ml-2">
-            <div className="pl-2 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: achievements }} />
+            <div className="pl-2 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(achievements) }} />
           </div>
         </section>
       )}
@@ -155,7 +156,7 @@ export default function TimelineTemplate() {
         <section className="mb-4">
           <h2 className="font-bold uppercase text-[13px] mb-1">Interests</h2>
           <div className="pl-2 border-l-2 border-black ml-2">
-            <div className="pl-2 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: interests }} />
+            <div className="pl-2 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(interests) }} />
           </div>
         </section>
       )}
@@ -190,7 +191,7 @@ export default function TimelineTemplate() {
           <section key={index} className="mb-4">
             <h2 className="font-bold uppercase text-[13px] mb-1">{section.title || 'Custom Section'}</h2>
             <div className="pl-2 border-l-2 border-black ml-2">
-              <div className="pl-2 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: section.content }} />
+              <div className="pl-2 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(section.content) }} />
             </div>
           </section>
         ) : null

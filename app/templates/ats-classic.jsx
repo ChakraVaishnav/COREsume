@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { sanitizeHtml } from '@/lib/sanitizeHtml';
 
 export default function AtsClassicTemplate() {
   const [form, setForm] = useState(null);
@@ -62,25 +63,25 @@ export default function AtsClassicTemplate() {
         <aside className="border-r border-gray-300 bg-gray-50 px-6 py-6">
           {hasContent(skills) && (
             <SidebarSection title="Core Skills">
-              <div className="whitespace-pre-line text-[10.5px] leading-[1.45] text-black" dangerouslySetInnerHTML={{ __html: skills }} />
+              <div className="whitespace-pre-line text-[10.5px] leading-[1.45] text-black" dangerouslySetInnerHTML={{ __html: sanitizeHtml(skills) }} />
             </SidebarSection>
           )}
 
           {hasContent(education) && (
             <SidebarSection title="Education">
-              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: education }} />
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(education) }} />
             </SidebarSection>
           )}
 
           {hasContent(achievements) && (
             <SidebarSection title="Highlights">
-              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: achievements }} />
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(achievements) }} />
             </SidebarSection>
           )}
 
           {hasContent(interests) && (
             <SidebarSection title="Interests">
-              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: interests }} />
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(interests) }} />
             </SidebarSection>
           )}
         </aside>
@@ -88,7 +89,7 @@ export default function AtsClassicTemplate() {
         <main className="px-8 py-6">
           {hasContent(summary) && (
             <MainSection title="Profile Snapshot">
-              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: summary }} />
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(summary) }} />
             </MainSection>
           )}
 
@@ -102,7 +103,7 @@ export default function AtsClassicTemplate() {
                     </div>
                     {exp.duration && <p className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500">{exp.duration}</p>}
                   </div>
-                  <div className="mt-2 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: exp.description }} />
+                  <div className="mt-2 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(exp.description) }} />
                 </article>
               ))}
             </MainSection>
@@ -121,7 +122,7 @@ export default function AtsClassicTemplate() {
                       project.name
                     )}
                   </h3>
-                  <div className="mt-2 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: project.description }} />
+                  <div className="mt-2 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(project.description) }} />
                 </article>
               ))}
             </MainSection>
@@ -152,7 +153,7 @@ export default function AtsClassicTemplate() {
           {Array.isArray(customSections) && customSections.map((section, index) => (
             section.title || section.content ? (
               <MainSection key={index} title={section.title || 'Custom Section'}>
-                <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: section.content }} />
+                <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(section.content) }} />
               </MainSection>
             ) : null
           ))}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { sanitizeHtml } from '@/lib/sanitizeHtml';
 
 export default function SingleColumnTemplate() {
   const [form, setForm] = useState(null);
@@ -60,7 +61,7 @@ export default function SingleColumnTemplate() {
       {hasContent(summary) && (
         <section className="mb-2">
           <h2 className="font-bold border-b border-gray-300 mb-0.5 uppercase text-[11px]">Professional Summary</h2>
-          <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: summary }} />
+          <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(summary) }} />
         </section>
       )}
 
@@ -68,7 +69,7 @@ export default function SingleColumnTemplate() {
       {hasContent(skills) && (
         <section className="mb-2">
           <h2 className="font-bold border-b border-gray-300 mb-0.5 uppercase text-[11px]">Skills</h2>
-          <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: skills }} />
+          <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(skills) }} />
         </section>
       )}
 
@@ -76,7 +77,7 @@ export default function SingleColumnTemplate() {
       {hasContent(education) && (
         <section className="mb-2">
           <h2 className="font-bold border-b border-gray-300 mb-0.5 uppercase text-[11px]">Education</h2>
-          <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: education }} />
+          <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(education) }} />
         </section>
       )}
 
@@ -88,7 +89,7 @@ export default function SingleColumnTemplate() {
             <div key={index} className="mb-1">
               <h3 className="text-[11px] font-bold">{exp.role} — {exp.company}</h3>
               <p className="text-[10px] text-gray-500 mb-0.5">{exp.duration}</p>
-              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: exp.description }} />
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(exp.description) }} />
             </div>
           ))}
         </section>
@@ -109,7 +110,7 @@ export default function SingleColumnTemplate() {
                   proj.name
                 )}
               </h3>
-              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: proj.description }} />
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(proj.description) }} />
             </div>
           ))}
         </section>
@@ -119,7 +120,7 @@ export default function SingleColumnTemplate() {
       {hasContent(achievements) && (
         <section className="mb-2">
           <h2 className="font-bold border-b border-gray-300 mb-0.5 uppercase text-[11px]">Achievements</h2>
-          <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: achievements }} />
+          <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(achievements) }} />
         </section>
       )}
 
@@ -127,7 +128,7 @@ export default function SingleColumnTemplate() {
       {hasContent(interests) && (
         <section className="mb-2">
           <h2 className="font-bold border-b border-gray-300 mb-0.5 uppercase text-[11px]">Interests</h2>
-          <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: interests }} />
+          <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(interests) }} />
         </section>
       )}
 
@@ -158,7 +159,7 @@ export default function SingleColumnTemplate() {
         section.title || section.content ? (
           <section key={index} className="mb-2">
             <h2 className="font-bold border-b border-gray-300 mb-0.5 uppercase text-[11px]">{section.title || 'Custom Section'}</h2>
-            <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: section.content }} />
+            <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(section.content) }} />
           </section>
         ) : null
       ))}

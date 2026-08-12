@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { sanitizeHtml } from '@/lib/sanitizeHtml';
 
 export default function CompactProTemplate() {
   const [form, setForm] = useState(null);
@@ -55,22 +56,22 @@ export default function CompactProTemplate() {
         <aside className="col-span-1 bg-gray-100 border border-gray-300 p-3">
           {hasContent(skills) && (
             <Section title="Core Skills" compact>
-              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: skills }} />
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(skills) }} />
             </Section>
           )}
           {hasContent(education) && (
             <Section title="Education" compact>
-              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: education }} />
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(education) }} />
             </Section>
           )}
           {hasContent(achievements) && (
             <Section title="Achievements" compact>
-              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: achievements }} />
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(achievements) }} />
             </Section>
           )}
           {hasContent(interests) && (
             <Section title="Interests" compact>
-              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: interests }} />
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(interests) }} />
             </Section>
           )}
         </aside>
@@ -78,7 +79,7 @@ export default function CompactProTemplate() {
         <main className="col-span-3">
           {hasContent(summary) && (
             <Section title="Professional Summary">
-              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: summary }} />
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(summary) }} />
             </Section>
           )}
 
@@ -90,7 +91,7 @@ export default function CompactProTemplate() {
                     <h3 className="font-bold">{exp.role} | {exp.company}</h3>
                     <p className="text-gray-600">{exp.duration}</p>
                   </div>
-                  <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: exp.description }} />
+                  <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(exp.description) }} />
                 </div>
               ))}
             </Section>
@@ -109,7 +110,7 @@ export default function CompactProTemplate() {
                       project.name
                     )}
                   </h3>
-                  <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: project.description }} />
+                  <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(project.description) }} />
                 </div>
               ))}
             </Section>
@@ -140,7 +141,7 @@ export default function CompactProTemplate() {
           {Array.isArray(customSections) && customSections.map((section, index) => (
             section.title || section.content ? (
               <Section key={index} title={section.title || 'Custom Section'}>
-                <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: section.content }} />
+                <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(section.content) }} />
               </Section>
             ) : null
           ))}

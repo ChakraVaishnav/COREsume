@@ -5,13 +5,14 @@ import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { toBlob } from "html-to-image";
+import { sanitizeHtml } from "@/lib/sanitizeHtml";
 
 function renderSuggestionText(text) {
   if (!text) return "";
   let htmlText = text
     .replace(/\*\*(.*?)\*\*/g, '<strong class="font-extrabold text-black">$1</strong>')
     .replace(/\*(.*?)\*/g, '<em class="font-medium italic text-black">$1</em>');
-  return <span dangerouslySetInnerHTML={{ __html: htmlText }} />;
+  return <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(htmlText) }} />;
 }
 
 const TEMPLATES = [

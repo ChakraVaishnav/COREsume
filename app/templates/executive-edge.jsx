@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { sanitizeHtml } from '@/lib/sanitizeHtml';
 
 export default function ExecutiveEdgeTemplate() {
   const [form, setForm] = useState(null);
@@ -67,25 +68,25 @@ export default function ExecutiveEdgeTemplate() {
         <aside className="col-span-1 border-r border-gray-300 pr-4">
           {hasContent(skills) && (
             <Section title="Skills">
-              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: skills }} />
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(skills) }} />
             </Section>
           )}
 
           {hasContent(education) && (
             <Section title="Education">
-              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: education }} />
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(education) }} />
             </Section>
           )}
 
           {hasContent(achievements) && (
             <Section title="Achievements">
-              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: achievements }} />
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(achievements) }} />
             </Section>
           )}
 
           {hasContent(interests) && (
             <Section title="Interests">
-              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: interests }} />
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(interests) }} />
             </Section>
           )}
         </aside>
@@ -93,7 +94,7 @@ export default function ExecutiveEdgeTemplate() {
         <main className="col-span-2">
           {hasContent(summary) && (
             <Section title="Executive Summary">
-              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: summary }} />
+              <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(summary) }} />
             </Section>
           )}
 
@@ -103,7 +104,7 @@ export default function ExecutiveEdgeTemplate() {
                 <div key={index} className="mb-3">
                   <h3 className="text-[12px] font-bold">{exp.role} | {exp.company}</h3>
                   <p className="text-[11px] text-gray-600">{exp.duration}</p>
-                  <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: exp.description }} />
+                  <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(exp.description) }} />
                 </div>
               ))}
             </Section>
@@ -122,7 +123,7 @@ export default function ExecutiveEdgeTemplate() {
                       project.name
                     )}
                   </h3>
-                  <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: project.description }} />
+                  <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(project.description) }} />
                 </div>
               ))}
             </Section>
@@ -153,7 +154,7 @@ export default function ExecutiveEdgeTemplate() {
           {Array.isArray(customSections) && customSections.map((section, index) => (
             section.title || section.content ? (
               <Section key={index} title={section.title || 'Custom Section'}>
-                <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: section.content }} />
+                <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: sanitizeHtml(section.content) }} />
               </Section>
             ) : null
           ))}
