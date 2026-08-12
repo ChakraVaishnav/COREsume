@@ -1,6 +1,8 @@
 import { Merriweather, Outfit, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
+import { unstable_cache } from "next/cache";
+import { prisma } from "@/lib/prisma";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -33,7 +35,7 @@ export const metadata = {
   },
 
   description:
-    "Build ATS-friendly resumes in minutes with COREsume. Free AI-powered resume builder with 9+ templates, ATS scorer, and job matching — built for students and freshers.",
+    "Build ATS-friendly resumes in minutes with COREsume. Free AI-powered resume builder with 9+ templates, ATS scores, and job matching — built for students and freshers.",
 
   keywords: [
     "free resume builder india",
@@ -87,7 +89,7 @@ export const metadata = {
   openGraph: {
     title: "COREsume – Free AI Resume Builder for Students",
     description:
-      "Build ATS-friendly resumes in minutes. AI-powered suggestions, 9+ templates, ATS scorer — free for students.",
+      "Build ATS-friendly resumes in minutes. AI-powered suggestions, 9+ templates, ATS scores — free for students.",
     url: "https://coresume.in/",
     siteName: "COREsume",
     images: [
@@ -114,30 +116,51 @@ export const metadata = {
   },
 };
 
-// JSON-LD structured data — helps Google understand what COREsume is
-// This is what gets you rich results in search
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "WebApplication",
-  name: "COREsume",
-  url: "https://coresume.in",
-  description:
-    "Free AI-powered resume builder for students and freshers. Build ATS-friendly resumes with 9+ templates.",
-  applicationCategory: "BusinessApplication",
-  operatingSystem: "Web",
-  offers: {
-    "@type": "Offer",
-    price: "0",
-    priceCurrency: "INR",
+// Fetch real aggregate rating from DB, cached for 1 hour
+const getAggregateRating = unstable_cache(
+  async () => {
+    const result = await prisma.rating.aggregate({
+      _avg: { score: true },
+      _count: true,
+    });
+    return result;
   },
-  aggregateRating: {
-    "@type": "AggregateRating",
-    ratingValue: "4.8",
-    reviewCount: "230", // update this as you grow
-  },
-};
+  ["aggregate-rating"],
+  { revalidate: 3600 }
+);
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  // Build JSON-LD structured data — helps Google understand what COREsume is
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: "COREsume",
+    url: "https://coresume.in",
+    description:
+      "Free AI-powered resume builder for students and freshers. Build ATS-friendly resumes with 9+ templates.",
+    applicationCategory: "BusinessApplication",
+    operatingSystem: "Web",
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "INR",
+    },
+  };
+
+  // Inject real aggregate rating from DB (cached for 1 hour)
+  try {
+    const rating = await getAggregateRating();
+    if (rating._count > 0 && rating._avg.score !== null) {
+      jsonLd.aggregateRating = {
+        "@type": "AggregateRating",
+        ratingValue: rating._avg.score.toFixed(1),
+        reviewCount: String(rating._count),
+      };
+    }
+  } catch {
+    // If DB is unavailable, omit aggregateRating rather than showing fake data
+  }
+
   return (
     <html lang="en">
       <head>
